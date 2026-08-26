@@ -15,6 +15,8 @@
 <script>window.Chart || document.write('<script src="https://unpkg.com/chart.js@4.4.4/dist/chart.umd.min.js"><\/script>')</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>window.supabase || document.write('<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"><\/script>')</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>window.XLSX || document.write('<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>')</script>
 <style>
 :root{
   --navy:#16213E;
@@ -859,6 +861,9 @@ function renderShell(){
   document.getElementById('topbar').innerHTML = `
     <h1>${titles[state.view]}</h1>
     <div class="search-wrap">${icon('search',15)}<input id="globalSearch" type="text" placeholder="Buscar estudiante, RUT, empresa o carrera..." value="${state.search.replace(/"/g,'&quot;')}"/></div>
+    <button class="btn-secondary" data-action="download-import-template">${icon('download',14)} Plantilla Excel</button>
+    <button class="btn-secondary" data-action="trigger-import">${icon('upload',14)} Importar Excel</button>
+    <input type="file" id="importStudentsInput" accept=".xlsx,.xls" style="display:none" />
     <button class="btn-primary gold" data-action="new-student">${icon('plus',15)} Nueva práctica</button>
     <div class="user-badge">
       <span class="ub-email">${(currentUser&&currentUser.email)||''}</span>
@@ -2815,6 +2820,118 @@ function exportReport(type){
 }
 
 /* ============================================================
+   IMPORTAR / EXPORTAR MASIVO (Excel)
+   ============================================================ */
+const IMPORT_COLUMNS = [
+  {header:'Nombre completo', key:'nombre'},
+  {header:'RUT', key:'rut'},
+  {header:'Carrera / especialidad', key:'carrera'},
+  {header:'Curso / nivel', key:'curso'},
+  {header:'Correo electrónico', key:'correo'},
+  {header:'Teléfono', key:'telefono'},
+  {header:'Empresa', key:'empresa'},
+  {header:'Supervisor de empresa', key:'supervisor'},
+  {header:'Área / departamento', key:'area'},
+  {header:'Fecha de inicio (AAAA-MM-DD)', key:'fechaInicio'},
+  {header:'Fecha de término (AAAA-MM-DD)', key:'fechaTermino'},
+  {header:'Horas requeridas', key:'horasRequeridas'},
+];
+
+function downloadImportTemplate(){
+  if(typeof XLSX==='undefined'){ toast('No se pudo cargar la librería de Excel. Revisa tu conexión o desactiva bloqueadores de anuncios y recarga la página.'); return; }
+  const headers = IMPORT_COLUMNS.map(c=>c.header);
+  const ejemplo = ['Juan Pérez Soto','12.345.678-9','Servicios de Turismo','4° Medio','juan.perez@correo.cl','+56912345678','Empresa Ejemplo SpA','María López','Atención al cliente','2025-03-01','2025-07-31',180];
+  const wsData = [headers, ejemplo];
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  ws['!cols'] = headers.map(h=>({wch: Math.max(18, h.length+2)}));
+  const especialidades = Object.keys(ESPECIALIDADES);
+  const wsEsp = XLSX.utils.aoa_to_sheet([['Carreras / especialidades disponibles'], ...especialidades.map(e=>[e])]);
+  wsEsp['!cols'] = [{wch: 40}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Estudiantes');
+  XLSX.utils.book_append_sheet(wb, wsEsp, 'Especialidades');
+  XLSX.writeFile(wb, 'plantilla_estudiantes.xlsx');
+  toast('Plantilla descargada. Complétala y luego usa "Importar Excel".');
+}
+
+function triggerImportFile(){
+  const input = document.getElementById('importStudentsInput');
+  if(input) input.click();
+}
+
+async function handleImportStudentsFile(file){
+  if(!file) return;
+  if(typeof XLSX==='undefined'){ toast('No se pudo cargar la librería de Excel. Revisa tu conexión o desactiva bloqueadores de anuncios y recarga la página.'); return; }
+  try{
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, {type:'array', cellDates:true});
+    const sheetName = wb.SheetNames.find(n=>/estudiante/i.test(n)) || wb.SheetNames[0];
+    const ws = wb.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(ws, {defval:'', raw:false});
+    if(!rows.length){ toast('El archivo no contiene filas de datos.'); return; }
+    const headerMap = {};
+    IMPORT_COLUMNS.forEach(c=>{ headerMap[c.header.trim().toLowerCase()] = c.key; });
+    const especialidadesNorm = {};
+    Object.keys(ESPECIALIDADES).forEach(e=> especialidadesNorm[normalizeTxt(e)] = e);
+
+    let creados = 0, omitidos = 0, carrerasNoReconocidas = 0;
+    rows.forEach(row=>{
+      const mapped = {};
+      Object.keys(row).forEach(rawHeader=>{
+        const key = headerMap[rawHeader.trim().toLowerCase()];
+        if(key) mapped[key] = row[rawHeader];
+      });
+      const nombre = (mapped.nombre||'').toString().trim();
+      if(!nombre){ omitidos++; return; }
+      const s = blankStudent();
+      s.nombre = nombre;
+      s.rut = (mapped.rut||'').toString().trim();
+      s.curso = (mapped.curso||'').toString().trim();
+      s.correo = (mapped.correo||'').toString().trim();
+      s.telefono = (mapped.telefono||'').toString().trim();
+      s.empresa = (mapped.empresa||'').toString().trim();
+      s.supervisor = (mapped.supervisor||'').toString().trim();
+      s.area = (mapped.area||'').toString().trim();
+      s.fechaInicio = normalizeImportedDate(mapped.fechaInicio);
+      s.fechaTermino = normalizeImportedDate(mapped.fechaTermino);
+      const horas = Number(mapped.horasRequeridas);
+      s.horasRequeridas = Number.isFinite(horas) && horas>0 ? horas : 180;
+      const carreraRaw = (mapped.carrera||'').toString().trim();
+      if(carreraRaw){
+        const match = especialidadesNorm[normalizeTxt(carreraRaw)];
+        if(match){ s.carrera = match; }
+        else { s.carrera = carreraRaw; carrerasNoReconocidas++; }
+      }
+      s.estado = 'Pendiente';
+      state.data.students.push(s);
+      creados++;
+    });
+    if(creados>0){ await saveData(); renderView(); }
+    let msg = creados+' estudiante(s) importado(s) correctamente.';
+    if(omitidos>0) msg += ' '+omitidos+' fila(s) sin nombre fueron omitidas.';
+    if(carrerasNoReconocidas>0) msg += ' '+carrerasNoReconocidas+' registro(s) con una carrera no reconocida (revisa la hoja "Especialidades" de la plantilla).';
+    toast(msg);
+  }catch(err){
+    console.error('Error importando estudiantes:', err);
+    toast('No se pudo leer el archivo. Verifica que sea el formato de la plantilla descargada (.xlsx).');
+  }
+}
+
+function normalizeImportedDate(val){
+  if(!val) return '';
+  if(val instanceof Date && !isNaN(val)){
+    const y=val.getFullYear(), m=String(val.getMonth()+1).padStart(2,'0'), d=String(val.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+d;
+  }
+  const str = val.toString().trim();
+  const m = str.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m) return m[1]+'-'+m[2].padStart(2,'0')+'-'+m[3].padStart(2,'0');
+  const m2 = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if(m2) return m2[3]+'-'+m2[1].padStart(2,'0')+'-'+m2[2].padStart(2,'0');
+  return str;
+}
+
+/* ============================================================
    EVENT DELEGATION
    ============================================================ */
 document.addEventListener('click', async (e)=>{
@@ -2851,6 +2968,8 @@ document.addEventListener('click', async (e)=>{
     case 'save-config': await handleSaveConfig(); break;
     case 'export-csv': exportCSV(); break;
     case 'export-report': exportReport(t.dataset.report); break;
+    case 'download-import-template': downloadImportTemplate(); break;
+    case 'trigger-import': triggerImportFile(); break;
     case 'stat-detail': openStatDetail(t.dataset.metric); break;
     case 'generar-informe-pdf': await generarInformePDF(); break;
     case 'open-empresa': openEmpresaDetail(decodeURIComponent(t.dataset.empresa)); break;
@@ -2911,6 +3030,11 @@ document.addEventListener('change', async (e)=>{
     if(!config().logosPorCarrera) config().logosPorCarrera = {};
     config().logosPorCarrera[carrera] = b64;
     await saveData(); renderView(); toast('Logo de '+carrera+' actualizado');
+  }
+  if(e.target.id==='importStudentsInput'){
+    const f = e.target.files[0];
+    e.target.value = '';
+    await handleImportStudentsFile(f);
   }
   if(e.target.id==='fotoInput'){
     const f = e.target.files[0]; if(!f) return;
