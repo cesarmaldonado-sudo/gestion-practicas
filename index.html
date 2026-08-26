@@ -1123,6 +1123,39 @@ function renderEmpresas(){
   document.getElementById('view-root').innerHTML = html;
 }
 
+function openEncuestaEstudianteModal(studentId, nombreEmpresaVolver){
+  const s = getStudent(studentId);
+  if(!s) return;
+  const es = getEncuestaEstudiante(s);
+  const sEnc = encodeURIComponent(s.id);
+  const volverEnc = encodeURIComponent(nombreEmpresaVolver||s.empresa||'');
+  document.getElementById('modal-root').innerHTML = `
+  <div class="modal-overlay" data-action="close-modal">
+    <div class="modal" style="max-width:560px" data-action="noop">
+      <div class="modal-head"><h2>Evaluación y Feedback del Maestro Guía</h2><button class="close-x" data-action="close-modal">&times;</button></div>
+      <div class="modal-body">
+        <div class="field">
+          <label style="font-weight:700;font-size:16px">${s.nombre}</label>
+          <div class="hint" style="margin-bottom:10px">${s.empresa||'Sin empresa asignada'} · Encuesta de satisfacción individual</div>
+          ${starRatingHTML(sEnc, es.estrellas||0)}
+          <div class="field" style="margin-top:14px">
+            <label>Mejoras en el Proceso <span class="hint" style="display:block;font-weight:400">Enfocado en el perfil del estudiante</span></label>
+            <textarea id="est_mejorasEstudiante_${s.id}" rows="3">${es.mejorasEstudiante||''}</textarea>
+          </div>
+          <div class="field" style="margin-top:10px">
+            <label>Mejoras en el Proceso y Supervisión <span class="hint" style="display:block;font-weight:400">Enfocado en el rol y apoyo del jefe de práctica</span></label>
+            <textarea id="est_mejorasProceso_${s.id}" rows="3">${es.mejorasProceso||''}</textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" data-action="volver-empresa-detail" data-empresa="${volverEnc}">${icon('arrow',13)} Volver</button>
+        <button class="btn-primary gold" data-action="save-encuesta-estudiante" data-id="${s.id}">${icon('check',14)} Guardar evaluación</button>
+      </div>
+    </div>
+  </div>`;
+}
+
 function openEmpresaDetail(nombreEmpresa){
   const list = students().filter(x=>x.empresa===nombreEmpresa);
   if(!list.length) return;
@@ -1147,7 +1180,7 @@ function openEmpresaDetail(nombreEmpresa){
           ${statCard(promEval,'Promedio encuesta satisfacción')}
         </div>
         <table><thead><tr><th>Estudiante</th><th>Especialidad</th><th>Supervisor</th><th>Horas</th><th>Nota</th><th>Encuesta</th><th>Estado</th><th></th></tr></thead><tbody>
-        ${list.map(s=>{const es=getEncuestaEstudiante(s); return `<tr class="row-clickable" data-action="open-student" data-id="${s.id}"><td>${s.nombre}</td><td>${s.carrera||'—'}</td><td>${s.supervisor||'—'}</td><td>${s.horasRealizadas}/${s.horasRequeridas}</td><td>${s.evaluacionDocente?s.evaluacionDocente.nota:'—'}</td><td>${es.estrellas? es.estrellas+' ★' : '—'}</td><td>${s.estado}</td><td><button class="btn-secondary" data-action="scroll-to-encuesta" data-id="${s.id}" onclick="event.stopPropagation()">Evaluar ${icon('arrow',13)}</button></td></tr>`;}).join('')}
+        ${list.map(s=>{const es=getEncuestaEstudiante(s); return `<tr><td>${s.nombre}</td><td>${s.carrera||'—'}</td><td>${s.supervisor||'—'}</td><td>${s.horasRealizadas}/${s.horasRequeridas}</td><td>${s.evaluacionDocente?s.evaluacionDocente.nota:'—'}</td><td>${es.estrellas? es.estrellas+' ★' : '—'}</td><td>${s.estado}</td><td><button class="btn-secondary" data-action="open-encuesta-estudiante" data-id="${s.id}" data-empresa="${empEnc}">Evaluar ${icon('arrow',13)}</button></td></tr>`;}).join('')}
         </tbody></table>
 
         <div class="form-section" style="margin-top:22px">
@@ -1161,29 +1194,6 @@ function openEmpresaDetail(nombreEmpresa){
             ${campoEmpresa('ce_telefono','Teléfono de contacto',ref.telefonoSupervisor,'tel')}
           </div>
           <button class="btn-secondary" style="margin-top:10px" data-action="save-centro-practica" data-empresa="${empEnc}">${icon('check',14)} Guardar información del centro</button>
-        </div>
-
-        <div class="form-section">
-          <div class="st"><div class="bar"></div><h4>Evaluación y Feedback del Maestro Guía <span class="hint" style="display:block;font-weight:400">Encuesta de satisfacción individual por estudiante</span></h4></div>
-          ${list.map(s=>{
-            const es = getEncuestaEstudiante(s);
-            const sEnc = encodeURIComponent(s.id);
-            return `<div class="field" id="enc_${s.id}" style="margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)">
-              <label style="font-weight:700">${s.nombre}</label>
-              ${starRatingHTML(sEnc, es.estrellas||0)}
-              <div class="form-grid cols-2" style="margin-top:8px">
-                <div class="field">
-                  <label>Mejoras en el Proceso <span class="hint" style="display:block;font-weight:400">Enfocado en el perfil del estudiante</span></label>
-                  <textarea id="est_mejorasEstudiante_${s.id}" rows="3">${es.mejorasEstudiante||''}</textarea>
-                </div>
-                <div class="field">
-                  <label>Mejoras en el Proceso y Supervisión <span class="hint" style="display:block;font-weight:400">Enfocado en el rol y apoyo del jefe de práctica</span></label>
-                  <textarea id="est_mejorasProceso_${s.id}" rows="3">${es.mejorasProceso||''}</textarea>
-                </div>
-              </div>
-              <button class="btn-secondary" style="margin-top:10px" data-action="save-encuesta-estudiante" data-id="${s.id}">${icon('check',14)} Guardar evaluación de ${s.nombre.split(' ')[0]}</button>
-            </div>`;
-          }).join('')}
         </div>
       </div>
       <div class="modal-foot">
@@ -1245,7 +1255,7 @@ async function handleSetEstrellasEstudiante(studentId, valor){
   const es = getEncuestaEstudiante(s);
   es.estrellas = valor;
   await saveData();
-  openEmpresaDetail(s.empresa);
+  openEncuestaEstudianteModal(studentId, s.empresa);
 }
 
 async function handleSaveEncuestaEstudiante(studentId){
@@ -2987,6 +2997,8 @@ document.addEventListener('click', async (e)=>{
       }
       break;
     }
+    case 'open-encuesta-estudiante': openEncuestaEstudianteModal(t.dataset.id, decodeURIComponent(t.dataset.empresa||'')); break;
+    case 'volver-empresa-detail': openEmpresaDetail(decodeURIComponent(t.dataset.empresa)); break;
     case 'set-estrellas-estudiante': await handleSetEstrellasEstudiante(decodeURIComponent(t.dataset.id), Number(t.dataset.value)); break;
     case 'clear-filters': state.filters={carrera:'',estado:'',empresa:''}; renderView(); break;
     case 'doc-filter': state.docFilters.estado = (state.docFilters.estado===t.dataset.estado)? '' : t.dataset.estado; renderView(); break;
