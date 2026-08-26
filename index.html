@@ -1086,6 +1086,7 @@ function openEstudiantesCarreraModal(carrera){
                 <span class="bar-track"><span class="bar-fill" style="width:${pct}%"></span></span>
               </div>
               <button class="btn-secondary" data-action="open-student" data-id="${s.id}">Ver expediente ${icon('arrow',13)}</button>
+              <button class="btn-danger" data-action="delete-student" data-id="${s.id}" title="Eliminar estudiante">${icon('trash',13)}</button>
             </div>
           </div>`;
         }).join('') : `<div class="empty-state">${icon('user',34)}<div>No hay estudiantes en esta especialidad con los filtros actuales.</div></div>`}
@@ -1432,6 +1433,7 @@ function renderDocumentacion(){
                   <span class="bar-track"><span class="bar-fill" style="width:${pct}%"></span></span>
                 </div>
                 <button class="btn-secondary" data-action="open-student-docs" data-id="${g.s.id}">Ver expediente ${icon('arrow',13)}</button>
+                <button class="btn-danger" data-action="delete-student" data-id="${g.s.id}" title="Eliminar estudiante">${icon('trash',13)}</button>
               </div>
             </div>`;
           }).join('')}
@@ -1702,6 +1704,7 @@ function renderExpedientes(){
                 <div style="display:flex;gap:8px;margin-top:12px">
                   <button class="btn-secondary" style="flex:1;justify-content:center" data-action="open-student" data-id="${s.id}">Ver expediente</button>
                   <button class="btn-secondary" style="flex:1;justify-content:center" data-action="download-expediente" data-id="${s.id}">${icon('download',14)} PDF</button>
+                  <button class="btn-danger" data-action="delete-student" data-id="${s.id}" title="Eliminar estudiante">${icon('trash',14)}</button>
                 </div>
               </div>`;
             }).join('')}
