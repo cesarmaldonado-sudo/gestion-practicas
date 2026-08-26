@@ -1052,12 +1052,10 @@ function renderEstudiantes(){
     </div>
     <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:14px">
       ${carreraNames.length ? carreraNames.map(carrera=>{
-        const n = groups[carrera].length;
         const logo = logoForCarrera(config(), carrera);
-        return `<button class="btn-secondary carrera-tile" data-action="open-estudiantes-carrera" data-carrera="${encodeURIComponent(carrera)}" style="flex-direction:column;justify-content:center;width:150px;height:150px;border-radius:14px;gap:10px;padding:14px">
-          ${logo?`<img src="${logo}" alt="${carrera}" style="width:56px;height:56px;object-fit:contain;border-radius:8px;background:#fff;padding:4px;border:1px solid var(--border)"/>`:icon('building',32)}
+        return `<button class="btn-secondary carrera-tile" data-action="open-estudiantes-carrera" data-carrera="${encodeURIComponent(carrera)}" style="flex-direction:column;justify-content:center;width:170px;height:170px;border-radius:14px;gap:12px;padding:16px">
+          ${logo?`<img src="${logo}" alt="${carrera}" style="width:88px;height:88px;object-fit:contain;border-radius:10px;background:#fff;padding:4px;border:1px solid var(--border)"/>`:icon('building',48)}
           <span style="font-size:13px;font-weight:700;text-align:center;line-height:1.25">${carrera}</span>
-          <span class="badge-count">${n}</span>
         </button>`;
       }).join('') : `<div class="empty-state">${icon('user',34)}<div>No se encontraron estudiantes con estos filtros.</div></div>`}
     </div>
@@ -1376,12 +1374,10 @@ function renderDocumentacion(){
     <div class="panel-body" style="display:flex;flex-wrap:wrap;gap:14px">
       ${carreraBtnNames.map(carrera=>{
         const active = cf===carrera;
-        const n = carreraStudents[carrera].length;
         const logo = logoForCarrera(config(), carrera);
-        return `<button class="btn-secondary carrera-tile" data-action="doc-carrera-filter" data-carrera="${encodeURIComponent(carrera)}" style="flex-direction:column;justify-content:center;width:150px;height:150px;border-radius:14px;gap:10px;padding:14px;${active?'background:var(--navy);color:#fff;border-color:var(--navy)':''}">
-          ${logo?`<img src="${logo}" alt="${carrera}" style="width:56px;height:56px;object-fit:contain;border-radius:8px;background:#fff;padding:4px;${active?'':'border:1px solid var(--border)'}"/>`:icon('building',32)}
+        return `<button class="btn-secondary carrera-tile" data-action="doc-carrera-filter" data-carrera="${encodeURIComponent(carrera)}" style="flex-direction:column;justify-content:center;width:170px;height:170px;border-radius:14px;gap:12px;padding:16px;${active?'background:var(--navy);color:#fff;border-color:var(--navy)':''}">
+          ${logo?`<img src="${logo}" alt="${carrera}" style="width:88px;height:88px;object-fit:contain;border-radius:10px;background:#fff;padding:4px;${active?'':'border:1px solid var(--border)'}"/>`:icon('building',48)}
           <span style="font-size:13px;font-weight:700;text-align:center;line-height:1.25">${carrera}</span>
-          <span class="badge-count" style="${active?'background:#fff;color:var(--navy)':''}">${n}</span>
         </button>`;
       }).join('') || '<div class="hint">Aún no hay estudiantes registrados.</div>'}
     </div>
