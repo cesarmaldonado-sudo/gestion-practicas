@@ -819,7 +819,7 @@ function weightedNota(s){
   return Math.round((((en*p.empresa)+(dn*p.profesor)+(inf*p.informe))/100)*100)/100;
 }
 function avg(obj){ const v=Object.values(obj); return v.length? Math.round((v.reduce((a,b)=>a+Number(b),0)/v.length)*100)/100 : 0; }
-const DIAS_ALERTA_VISITA = 21;
+const DIAS_ALERTA_VISITA = 14;
 function visitaAlerts(){
   const now = new Date();
   return students().filter(s=> s.estado==='En ejecución').map(s=>{
