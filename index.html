@@ -613,6 +613,7 @@ function blankStudent(){
     planPractica:{tareas:{},empleabilidad:{},observaciones:'',fechaAcuerdo:''},
     programa:[], asistencia:[], bitacora:[], seguimiento:[],
     evaluacionEmpresa:null, evaluacionDocente:null, autoevaluacion:null, informeFinal:null,
+    encuestaEmpresa:null,
     fechaCierre:null, docGenerated:false,
   };
 }
@@ -1122,9 +1123,8 @@ function openEmpresaDetail(nombreEmpresa){
   if(!list.length) return;
   const ref = list[0];
   const horas = list.reduce((a,s)=>a+(Number(s.horasRealizadas)||0),0);
-  const notas = list.filter(s=>s.evaluacionDocente).map(s=>s.evaluacionDocente.nota);
-  const promEval = notas.length? (notas.reduce((a,b)=>a+b,0)/notas.length).toFixed(2) : '—';
-  const enc = getEncuestaCentro(nombreEmpresa);
+  const conEncuesta = list.filter(s=>getEncuestaEstudiante(s).estrellas>0);
+  const promEval = conEncuesta.length? (conEncuesta.reduce((a,s)=>a+getEncuestaEstudiante(s).estrellas,0)/conEncuesta.length).toFixed(1) : '—';
   const empEnc = encodeURIComponent(nombreEmpresa);
   document.getElementById('modal-root').innerHTML = `
   <div class="modal-overlay" data-action="close-modal">
@@ -1139,10 +1139,10 @@ function openEmpresaDetail(nombreEmpresa){
         <div class="grid-cards" style="margin-bottom:14px">
           ${statCard(list.length,'Estudiantes en práctica')}
           ${statCard(horas.toLocaleString('es-CL'),'Horas registradas')}
-          ${statCard(promEval,'Promedio evaluación')}
+          ${statCard(promEval,'Promedio encuesta satisfacción')}
         </div>
-        <table><thead><tr><th>Estudiante</th><th>Especialidad</th><th>Supervisor</th><th>Horas</th><th>Nota</th><th>Estado</th></tr></thead><tbody>
-        ${list.map(s=>`<tr class="row-clickable" data-action="open-student" data-id="${s.id}"><td>${s.nombre}</td><td>${s.carrera||'—'}</td><td>${s.supervisor||'—'}</td><td>${s.horasRealizadas}/${s.horasRequeridas}</td><td>${s.evaluacionDocente?s.evaluacionDocente.nota:'—'}</td><td>${s.estado}</td></tr>`).join('')}
+        <table><thead><tr><th>Estudiante</th><th>Especialidad</th><th>Supervisor</th><th>Horas</th><th>Nota</th><th>Encuesta</th><th>Estado</th></tr></thead><tbody>
+        ${list.map(s=>{const es=getEncuestaEstudiante(s); return `<tr class="row-clickable" data-action="open-student" data-id="${s.id}"><td>${s.nombre}</td><td>${s.carrera||'—'}</td><td>${s.supervisor||'—'}</td><td>${s.horasRealizadas}/${s.horasRequeridas}</td><td>${s.evaluacionDocente?s.evaluacionDocente.nota:'—'}</td><td>${es.estrellas? es.estrellas+' ★' : '—'}</td><td>${s.estado}</td></tr>`;}).join('')}
         </tbody></table>
 
         <div class="form-section" style="margin-top:22px">
@@ -1159,22 +1159,26 @@ function openEmpresaDetail(nombreEmpresa){
         </div>
 
         <div class="form-section">
-          <div class="st"><div class="bar"></div><h4>Evaluación y Feedback del Maestro Guía</h4></div>
-          <div class="field" style="margin-bottom:14px">
-            <label>Encuesta de Satisfacción de la Experiencia</label>
-            ${starRatingHTML(empEnc, enc.estrellas||0)}
-          </div>
-          <div class="form-grid cols-2">
-            <div class="field">
-              <label>Mejoras en el Proceso <span class="hint" style="display:block;font-weight:400">Enfocado en el perfil del estudiante</span></label>
-              <textarea id="ce_mejorasEstudiante" rows="3">${enc.mejorasEstudiante||''}</textarea>
-            </div>
-            <div class="field">
-              <label>Mejoras en el Proceso y Supervisión <span class="hint" style="display:block;font-weight:400">Enfocado en el rol y apoyo del jefe de práctica</span></label>
-              <textarea id="ce_mejorasProceso" rows="3">${enc.mejorasProceso||''}</textarea>
-            </div>
-          </div>
-          <button class="btn-secondary" style="margin-top:10px" data-action="save-encuesta-centro" data-empresa="${empEnc}">${icon('check',14)} Guardar evaluación</button>
+          <div class="st"><div class="bar"></div><h4>Evaluación y Feedback del Maestro Guía <span class="hint" style="display:block;font-weight:400">Encuesta de satisfacción individual por estudiante</span></h4></div>
+          ${list.map(s=>{
+            const es = getEncuestaEstudiante(s);
+            const sEnc = encodeURIComponent(s.id);
+            return `<div class="field" style="margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+              <label style="font-weight:700">${s.nombre}</label>
+              ${starRatingHTML(sEnc, es.estrellas||0)}
+              <div class="form-grid cols-2" style="margin-top:8px">
+                <div class="field">
+                  <label>Mejoras en el Proceso <span class="hint" style="display:block;font-weight:400">Enfocado en el perfil del estudiante</span></label>
+                  <textarea id="est_mejorasEstudiante_${s.id}" rows="3">${es.mejorasEstudiante||''}</textarea>
+                </div>
+                <div class="field">
+                  <label>Mejoras en el Proceso y Supervisión <span class="hint" style="display:block;font-weight:400">Enfocado en el rol y apoyo del jefe de práctica</span></label>
+                  <textarea id="est_mejorasProceso_${s.id}" rows="3">${es.mejorasProceso||''}</textarea>
+                </div>
+              </div>
+              <button class="btn-secondary" style="margin-top:10px" data-action="save-encuesta-estudiante" data-id="${s.id}">${icon('check',14)} Guardar evaluación de ${s.nombre.split(' ')[0]}</button>
+            </div>`;
+          }).join('')}
         </div>
       </div>
       <div class="modal-foot">
@@ -1189,24 +1193,19 @@ function campoEmpresa(id,label,value,type='text'){
   return `<div class="field"><label>${label}</label><input type="${type}" id="${id}" value="${(value??'').toString().replace(/"/g,'&quot;')}"></div>`;
 }
 
-function centrosPracticaData(){
-  if(!state.data.encuestasCentro) state.data.encuestasCentro = {};
-  return state.data.encuestasCentro;
-}
-function getEncuestaCentro(nombreEmpresa){
-  const store = centrosPracticaData();
-  if(!store[nombreEmpresa]) store[nombreEmpresa] = {estrellas:0, mejorasEstudiante:'', mejorasProceso:''};
-  return store[nombreEmpresa];
+function getEncuestaEstudiante(s){
+  if(!s.encuestaEmpresa) s.encuestaEmpresa = {estrellas:0, mejorasEstudiante:'', mejorasProceso:''};
+  return s.encuestaEmpresa;
 }
 
 function starIconSVG(filled){
   return `<svg viewBox="0 0 24 24" width="26" height="26"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 5.9-.8L12 3.5z" fill="${filled?'var(--gold)':'none'}" stroke="${filled?'var(--gold)':'var(--slate-2)'}" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
 }
 const ESTRELLAS_LABELS = {1:'Por Mejorar',2:'Regular',3:'Bueno',4:'Muy Bueno',5:'Excelente'};
-function starRatingHTML(empresaEncoded, value){
+function starRatingHTML(idEncoded, value){
   let stars = '';
   for(let i=1;i<=5;i++){
-    stars += `<button type="button" class="star-btn" data-action="set-estrellas" data-empresa="${empresaEncoded}" data-value="${i}" title="${i}: ${ESTRELLAS_LABELS[i]}">${starIconSVG(i<=value)}</button>`;
+    stars += `<button type="button" class="star-btn" data-action="set-estrellas-estudiante" data-id="${idEncoded}" data-value="${i}" title="${i}: ${ESTRELLAS_LABELS[i]}">${starIconSVG(i<=value)}</button>`;
   }
   const labelTxt = value? (value+' — '+ESTRELLAS_LABELS[value]) : 'Sin calificar aún';
   return `<div class="star-rating">${stars}</div><div class="star-rating-label">${labelTxt}</div>`;
@@ -1229,30 +1228,30 @@ async function handleSaveCentroPractica(nombreEmpresaOriginal){
     s.correoSupervisor = correo;
     s.telefonoSupervisor = telefono;
   });
-  if(nuevoNombre !== nombreEmpresaOriginal){
-    const store = centrosPracticaData();
-    if(store[nombreEmpresaOriginal]){ store[nuevoNombre] = store[nombreEmpresaOriginal]; delete store[nombreEmpresaOriginal]; }
-  }
   await saveData();
   toast('Información del centro de práctica actualizada');
   renderView();
   openEmpresaDetail(nuevoNombre);
 }
 
-async function handleSetEstrellas(nombreEmpresa, valor){
-  const enc = getEncuestaCentro(nombreEmpresa);
-  enc.estrellas = valor;
+async function handleSetEstrellasEstudiante(studentId, valor){
+  const s = getStudent(studentId);
+  if(!s) return;
+  const es = getEncuestaEstudiante(s);
+  es.estrellas = valor;
   await saveData();
-  openEmpresaDetail(nombreEmpresa);
+  openEmpresaDetail(s.empresa);
 }
 
-async function handleSaveEncuestaCentro(nombreEmpresa){
-  const enc = getEncuestaCentro(nombreEmpresa);
-  enc.mejorasEstudiante = val('ce_mejorasEstudiante');
-  enc.mejorasProceso = val('ce_mejorasProceso');
+async function handleSaveEncuestaEstudiante(studentId){
+  const s = getStudent(studentId);
+  if(!s) return;
+  const es = getEncuestaEstudiante(s);
+  es.mejorasEstudiante = val('est_mejorasEstudiante_'+studentId);
+  es.mejorasProceso = val('est_mejorasProceso_'+studentId);
   await saveData();
-  toast('Evaluación del centro de práctica guardada');
-  openEmpresaDetail(nombreEmpresa);
+  toast('Evaluación de '+s.nombre.split(' ')[0]+' guardada');
+  openEmpresaDetail(s.empresa);
 }
 
 async function generarInformeEmpresaPDF(nombreEmpresa){
@@ -2857,8 +2856,8 @@ document.addEventListener('click', async (e)=>{
     case 'open-empresa': openEmpresaDetail(decodeURIComponent(t.dataset.empresa)); break;
     case 'generar-informe-empresa': await generarInformeEmpresaPDF(decodeURIComponent(t.dataset.empresa)); break;
     case 'save-centro-practica': await handleSaveCentroPractica(decodeURIComponent(t.dataset.empresa)); break;
-    case 'save-encuesta-centro': await handleSaveEncuestaCentro(decodeURIComponent(t.dataset.empresa)); break;
-    case 'set-estrellas': await handleSetEstrellas(decodeURIComponent(t.dataset.empresa), Number(t.dataset.value)); break;
+    case 'save-encuesta-estudiante': await handleSaveEncuestaEstudiante(t.dataset.id); break;
+    case 'set-estrellas-estudiante': await handleSetEstrellasEstudiante(decodeURIComponent(t.dataset.id), Number(t.dataset.value)); break;
     case 'clear-filters': state.filters={carrera:'',estado:'',empresa:''}; renderView(); break;
     case 'doc-filter': state.docFilters.estado = (state.docFilters.estado===t.dataset.estado)? '' : t.dataset.estado; renderView(); break;
     case 'doc-carrera-filter': { const c=decodeURIComponent(t.dataset.carrera); state.docFilters.carrera = (state.docFilters.carrera===c)? '' : c; renderView(); break; }
