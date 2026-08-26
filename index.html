@@ -1548,7 +1548,7 @@ function renderEvaluaciones(){
                   <span class="bar-label" style="color:${resultadoColor};font-weight:700;font-family:'Fraunces',serif;font-size:15px">${notaTxt}</span>
                   <span class="pill" style="background:${resultadoColor}18;color:${resultadoColor}">${resultadoLabel}</span>
                 </div>
-                <button class="btn-secondary" data-action="open-student-tab" data-id="${s.id}" data-tab="evaluaciones">Evaluar ${icon('arrow',13)}</button>
+                <button class="btn-secondary" data-action="open-student-tab" data-id="${s.id}" data-tab="evaluaciones">${c.nota!==null ? `${icon('check',13)} Ver evaluación` : `Evaluar ${icon('arrow',13)}`}</button>
               </div>
             </div>`;
           }).join('')}
