@@ -820,6 +820,53 @@ function weightedNota(s){
 }
 function avg(obj){ const v=Object.values(obj); return v.length? Math.round((v.reduce((a,b)=>a+Number(b),0)/v.length)*100)/100 : 0; }
 const DIAS_ALERTA_VISITA = 14;
+
+/* ============================================================
+   ESTADÍSTICAS: por especialidad y por período (año)
+   ============================================================ */
+const PERIODOS_ANIO = [2027,2028,2029,2030];
+function anioDe(s){
+  const f = s.fechaInicio || s.fechaTermino;
+  if(!f) return null;
+  const y = new Date(f).getFullYear();
+  return isNaN(y) ? null : y;
+}
+function statsPorEspecialidad(){
+  const list = students();
+  const especialidades = uniqueVals('carrera');
+  return especialidades.map(esp=>{
+    const g = list.filter(s=>s.carrera===esp);
+    const activas = g.filter(s=>s.estado==='En ejecución').length;
+    const finalizadas = g.filter(s=>s.estado==='Finalizada'||s.estado==='Cerrada').length;
+    const notas = g.filter(s=>s.evaluacionDocente).map(s=>s.evaluacionDocente.nota);
+    const horasReq = g.reduce((a,s)=>a+(Number(s.horasRequeridas)||0),0);
+    const horasReal = g.reduce((a,s)=>a+(Number(s.horasRealizadas)||0),0);
+    return {
+      especialidad: esp, total: g.length, activas, finalizadas,
+      pctFinal: g.length? Math.round(finalizadas/g.length*100) : 0,
+      promEval: notas.length? (notas.reduce((a,b)=>a+b,0)/notas.length).toFixed(2) : '—',
+      horasReq, horasReal,
+      pctHoras: horasReq? Math.round(horasReal/horasReq*100) : 0,
+    };
+  }).sort((a,b)=>b.total-a.total);
+}
+function statsPorPeriodo(years){
+  const list = students();
+  const periodos = years || PERIODOS_ANIO;
+  return periodos.map(anio=>{
+    const g = list.filter(s=>anioDe(s)===anio);
+    const activas = g.filter(s=>s.estado==='En ejecución').length;
+    const finalizadas = g.filter(s=>s.estado==='Finalizada'||s.estado==='Cerrada').length;
+    const notas = g.filter(s=>s.evaluacionDocente).map(s=>s.evaluacionDocente.nota);
+    const horasTotales = g.reduce((a,s)=>a+(Number(s.horasRealizadas)||0),0);
+    return {
+      anio, total: g.length, activas, finalizadas,
+      pctFinal: g.length? Math.round(finalizadas/g.length*100) : 0,
+      promEval: notas.length? (notas.reduce((a,b)=>a+b,0)/notas.length).toFixed(2) : '—',
+      horasTotales,
+    };
+  });
+}
 function visitaAlerts(){
   const now = new Date();
   return students().filter(s=> s.estado==='En ejecución').map(s=>{
@@ -890,6 +937,8 @@ function renderDashboard(){
 
   const notas = list.filter(s=>s.evaluacionDocente).map(s=>s.evaluacionDocente.nota);
   const promEval = notas.length? (notas.reduce((a,b)=>a+b,0)/notas.length).toFixed(2) : '—';
+  const estEsp = statsPorEspecialidad();
+  const estPeriodo = statsPorPeriodo();
 
   const html = `
   <div class="grid-cards">
@@ -936,6 +985,53 @@ function renderDashboard(){
     <div class="chart-card"><h3>Horas realizadas vs requeridas</h3><div class="chart-wrap"><canvas id="chartHoras"></canvas></div></div>
     <div class="chart-card"><h3>Prácticas por curso / nivel</h3><div class="chart-wrap"><canvas id="chartCurso"></canvas></div></div>
   </div>
+  <div class="panel" style="margin-bottom:22px">
+    <div class="panel-head">
+      <h2 style="display:flex;align-items:center;gap:9px"><span class="panel-head-icon">${icon('trendingUp',18)}</span>Estadística por especialidad</h2>
+      <span class="hint">Indicadores desglosados por carrera / especialidad</span>
+    </div>
+    <div class="panel-body">
+      <div class="table-wrap" style="overflow-x:auto">
+        <table><thead><tr><th>Especialidad</th><th>Estudiantes</th><th>Activas</th><th>Finalizadas</th><th>% Finalizadas</th><th>Horas realizadas / requeridas</th><th>Promedio evaluación docente</th></tr></thead>
+        <tbody>
+        ${estEsp.length ? estEsp.map(r=>`<tr>
+          <td>${r.especialidad}</td><td>${r.total}</td><td>${r.activas}</td><td>${r.finalizadas}</td>
+          <td>${r.pctFinal}%</td><td>${r.horasReal.toLocaleString('es-CL')} / ${r.horasReq.toLocaleString('es-CL')} (${r.pctHoras}%)</td>
+          <td>${r.promEval}</td></tr>`).join('') : `<tr><td colspan="7" class="hint" style="text-align:center;padding:16px">Sin datos de especialidades aún.</td></tr>`}
+        </tbody></table>
+      </div>
+      <div class="chart-card" style="margin-top:18px;height:300px">
+        <h3>Estudiantes por especialidad, según estado</h3>
+        <div class="chart-wrap"><canvas id="chartEspecialidadEstado"></canvas></div>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn-secondary" data-action="export-report" data-report="especialidad">${icon('download',14)} Exportar estadística por especialidad (CSV)</button>
+      </div>
+    </div>
+  </div>
+  <div class="panel" style="margin-bottom:22px">
+    <div class="panel-head">
+      <h2 style="display:flex;align-items:center;gap:9px"><span class="panel-head-icon">${icon('calendarDays',18)}</span>Estadística general por período</h2>
+      <span class="hint">Años ${PERIODOS_ANIO[0]}–${PERIODOS_ANIO[PERIODOS_ANIO.length-1]}, según fecha de inicio de práctica</span>
+    </div>
+    <div class="panel-body">
+      <div class="table-wrap" style="overflow-x:auto">
+        <table><thead><tr><th>Período</th><th>Estudiantes</th><th>Activas</th><th>Finalizadas</th><th>% Finalizadas</th><th>Promedio evaluación docente</th><th>Horas realizadas</th></tr></thead>
+        <tbody>
+        ${estPeriodo.map(r=>`<tr>
+          <td>${r.anio}</td><td>${r.total}</td><td>${r.activas}</td><td>${r.finalizadas}</td>
+          <td>${r.pctFinal}%</td><td>${r.promEval}</td><td>${r.horasTotales.toLocaleString('es-CL')}</td></tr>`).join('')}
+        </tbody></table>
+      </div>
+      <div class="chart-card" style="margin-top:18px;height:300px">
+        <h3>Evolución de estudiantes por período</h3>
+        <div class="chart-wrap"><canvas id="chartPeriodo"></canvas></div>
+      </div>
+      <div style="margin-top:14px">
+        <button class="btn-secondary" data-action="export-report" data-report="periodo">${icon('download',14)} Exportar estadística por período (CSV)</button>
+      </div>
+    </div>
+  </div>
   <div class="panel">
     <div class="panel-head"><h2>Reportes</h2></div>
     <div class="panel-body" style="display:flex;gap:10px;flex-wrap:wrap">
@@ -976,6 +1072,23 @@ function renderDashboard(){
   });
   const cursos = uniqueVals('curso');
   makeChart('chartCurso','doughnut', { labels:cursos, datasets:[{data:cursos.map(c=>list.filter(s=>s.curso===c).length), backgroundColor:['#16213E','#B7862B','#2C5F8A','#2F6F4E','#7A2E3B','#9C6B12']}] });
+
+  makeChart('chartEspecialidadEstado','bar', {
+    labels: estEsp.map(r=>r.especialidad),
+    datasets:[
+      {label:'Activas', data:estEsp.map(r=>r.activas), backgroundColor:'#2C5F8A', borderRadius:4},
+      {label:'Finalizadas', data:estEsp.map(r=>r.finalizadas), backgroundColor:'#2F6F4E', borderRadius:4},
+      {label:'Otras', data:estEsp.map(r=>r.total-r.activas-r.finalizadas), backgroundColor:'#9C6B12', borderRadius:4},
+    ]
+  }, {scales:{x:{stacked:true},y:{stacked:true}}});
+
+  makeChart('chartPeriodo','bar', {
+    labels: estPeriodo.map(r=>String(r.anio)),
+    datasets:[
+      {label:'Estudiantes', data:estPeriodo.map(r=>r.total), backgroundColor:'#16213E', borderRadius:4},
+      {label:'Finalizadas', data:estPeriodo.map(r=>r.finalizadas), backgroundColor:'#B7862B', borderRadius:4},
+    ]
+  });
 }
 /* ---- Helpers del catálogo de especialidades ---- */
 function especialidadDe(s){ return ESPECIALIDADES[s.carrera] || null; }
@@ -2350,6 +2463,23 @@ async function generarInformePDF(){
   const withEval = list.filter(s=>s.evaluacionDocente);
   const imgEval = withEval.length? await renderOffscreenChart('bar', {labels:withEval.map(s=>s.nombre.split(' ')[0]), datasets:[{label:'Nota (1-7)', data:withEval.map(s=>s.evaluacionDocente.nota), backgroundColor:'#B7862B', borderRadius:4}]}, {scales:{y:{beginAtZero:true,max:7}}}, 700, 340) : null;
 
+  const estEsp = statsPorEspecialidad();
+  const imgEspEstado = estEsp.length? await renderOffscreenChart('bar', {
+    labels: estEsp.map(r=>r.especialidad),
+    datasets:[
+      {label:'Activas', data:estEsp.map(r=>r.activas), backgroundColor:'#2C5F8A', borderRadius:4},
+      {label:'Finalizadas', data:estEsp.map(r=>r.finalizadas), backgroundColor:'#2F6F4E', borderRadius:4},
+      {label:'Otras', data:estEsp.map(r=>r.total-r.activas-r.finalizadas), backgroundColor:'#9C6B12', borderRadius:4},
+    ]}, {scales:{x:{stacked:true},y:{stacked:true}}}, 700, 340) : null;
+
+  const estPeriodo = statsPorPeriodo();
+  const imgPeriodo = await renderOffscreenChart('bar', {
+    labels: estPeriodo.map(r=>String(r.anio)),
+    datasets:[
+      {label:'Estudiantes', data:estPeriodo.map(r=>r.total), backgroundColor:'#16213E', borderRadius:4},
+      {label:'Finalizadas', data:estPeriodo.map(r=>r.finalizadas), backgroundColor:'#B7862B', borderRadius:4},
+    ]}, {}, 700, 340);
+
   const jsPDF = collectPDFmakerLib();
   const pdf = new jsPDF({unit:'mm', format:'a4'});
   const pw = pdf.internal.pageSize.getWidth();
@@ -2385,6 +2515,28 @@ async function generarInformePDF(){
     sectionTitle(pdf,15,y,'Evaluación docente por estudiante'); y+=6;
     y = addChartImage(pdf, imgEval, 15, y, pw-30, chartH);
   }
+
+  pdf.addPage(); y = 20;
+  sectionTitle(pdf,15,y,'Estadística por especialidad'); y+=8;
+  pdf.autoTable({ startY:y, margin:{left:15,right:15}, styles:{fontSize:8.5}, headStyles:{fillColor:[22,33,62]}, theme:'grid',
+    head:[['Especialidad','Estudiantes','Activas','Finalizadas','% Final.','Horas real./req.','Prom. eval. docente']],
+    body: estEsp.map(r=>[r.especialidad, r.total, r.activas, r.finalizadas, r.pctFinal+'%', `${r.horasReal}/${r.horasReq}`, r.promEval]) });
+  y = pdf.lastAutoTable.finalY + 10;
+  if(imgEspEstado){
+    y = checkPageBreakForBlock(pdf,y,cfg,6+chartH);
+    sectionTitle(pdf,15,y,'Estudiantes por especialidad, según estado'); y+=6;
+    y = addChartImage(pdf, imgEspEstado, 15, y, pw-30, chartH);
+  }
+
+  pdf.addPage(); y = 20;
+  sectionTitle(pdf,15,y,`Estadística general por período (${PERIODOS_ANIO[0]}–${PERIODOS_ANIO[PERIODOS_ANIO.length-1]})`); y+=8;
+  pdf.autoTable({ startY:y, margin:{left:15,right:15}, styles:{fontSize:9}, headStyles:{fillColor:[22,33,62]}, theme:'grid',
+    head:[['Período','Estudiantes','Activas','Finalizadas','% Final.','Prom. eval. docente','Horas realizadas']],
+    body: estPeriodo.map(r=>[r.anio, r.total, r.activas, r.finalizadas, r.pctFinal+'%', r.promEval, r.horasTotales]) });
+  y = pdf.lastAutoTable.finalY + 10;
+  y = checkPageBreakForBlock(pdf,y,cfg,6+chartH);
+  sectionTitle(pdf,15,y,'Evolución de estudiantes por período'); y+=6;
+  y = addChartImage(pdf, imgPeriodo, 15, y, pw-30, chartH);
 
   pdf.addPage(); y = 20;
   sectionTitle(pdf,15,y,'Detalle por estudiante'); y+=8;
@@ -2823,6 +2975,8 @@ function exportReport(type){
   let rows, name;
   if(type==='horas'){ rows=[['Estudiante','Horas requeridas','Horas realizadas','% cumplimiento']]; students().forEach(s=>rows.push([s.nombre,s.horasRequeridas,s.horasRealizadas, s.horasRequeridas? Math.round(s.horasRealizadas/s.horasRequeridas*100)+'%':'—'])); name='reporte_horas.csv'; }
   else if(type==='evaluaciones'){ rows=[['Estudiante','Eval. Empresa','Eval. Docente','Informe','Nota final','Resultado']]; students().forEach(s=>{ const n=(s.evaluacionEmpresa&&s.evaluacionDocente)? weightedNota(s):''; rows.push([s.nombre, s.evaluacionEmpresa?s.evaluacionEmpresa.nota:'', s.evaluacionDocente?s.evaluacionDocente.nota:'', s.informeFinal?s.informeFinal.nota:'', n, n!==''? (n>=config().escalaAprobacion?'Aprobado':'Reprobado'):'']); }); name='reporte_evaluaciones.csv'; }
+  else if(type==='especialidad'){ rows=[['Especialidad','Estudiantes','Activas','Finalizadas','% Finalizadas','Horas realizadas','Horas requeridas','% Horas','Promedio evaluación docente']]; statsPorEspecialidad().forEach(r=>rows.push([r.especialidad,r.total,r.activas,r.finalizadas,r.pctFinal+'%',r.horasReal,r.horasReq,r.pctHoras+'%',r.promEval])); name='estadistica_por_especialidad.csv'; }
+  else if(type==='periodo'){ rows=[['Período','Estudiantes','Activas','Finalizadas','% Finalizadas','Promedio evaluación docente','Horas realizadas']]; statsPorPeriodo().forEach(r=>rows.push([r.anio,r.total,r.activas,r.finalizadas,r.pctFinal+'%',r.promEval,r.horasTotales])); name='estadistica_por_periodo.csv'; }
   else { rows=[['Estudiante','Empresa','Carrera','Fecha de cierre','Resultado']]; students().filter(s=>s.estado==='Cerrada'||s.estado==='Finalizada').forEach(s=>{ const n=(s.evaluacionEmpresa&&s.evaluacionDocente)?weightedNota(s):null; rows.push([s.nombre,s.empresa,s.carrera,s.fechaCierre||'',n!==null?(n>=config().escalaAprobacion?'Aprobado':'Reprobado'):'']); }); name='reporte_finalizadas.csv'; }
   const csv = rows.map(r=>r.map(csvEscape).join(',')).join('\n');
   download(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}), name);
