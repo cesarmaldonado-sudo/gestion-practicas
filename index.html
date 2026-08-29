@@ -304,6 +304,7 @@ select{cursor:pointer;}
 .carrera-head .chev{display:flex;color:var(--navy);transition:transform .15s;flex-shrink:0;}
 .carrera-head .chev.collapsed{transform:rotate(-90deg);}
 .carrera-head .carrera-icon{display:flex;color:var(--gold);flex-shrink:0;}
+.carrera-head .carrera-logo{width:26px;height:26px;object-fit:contain;border-radius:50%;background:#fff;border:1px solid var(--border);flex-shrink:0;}
 .carrera-head .carrera-name{font-family:'Fraunces',serif;font-weight:600;font-size:16px;color:var(--navy);flex:1;min-width:0;}
 .carrera-head:hover .carrera-name{color:var(--gold);}
 @media (max-width:880px){
@@ -1695,11 +1696,12 @@ function renderEvaluaciones(){
         const gList = carreraGroups[carrera];
         const key = 'evalesp_'+carrera.replace(/[^\w]+/g,'_');
         const collapsed = state.docCollapsed && state.docCollapsed[key];
+        const carreraLogo = logoForCarrera(config(), carrera);
         return `
         <div class="carrera-section">
           <div class="carrera-head" data-action="toggle-doc-carrera" data-key="${key}">
             <span class="chev ${collapsed?'collapsed':''}">${icon('chevronDown',15)}</span>
-            <span class="carrera-icon">${icon('building',15)}</span>
+            ${carreraLogo ? `<img class="carrera-logo" src="${carreraLogo}" alt="Logo ${carrera}">` : `<span class="carrera-icon">${icon('building',15)}</span>`}
             <span class="carrera-name">${carrera}</span>
             <span class="hint">${gList.length} estudiante${gList.length===1?'':'s'}</span>
             <span class="badge-count">${gList.length}</span>
