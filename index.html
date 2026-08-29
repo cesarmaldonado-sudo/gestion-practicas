@@ -1115,6 +1115,15 @@ function fldSelectEspecialidad(val){
 function nivelSelect(id, val, opts, labels){
   return `<select id="${id}" class="mono"><option value="">—</option>${opts.map(o=>`<option value="${o}" ${o===val?'selected':''}>${o} · ${labels[o]}</option>`).join('')}</select>`;
 }
+function escalaOptions(){
+  const out = [];
+  for(let n=1; n<=7; n+=0.5) out.push(Math.round(n*10)/10);
+  return out;
+}
+function selectNota17(id, value){
+  const v = (value===undefined||value===null||value==='')? '' : Number(value);
+  return `<select id="${id}" class="eval-scale-select"><option value="">—</option>${escalaOptions().map(o=>`<option value="${o}" ${v===o?'selected':''}>${o.toFixed(1)}</option>`).join('')}</select>`;
+}
 function statCard(num,label){ return `<div class="stat-card accent"><div class="num">${num}</div><div class="label">${label}</div></div>`; }
 function makeChart(id, type, data, extra){
   const ctx = document.getElementById(id); if(!ctx) return;
@@ -2200,16 +2209,18 @@ function tplEvaluaciones(s){
   const auto = s.autoevaluacion || {};
   return `
   <div class="form-section"><div class="st"><div class="bar"></div><h4>Evaluación del supervisor de empresa</h4></div>
-    <div class="form-grid cols-3">
-    ${EVAL_CRITERIOS_EMPRESA.map(c=>`<div class="field"><label>${c}</label><input type="number" min="1" max="7" step="0.5" id="ee_${c.replace(/\s/g,'_')}" value="${ee[c]??''}"></div>`).join('')}
+    <span class="hint">Escala de evaluación: 1.0 a 7.0</span>
+    <div class="form-grid cols-3" style="margin-top:8px">
+    ${EVAL_CRITERIOS_EMPRESA.map(c=>`<div class="field"><label>${c}</label>${selectNota17('ee_'+c.replace(/\s/g,'_'), ee[c])}</div>`).join('')}
     </div>
     <button class="btn-primary" style="margin-top:10px" data-action="save-eval-empresa" data-id="${s.id}">Guardar evaluación empresa</button>
     ${s.evaluacionEmpresa? `<span class="hint" style="margin-left:10px">Nota actual: <strong>${s.evaluacionEmpresa.nota.toFixed(1)}</strong></span>`:''}
   </div>
 
   <div class="form-section"><div class="st"><div class="bar"></div><h4>Evaluación docente</h4></div>
-    <div class="form-grid cols-3">
-    ${EVAL_CRITERIOS_DOCENTE.map(c=>`<div class="field"><label>${c}</label><input type="number" min="1" max="7" step="0.5" id="ed_${c.replace(/\s/g,'_')}" value="${ed[c]??''}"></div>`).join('')}
+    <span class="hint">Escala de evaluación: 1.0 a 7.0</span>
+    <div class="form-grid cols-3" style="margin-top:8px">
+    ${EVAL_CRITERIOS_DOCENTE.map(c=>`<div class="field"><label>${c}</label>${selectNota17('ed_'+c.replace(/\s/g,'_'), ed[c])}</div>`).join('')}
     </div>
     <button class="btn-primary" style="margin-top:10px" data-action="save-eval-docente" data-id="${s.id}">Guardar evaluación docente</button>
     ${s.evaluacionDocente? `<span class="hint" style="margin-left:10px">Nota actual: <strong>${s.evaluacionDocente.nota.toFixed(1)}</strong></span>`:''}
