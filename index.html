@@ -657,8 +657,9 @@ function seedData(){
     });
     if(i===3){ // finalizado con todo completo
       DOC_TYPES.forEach(d=> s.documentos[d.key]={status:'completo', fileName:d.name.replace(/\s/g,'_')+'.pdf', updatedAt:'2026-07-16'});
-      s.evaluacionEmpresa = {scores:Object.fromEntries(EVAL_CRITERIOS_EMPRESA.map(c=>[c,6])), nota:6.0};
-      s.evaluacionDocente = {scores:Object.fromEntries(EVAL_CRITERIOS_DOCENTE.map(c=>[c,6.2])), nota:6.2};
+      const critSeed = criteriosEvaluacion(s);
+      s.evaluacionEmpresa = {scores:Object.fromEntries([...critSeed.tecnicos,...critSeed.empleabilidad].map(c=>[c,6])), nota:6.0};
+      s.evaluacionDocente = {scores:Object.fromEntries([...critSeed.tecnicos,...critSeed.empleabilidad].map(c=>[c,6.2])), nota:6.2};
       s.informeFinal = {nota:6.0, descripcionEmpresa:'Empresa del rubro financiero, sucursal centro.', actividadesDesarrolladas:'Apoyo en análisis de carteras y atención de clientes.', competenciasAdquiridas:'Análisis financiero, atención al público.', aprendizajes:'Gestión de tiempo y trabajo bajo presión.', dificultades:'Adaptación a sistemas internos.', soluciones:'Capacitación interna y acompañamiento.', conclusiones:'Experiencia formativa relevante para su perfil de egreso.', recomendaciones:'Mantener convenio con la empresa.'};
       s.autoevaluacion = {cumplimiento:'Alto cumplimiento de objetivos trazados.', aprendizajes:'Manejo de herramientas financieras.', competencias:'Comunicación efectiva y análisis.', fortalezas:'Responsabilidad y proactividad.', mejoras:'Manejo de situaciones de alta presión.', experiencia:'Muy positiva.', reflexion:'La práctica confirmó mi interés por el área financiera.'};
       s.fechaCierre='2026-07-18'; s.docGenerated=true;
@@ -1124,6 +1125,18 @@ function renderDashboard(){
 }
 /* ---- Helpers del catálogo de especialidades ---- */
 function especialidadDe(s){ return ESPECIALIDADES[s.carrera] || null; }
+/* Deriva los criterios de evaluación (técnicos + empleabilidad) directamente
+   del catálogo de especialidades, para evaluar a cada estudiante según las
+   áreas de competencia y actitudes propias de su especialidad. Si la carrera
+   del estudiante no está cargada en el catálogo, se usan los criterios
+   genéricos por defecto. */
+function criteriosEvaluacion(s){
+  const esp = especialidadDe(s);
+  if(esp){
+    return { tecnicos: esp.areas.map(a=>a.nombre), empleabilidad: esp.empleabilidad };
+  }
+  return { tecnicos: EVAL_CRITERIOS_EMPRESA, empleabilidad: EVAL_CRITERIOS_DOCENTE };
+}
 function tareaKey(areaNum, idx){ return areaNum+'_'+idx; }
 function todasLasTareas(esp){
   const out = [];
@@ -2231,20 +2244,35 @@ function tplEvaluaciones(s){
   const ed = s.evaluacionDocente? s.evaluacionDocente.scores : {};
   const inf = s.informeFinal || {};
   const auto = s.autoevaluacion || {};
+  const esp = especialidadDe(s);
+  const crit = criteriosEvaluacion(s);
+  const critHint = esp
+    ? `Criterios según Plan de Práctica de <strong>${s.carrera}</strong>`
+    : 'Sin especialidad cargada en el catálogo: se usan criterios generales';
   return `
   <div class="form-section"><div class="st"><div class="bar"></div><h4>Evaluación del supervisor de empresa</h4></div>
-    <span class="hint">Escala de evaluación: 1.0 a 7.0</span>
+    <span class="hint">Escala de evaluación: 1.0 a 7.0 · ${critHint}</span>
+    ${esp? `<div class="hint" style="margin-top:10px;font-weight:600;color:var(--navy)">Competencias técnicas del área</div>`:''}
     <div class="form-grid cols-3" style="margin-top:8px">
-    ${EVAL_CRITERIOS_EMPRESA.map(c=>`<div class="field"><label>${c}</label>${selectNota17('ee_'+c.replace(/\s/g,'_'), ee[c])}</div>`).join('')}
+    ${crit.tecnicos.map((c,i)=>`<div class="field"><label>${c}</label>${selectNota17('ee_t'+i, ee[c])}</div>`).join('')}
+    </div>
+    ${esp? `<div class="hint" style="margin-top:14px;font-weight:600;color:var(--navy)">Competencias de empleabilidad</div>`:''}
+    <div class="form-grid cols-3" style="margin-top:8px">
+    ${crit.empleabilidad.map((c,i)=>`<div class="field"><label>${c}</label>${selectNota17('ee_e'+i, ee[c])}</div>`).join('')}
     </div>
     <button class="btn-primary" style="margin-top:10px" data-action="save-eval-empresa" data-id="${s.id}">Guardar evaluación empresa</button>
     ${s.evaluacionEmpresa? `<span class="hint" style="margin-left:10px">Nota actual: <strong>${s.evaluacionEmpresa.nota.toFixed(1)}</strong></span>`:''}
   </div>
 
   <div class="form-section"><div class="st"><div class="bar"></div><h4>Evaluación docente</h4></div>
-    <span class="hint">Escala de evaluación: 1.0 a 7.0</span>
+    <span class="hint">Escala de evaluación: 1.0 a 7.0 · ${critHint}</span>
+    ${esp? `<div class="hint" style="margin-top:10px;font-weight:600;color:var(--navy)">Competencias técnicas del área</div>`:''}
     <div class="form-grid cols-3" style="margin-top:8px">
-    ${EVAL_CRITERIOS_DOCENTE.map(c=>`<div class="field"><label>${c}</label>${selectNota17('ed_'+c.replace(/\s/g,'_'), ed[c])}</div>`).join('')}
+    ${crit.tecnicos.map((c,i)=>`<div class="field"><label>${c}</label>${selectNota17('ed_t'+i, ed[c])}</div>`).join('')}
+    </div>
+    ${esp? `<div class="hint" style="margin-top:14px;font-weight:600;color:var(--navy)">Competencias de empleabilidad</div>`:''}
+    <div class="form-grid cols-3" style="margin-top:8px">
+    ${crit.empleabilidad.map((c,i)=>`<div class="field"><label>${c}</label>${selectNota17('ed_e'+i, ed[c])}</div>`).join('')}
     </div>
     <button class="btn-primary" style="margin-top:10px" data-action="save-eval-docente" data-id="${s.id}">Guardar evaluación docente</button>
     ${s.evaluacionDocente? `<span class="hint" style="margin-left:10px">Nota actual: <strong>${s.evaluacionDocente.nota.toFixed(1)}</strong></span>`:''}
@@ -2883,7 +2911,7 @@ function contentEvalEmpresa(pdf,s,cfg,y,pw){
   const ev = s.evaluacionEmpresa;
   if(!ev){ paragraph(pdf,15,y,'Evaluación aún no registrada.',pw-30); return; }
   pdf.autoTable({ startY:y, margin:{left:15,right:15}, styles:{fontSize:9}, headStyles:{fillColor:[22,33,62]},
-    head:[['Criterio','Puntaje (1-7)']], body: EVAL_CRITERIOS_EMPRESA.map(c=>[c, ev.scores[c]]) });
+    head:[['Criterio','Puntaje (1-7)']], body: Object.keys(ev.scores).map(c=>[c, ev.scores[c]]) });
   let yy = pdf.lastAutoTable.finalY+12;
   pdf.setFont('helvetica','bold'); pdf.setFontSize(13); pdf.setTextColor(22,33,62);
   pdf.text('Nota final: '+ev.nota.toFixed(1), 15, yy);
@@ -3082,14 +3110,20 @@ async function handleSavePlan(sid){
 
 async function handleSaveEvalEmpresa(sid){
   const s = getStudent(sid);
-  const scores = {}; EVAL_CRITERIOS_EMPRESA.forEach(c=>{ scores[c] = Number(val('ee_'+c.replace(/\s/g,'_')))||1; });
+  const crit = criteriosEvaluacion(s);
+  const scores = {};
+  crit.tecnicos.forEach((c,i)=>{ scores[c] = Number(val('ee_t'+i))||1; });
+  crit.empleabilidad.forEach((c,i)=>{ scores[c] = Number(val('ee_e'+i))||1; });
   s.evaluacionEmpresa = {scores, nota: avg(scores)};
   s.documentos.doc09.status='completo'; s.documentos.doc09.updatedAt=new Date().toISOString().slice(0,10);
   await saveData(); renderView(); toast('Evaluación de empresa guardada');
 }
 async function handleSaveEvalDocente(sid){
   const s = getStudent(sid);
-  const scores = {}; EVAL_CRITERIOS_DOCENTE.forEach(c=>{ scores[c] = Number(val('ed_'+c.replace(/\s/g,'_')))||1; });
+  const crit = criteriosEvaluacion(s);
+  const scores = {};
+  crit.tecnicos.forEach((c,i)=>{ scores[c] = Number(val('ed_t'+i))||1; });
+  crit.empleabilidad.forEach((c,i)=>{ scores[c] = Number(val('ed_e'+i))||1; });
   s.evaluacionDocente = {scores, nota: avg(scores)};
   await saveData(); renderView(); toast('Evaluación docente guardada');
 }
