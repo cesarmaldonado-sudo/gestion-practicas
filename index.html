@@ -248,6 +248,16 @@ select{cursor:pointer;}
 .doc-filter-top{display:flex;align-items:center;justify-content:space-between;}
 .doc-filter-icon{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:9px;flex-shrink:0;}
 .panel-head-icon{display:flex;align-items:center;color:var(--gold);flex-shrink:0;}
+.especialidad-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;}
+.especialidad-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;}
+.especialidad-card .ec-head{display:flex;align-items:center;gap:11px;}
+.especialidad-card .ec-logo{width:48px;height:48px;object-fit:contain;border-radius:9px;background:#fff;padding:3px;border:1px solid var(--border);flex-shrink:0;}
+.especialidad-card .ec-name{font-family:'Fraunces',serif;font-weight:600;font-size:14px;color:var(--navy);line-height:1.25;}
+.especialidad-card .ec-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;padding-top:2px;}
+.especialidad-card .ec-stat .num{font-family:'Fraunces',serif;font-size:19px;font-weight:600;color:var(--navy);line-height:1;}
+.especialidad-card .ec-stat .lbl{font-size:10px;color:var(--slate-2);text-transform:uppercase;letter-spacing:.03em;margin-top:3px;}
+.especialidad-card .ec-extra{font-size:11.5px;color:var(--slate);border-top:1px solid var(--border);padding-top:10px;line-height:1.6;}
+.especialidad-card .ec-foot{display:flex;justify-content:flex-end;}
 .visit-alert-row{display:flex;align-items:center;gap:12px;padding:12px 6px;border-bottom:1px solid var(--border);}
 .visit-alert-row:last-child{border-bottom:none;}
 .visit-alert-row .va-info{flex:1;min-width:0;}
@@ -997,19 +1007,33 @@ function renderDashboard(){
       </div>
     </div>
     <div class="panel-body">
-      <div class="chart-card" style="height:300px">
+      <div class="especialidad-grid">
+      ${estEsp.length ? estEsp.map(r=>{
+        const logo = logoForCarrera(config(), r.especialidad);
+        return `<div class="especialidad-card">
+          <div class="ec-head">
+            ${logo?`<img class="ec-logo" src="${logo}" alt="${r.especialidad}"/>`:`<span class="ec-logo" style="display:flex;align-items:center;justify-content:center;color:var(--gold)">${icon('building',24)}</span>`}
+            <div class="ec-name">${r.especialidad}</div>
+          </div>
+          <div class="ec-stats">
+            <div class="ec-stat"><div class="num">${r.total}</div><div class="lbl">Estudiantes</div></div>
+            <div class="ec-stat"><div class="num">${r.activas}</div><div class="lbl">Activas</div></div>
+            <div class="ec-stat"><div class="num">${r.finalizadas}</div><div class="lbl">Finalizadas</div></div>
+            <div class="ec-stat"><div class="num">${r.pctFinal}%</div><div class="lbl">% Finalizadas</div></div>
+          </div>
+          <div class="ec-extra">
+            Horas: <strong>${r.horasReal.toLocaleString('es-CL')} / ${r.horasReq.toLocaleString('es-CL')}</strong> (${r.pctHoras}%)<br>
+            Prom. evaluación docente: <strong>${r.promEval}</strong>
+          </div>
+          <div class="ec-foot">
+            <button class="btn-secondary" style="padding:6px 10px;font-size:12px" data-action="generar-informe-especialidad-pdf" data-especialidad="${encodeURIComponent(r.especialidad)}">${icon('download',12)} PDF</button>
+          </div>
+        </div>`;
+      }).join('') : `<div class="empty-state">${icon('building',34)}<div>Sin datos de especialidades aún.</div></div>`}
+      </div>
+      <div class="chart-card" style="height:300px;margin-top:20px">
         <h3>Estudiantes por especialidad, según estado</h3>
         <div class="chart-wrap"><canvas id="chartEspecialidadEstado"></canvas></div>
-      </div>
-      <div class="table-wrap" style="overflow-x:auto;margin-top:18px">
-        <table><thead><tr><th>Especialidad</th><th>Estudiantes</th><th>Activas</th><th>Finalizadas</th><th>% Finalizadas</th><th>Horas realizadas / requeridas</th><th>Promedio evaluación docente</th><th></th></tr></thead>
-        <tbody>
-        ${estEsp.length ? estEsp.map(r=>`<tr>
-          <td>${r.especialidad}</td><td>${r.total}</td><td>${r.activas}</td><td>${r.finalizadas}</td>
-          <td>${r.pctFinal}%</td><td>${r.horasReal.toLocaleString('es-CL')} / ${r.horasReq.toLocaleString('es-CL')} (${r.pctHoras}%)</td>
-          <td>${r.promEval}</td>
-          <td><button class="btn-secondary" style="padding:6px 10px;font-size:12px" data-action="generar-informe-especialidad-pdf" data-especialidad="${encodeURIComponent(r.especialidad)}">${icon('download',12)} PDF</button></td></tr>`).join('') : `<tr><td colspan="8" class="hint" style="text-align:center;padding:16px">Sin datos de especialidades aún.</td></tr>`}
-        </tbody></table>
       </div>
     </div>
   </div>
