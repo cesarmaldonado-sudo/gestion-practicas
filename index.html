@@ -127,6 +127,19 @@ h1,h2,h3,.serif{font-family:'Fraunces',serif;}
 .panel-head h2{margin:0;font-size:16.5px;font-weight:600;color:var(--navy);}
 .panel-body{padding:18px 20px;}
 
+/* ---------- Dashboard: paneles desplegables (viñetas) ---------- */
+.dash-accordion{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;}
+.dash-accordion>summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;transition:background .12s;}
+.dash-accordion>summary:hover{background:var(--paper);}
+.dash-accordion>summary::-webkit-details-marker{display:none;}
+.dash-accordion>summary::marker{content:'';}
+.dash-accordion summary h2{margin:0;font-size:15.5px;font-weight:600;color:var(--navy);display:flex;align-items:center;gap:9px;}
+.dash-accordion .acc-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.dash-accordion .acc-chevron{color:var(--slate-2);transition:transform .18s;flex-shrink:0;}
+.dash-accordion[open] .acc-chevron{transform:rotate(180deg);}
+.dash-accordion[open]>summary{border-bottom:1px solid var(--border);}
+.dash-accordion .panel-body{padding:18px 20px;}
+
 /* ---------- Table ---------- */
 table{width:100%;border-collapse:collapse;font-size:13px;}
 th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--slate);padding:10px 12px;border-bottom:1.5px solid var(--border);}
@@ -585,6 +598,7 @@ let state = {
   docCollapsed: {},
   estCollapsed: {},
   expCollapsed: {},
+  dashOpen: {graficos:false, especialidad:false, periodo:false, reportes:false},
   singleTab: false,
   loaded:false,
 };
@@ -952,6 +966,7 @@ function renderDashboard(){
   const estEsp = statsPorEspecialidad();
   const estPeriodo = statsPorPeriodo();
 
+  const o = state.dashOpen;
   const html = `
   <div class="grid-cards">
     ${statCardClick(total,'Estudiantes en práctica','dash-total')}
@@ -966,7 +981,7 @@ function renderDashboard(){
     ${statCardClick(promEval,'Promedio evaluación docente','evaluacion')}
   </div>
   <div class="hint" style="margin:-10px 0 14px">Haz clic en cualquier indicador para ver el detalle.</div>
-  <div class="panel" style="margin-bottom:22px">
+  <div class="panel" style="margin-bottom:16px">
     <div class="panel-head">
       <h2 style="display:flex;align-items:center;gap:9px"><span class="panel-head-icon" style="color:var(--wine)">${icon('alertTriangle',18)}</span>Alertas de visitas a terreno${visitas.length? ` <span class="badge-count" style="background:var(--wine)">${visitas.length}</span>`:''}</h2>
       <span class="hint">Supervisión de prácticas activas</span>
@@ -985,30 +1000,38 @@ function renderDashboard(){
         : `<div class="doc-empty-state">${icon('check',36)}<div style="font-weight:600;color:var(--navy);margin-bottom:2px">Sin alertas pendientes</div><div class="hint">Todas las prácticas activas tienen su visita de seguimiento al día.</div></div>`}
     </div>
   </div>
-  <div class="charts-row">
-    <div class="chart-card"><h3>Estado de las prácticas</h3><div class="chart-wrap"><canvas id="chartEstados"></canvas></div></div>
-    <div class="chart-card"><h3>Estudiantes por carrera</h3><div class="chart-wrap"><canvas id="chartCarreras"></canvas></div></div>
-  </div>
-  <div class="charts-row">
-    <div class="chart-card"><h3>Prácticas por empresa</h3><div class="chart-wrap"><canvas id="chartEmpresas"></canvas></div></div>
-    <div class="chart-card"><h3>Evaluación promedio (docente vs empresa)</h3><div class="chart-wrap"><canvas id="chartEval"></canvas></div></div>
-  </div>
-  <div class="charts-row">
-    <div class="chart-card"><h3>Horas realizadas vs requeridas</h3><div class="chart-wrap"><canvas id="chartHoras"></canvas></div></div>
-    <div class="chart-card"><h3>Prácticas por curso / nivel</h3><div class="chart-wrap"><canvas id="chartCurso"></canvas></div></div>
-  </div>
-  <div class="panel" style="margin-bottom:22px">
-    <div class="panel-head">
-      <h2 style="display:flex;align-items:center;gap:9px"><span class="panel-head-icon">${icon('trendingUp',18)}</span>Estadística por especialidad</h2>
-      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-        <span class="hint" style="margin:0">Indicadores desglosados por carrera / especialidad</span>
-        <div style="display:flex;gap:8px">
-          <button class="btn-primary gold" data-action="generar-informe-especialidad-pdf">${icon('download',14)} Descargar PDF</button>
-          <button class="btn-secondary" data-action="export-report" data-report="especialidad">${icon('download',14)} CSV</button>
-        </div>
+
+  <details id="acc-graficos" class="dash-accordion" data-open-key="graficos" ${o.graficos?'open':''}>
+    <summary>
+      <h2>${icon('trendingUp',17)} Gráficos generales</h2>
+      <span class="acc-meta"><span class="hint" style="margin:0">Estados, carreras, empresas, evaluaciones, horas y curso</span><span class="acc-chevron">${icon('chevronDown',16)}</span></span>
+    </summary>
+    <div class="panel-body">
+      <div class="charts-row">
+        <div class="chart-card"><h3>Estado de las prácticas</h3><div class="chart-wrap"><canvas id="chartEstados"></canvas></div></div>
+        <div class="chart-card"><h3>Estudiantes por carrera</h3><div class="chart-wrap"><canvas id="chartCarreras"></canvas></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-card"><h3>Prácticas por empresa</h3><div class="chart-wrap"><canvas id="chartEmpresas"></canvas></div></div>
+        <div class="chart-card"><h3>Evaluación promedio (docente vs empresa)</h3><div class="chart-wrap"><canvas id="chartEval"></canvas></div></div>
+      </div>
+      <div class="charts-row">
+        <div class="chart-card"><h3>Horas realizadas vs requeridas</h3><div class="chart-wrap"><canvas id="chartHoras"></canvas></div></div>
+        <div class="chart-card"><h3>Prácticas por curso / nivel</h3><div class="chart-wrap"><canvas id="chartCurso"></canvas></div></div>
       </div>
     </div>
+  </details>
+
+  <details id="acc-especialidad" class="dash-accordion" data-open-key="especialidad" ${o.especialidad?'open':''}>
+    <summary>
+      <h2>${icon('trendingUp',17)} Estadística por especialidad</h2>
+      <span class="acc-meta"><span class="hint" style="margin:0">Indicadores desglosados por carrera / especialidad</span><span class="acc-chevron">${icon('chevronDown',16)}</span></span>
+    </summary>
     <div class="panel-body">
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn-primary gold" data-action="generar-informe-especialidad-pdf">${icon('download',14)} Descargar PDF</button>
+        <button class="btn-secondary" data-action="export-report" data-report="especialidad">${icon('download',14)} CSV</button>
+      </div>
       <div class="especialidad-grid">
       ${estEsp.length ? estEsp.map(r=>{
         const logo = logoForCarrera(config(), r.especialidad);
@@ -1038,19 +1061,18 @@ function renderDashboard(){
         <div class="chart-wrap"><canvas id="chartEspecialidadEstado"></canvas></div>
       </div>
     </div>
-  </div>
-  <div class="panel" style="margin-bottom:22px">
-    <div class="panel-head">
-      <h2 style="display:flex;align-items:center;gap:9px"><span class="panel-head-icon">${icon('calendarDays',18)}</span>Estadística general por período</h2>
-      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-        <span class="hint" style="margin:0">Años ${PERIODOS_ANIO[0]}–${PERIODOS_ANIO[PERIODOS_ANIO.length-1]}, según fecha de inicio de práctica</span>
-        <div style="display:flex;gap:8px">
-          <button class="btn-primary gold" data-action="generar-informe-periodo-pdf">${icon('download',14)} Descargar PDF</button>
-          <button class="btn-secondary" data-action="export-report" data-report="periodo">${icon('download',14)} CSV</button>
-        </div>
-      </div>
-    </div>
+  </details>
+
+  <details id="acc-periodo" class="dash-accordion" data-open-key="periodo" ${o.periodo?'open':''}>
+    <summary>
+      <h2>${icon('calendarDays',17)} Estadística general por período</h2>
+      <span class="acc-meta"><span class="hint" style="margin:0">Años ${PERIODOS_ANIO[0]}–${PERIODOS_ANIO[PERIODOS_ANIO.length-1]}</span><span class="acc-chevron">${icon('chevronDown',16)}</span></span>
+    </summary>
     <div class="panel-body">
+      <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+        <button class="btn-primary gold" data-action="generar-informe-periodo-pdf">${icon('download',14)} Descargar PDF</button>
+        <button class="btn-secondary" data-action="export-report" data-report="periodo">${icon('download',14)} CSV</button>
+      </div>
       <div class="chart-card" style="height:300px">
         <h3>Evolución de estudiantes por período</h3>
         <div class="chart-wrap"><canvas id="chartPeriodo"></canvas></div>
@@ -1065,9 +1087,13 @@ function renderDashboard(){
         </tbody></table>
       </div>
     </div>
-  </div>
-  <div class="panel">
-    <div class="panel-head"><h2>Reportes</h2></div>
+  </details>
+
+  <details id="acc-reportes" class="dash-accordion" data-open-key="reportes" ${o.reportes?'open':''}>
+    <summary>
+      <h2>${icon('download',17)} Reportes</h2>
+      <span class="acc-meta"><span class="hint" style="margin:0">Informes y exportaciones descargables</span><span class="acc-chevron">${icon('chevronDown',16)}</span></span>
+    </summary>
     <div class="panel-body" style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn-primary gold" data-action="generar-informe-pdf">${icon('download',14)} Informe profesional PDF (con gráficos)</button>
       <button class="btn-secondary" data-action="export-csv">${icon('download',14)} Listado de estudiantes (Excel)</button>
@@ -1075,53 +1101,70 @@ function renderDashboard(){
       <button class="btn-secondary" data-action="export-report" data-report="evaluaciones">${icon('download',14)} Reporte de evaluaciones (CSV)</button>
       <button class="btn-secondary" data-action="export-report" data-report="finalizadas">${icon('download',14)} Reporte de prácticas finalizadas (CSV)</button>
     </div>
-  </div>`;
+  </details>`;
   document.getElementById('view-root').innerHTML = html;
 
-  makeChart('chartEstados','doughnut', {
-    labels: ESTADOS, datasets:[{data: ESTADOS.map(e=>list.filter(s=>s.estado===e).length), backgroundColor:['#9C6B12','#2C5F8A','#2C5F8A','#7A2E3B','#9C6B12','#2F6F4E','#5B6472']}]
-  });
-  const carreras = uniqueVals('carrera');
-  makeChart('chartCarreras','bar', {
-    labels:carreras, datasets:[{label:'Estudiantes', data:carreras.map(c=>list.filter(s=>s.carrera===c).length), backgroundColor:'#16213E', borderRadius:4}]
-  }, {plugins:{legend:{display:false}}});
-  const empresas = uniqueVals('empresa');
-  makeChart('chartEmpresas','bar', {
-    labels:empresas, datasets:[{label:'Estudiantes', data:empresas.map(e=>list.filter(s=>s.empresa===e).length), backgroundColor:'#B7862B', borderRadius:4}]
-  }, {indexAxis:'y', plugins:{legend:{display:false}}});
-  const withEval = list.filter(s=>s.evaluacionEmpresa && s.evaluacionDocente);
-  makeChart('chartEval','bar', {
-    labels: withEval.map(s=>s.nombre.split(' ')[0]),
-    datasets:[
-      {label:'Empresa', data:withEval.map(s=>s.evaluacionEmpresa.nota), backgroundColor:'#2C5F8A', borderRadius:4},
-      {label:'Docente', data:withEval.map(s=>s.evaluacionDocente.nota), backgroundColor:'#B7862B', borderRadius:4},
-    ]
-  }, {scales:{y:{min:1,max:7}}});
-  makeChart('chartHoras','bar', {
-    labels: list.map(s=>s.nombre.split(' ')[0]),
-    datasets:[
-      {label:'Requeridas', data:list.map(s=>s.horasRequeridas), backgroundColor:'#DDDFDA', borderRadius:4},
-      {label:'Realizadas', data:list.map(s=>s.horasRealizadas), backgroundColor:'#16213E', borderRadius:4},
-    ]
-  });
-  const cursos = uniqueVals('curso');
-  makeChart('chartCurso','doughnut', { labels:cursos, datasets:[{data:cursos.map(c=>list.filter(s=>s.curso===c).length), backgroundColor:['#16213E','#B7862B','#2C5F8A','#2F6F4E','#7A2E3B','#9C6B12']}] });
-
-  makeChart('chartEspecialidadEstado','bar', {
-    labels: estEsp.map(r=>r.especialidad),
-    datasets:[
-      {label:'Activas', data:estEsp.map(r=>r.activas), backgroundColor:'#2C5F8A', borderRadius:4},
-      {label:'Finalizadas', data:estEsp.map(r=>r.finalizadas), backgroundColor:'#2F6F4E', borderRadius:4},
-      {label:'Otras', data:estEsp.map(r=>r.total-r.activas-r.finalizadas), backgroundColor:'#9C6B12', borderRadius:4},
-    ]
-  }, {scales:{x:{stacked:true},y:{stacked:true}}});
-
-  makeChart('chartPeriodo','bar', {
-    labels: estPeriodo.map(r=>String(r.anio)),
-    datasets:[
-      {label:'Estudiantes', data:estPeriodo.map(r=>r.total), backgroundColor:'#16213E', borderRadius:4},
-      {label:'Finalizadas', data:estPeriodo.map(r=>r.finalizadas), backgroundColor:'#B7862B', borderRadius:4},
-    ]
+  // Los gráficos de cada viñeta solo se dibujan la primera vez que se abre
+  // (si estuvieran ocultos con display:none, Chart.js los dibujaría con
+  // ancho 0). Además se recuerda qué viñetas dejó abiertas el usuario.
+  function initGraficosGenerales(){
+    makeChart('chartEstados','doughnut', {
+      labels: ESTADOS, datasets:[{data: ESTADOS.map(e=>list.filter(s=>s.estado===e).length), backgroundColor:['#9C6B12','#2C5F8A','#2C5F8A','#7A2E3B','#9C6B12','#2F6F4E','#5B6472']}]
+    });
+    const carreras = uniqueVals('carrera');
+    makeChart('chartCarreras','bar', {
+      labels:carreras, datasets:[{label:'Estudiantes', data:carreras.map(c=>list.filter(s=>s.carrera===c).length), backgroundColor:'#16213E', borderRadius:4}]
+    }, {plugins:{legend:{display:false}}});
+    const empresas = uniqueVals('empresa');
+    makeChart('chartEmpresas','bar', {
+      labels:empresas, datasets:[{label:'Estudiantes', data:empresas.map(e=>list.filter(s=>s.empresa===e).length), backgroundColor:'#B7862B', borderRadius:4}]
+    }, {indexAxis:'y', plugins:{legend:{display:false}}});
+    const withEval = list.filter(s=>s.evaluacionEmpresa && s.evaluacionDocente);
+    makeChart('chartEval','bar', {
+      labels: withEval.map(s=>s.nombre.split(' ')[0]),
+      datasets:[
+        {label:'Empresa', data:withEval.map(s=>s.evaluacionEmpresa.nota), backgroundColor:'#2C5F8A', borderRadius:4},
+        {label:'Docente', data:withEval.map(s=>s.evaluacionDocente.nota), backgroundColor:'#B7862B', borderRadius:4},
+      ]
+    }, {scales:{y:{min:1,max:7}}});
+    makeChart('chartHoras','bar', {
+      labels: list.map(s=>s.nombre.split(' ')[0]),
+      datasets:[
+        {label:'Requeridas', data:list.map(s=>s.horasRequeridas), backgroundColor:'#DDDFDA', borderRadius:4},
+        {label:'Realizadas', data:list.map(s=>s.horasRealizadas), backgroundColor:'#16213E', borderRadius:4},
+      ]
+    });
+    const cursos = uniqueVals('curso');
+    makeChart('chartCurso','doughnut', { labels:cursos, datasets:[{data:cursos.map(c=>list.filter(s=>s.curso===c).length), backgroundColor:['#16213E','#B7862B','#2C5F8A','#2F6F4E','#7A2E3B','#9C6B12']}] });
+  }
+  function initGraficoEspecialidad(){
+    makeChart('chartEspecialidadEstado','bar', {
+      labels: estEsp.map(r=>r.especialidad),
+      datasets:[
+        {label:'Activas', data:estEsp.map(r=>r.activas), backgroundColor:'#2C5F8A', borderRadius:4},
+        {label:'Finalizadas', data:estEsp.map(r=>r.finalizadas), backgroundColor:'#2F6F4E', borderRadius:4},
+        {label:'Otras', data:estEsp.map(r=>r.total-r.activas-r.finalizadas), backgroundColor:'#9C6B12', borderRadius:4},
+      ]
+    }, {scales:{x:{stacked:true},y:{stacked:true}}});
+  }
+  function initGraficoPeriodo(){
+    makeChart('chartPeriodo','bar', {
+      labels: estPeriodo.map(r=>String(r.anio)),
+      datasets:[
+        {label:'Estudiantes', data:estPeriodo.map(r=>r.total), backgroundColor:'#16213E', borderRadius:4},
+        {label:'Finalizadas', data:estPeriodo.map(r=>r.finalizadas), backgroundColor:'#B7862B', borderRadius:4},
+      ]
+    });
+  }
+  const accInit = {graficos:initGraficosGenerales, especialidad:initGraficoEspecialidad, periodo:initGraficoPeriodo};
+  ['acc-graficos','acc-especialidad','acc-periodo','acc-reportes'].forEach(id=>{
+    const det = document.getElementById(id); if(!det) return;
+    const key = det.dataset.openKey;
+    if(det.open && accInit[key]) accInit[key]();
+    det.addEventListener('toggle', ()=>{
+      state.dashOpen[key] = det.open;
+      if(det.open && accInit[key]) accInit[key]();
+    });
   });
 }
 /* ---- Helpers del catálogo de especialidades ---- */
