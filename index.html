@@ -3231,24 +3231,22 @@ function downloadImportTemplate(){
   if(typeof XLSX==='undefined'){ toast('No se pudo cargar la librería de Excel. Revisa tu conexión o desactiva bloqueadores de anuncios y recarga la página.'); return; }
   const headers = IMPORT_COLUMNS.map(c=>c.header);
   const especialidades = Object.keys(ESPECIALIDADES);
-  // Una fila de ejemplo por cada especialidad oficial, para que sea evidente
-  // cuál es el texto EXACTO que hay que copiar en la columna "Carrera / especialidad".
-  const ejemplosBase = {
-    'Servicios de Turismo': ['Juan Pérez Soto','12.345.678-9','4° Medio','juan.perez@correo.cl','+56912345678','Empresa Ejemplo SpA','María López','Atención al cliente','2025-03-01','2025-07-31',180],
-    'Construcciones Metálicas': ['Camila Muñoz Ríos','13.456.789-0','4° Medio','camila.munoz@correo.cl','+56923456789','Metalúrgica del Sur Ltda.','Pedro Soto','Taller de soldadura','2025-03-01','2025-07-31',180],
-    'Gastronomía Mención Cocina': ['Diego Fernández Vera','14.567.890-1','4° Medio','diego.fernandez@correo.cl','+56934567890','Restaurant Los Nire Ltda.','Ana Torres','Cocina caliente','2025-03-01','2025-07-31',180],
-    'Mecánica Automotriz': ['Valentina Rojas Díaz','15.678.901-2','4° Medio','valentina.rojas@correo.cl','+56945678901','Taller Mecánico Patagonia','Luis Barría','Mantención de vehículos','2025-03-01','2025-07-31',180],
-    'Administración / Recursos Humanos': ['Matías Álvarez Paredes','16.789.012-3','4° Medio','matias.alvarez@correo.cl','+56956789012','Hotel Araucanía Ltda.','Carla Vidal','Administración y RR.HH.','2025-03-01','2025-07-31',180],
-  };
-  const filasEjemplo = especialidades.map(esp=>{
-    const b = ejemplosBase[esp] || ['Nombre Apellido Apellido','11.111.111-1','4° Medio','correo@correo.cl','+56900000000','Empresa Ejemplo','Supervisor/a','Área','2025-03-01','2025-07-31',180];
-    return [b[0], b[1], esp, ...b.slice(2)];
-  });
-  const wsData = [headers, ...filasEjemplo];
+  // Plantilla en blanco: solo encabezados, sin datos de ejemplo. Se dejan
+  // filas vacías con la columna "Carrera / especialidad" resaltada y con
+  // un desplegable (lista de datos) que solo permite elegir una de las 5
+  // especialidades oficiales, para que los jefes de especialidad la usen
+  // directamente como guía de llenado.
+  const FILAS_VACIAS = 40;
+  const wsData = [headers];
+  for(let i=0;i<FILAS_VACIAS;i++) wsData.push(headers.map(()=>''));
   const ws = XLSX.utils.aoa_to_sheet(wsData);
   ws['!cols'] = headers.map((h,i)=> i===2 ? {wch:32} : {wch: Math.max(18, h.length+2)});
   ws['!freeze'] = {xSplit:0, ySplit:1};
   ws['!autofilter'] = {ref: XLSX.utils.encode_range({s:{r:0,c:0}, e:{r:0,c:headers.length-1}})};
+  // Nota: la librería XLSX gratuita (SheetJS community) no permite escribir
+  // desplegables/validación de datos en el archivo (eso es función Pro de
+  // pago), por eso la guía de las 5 especialidades se deja en la columna
+  // resaltada de esta hoja y en la hoja "Especialidades" como referencia.
   try{
     const headerFill = {fill:{fgColor:{rgb:'16213E'}}, font:{color:{rgb:'FFFFFF'}, bold:true}, alignment:{vertical:'center', wrapText:true}};
     for(let c=0;c<headers.length;c++){
@@ -3264,7 +3262,7 @@ function downloadImportTemplate(){
   }catch(e){ /* si el navegador no soporta estilos, la plantilla sigue funcionando */ }
   const wsEspData = [
     ['ESPECIALIDADES DISPONIBLES (Liceo Bicentenario Politécnico Luis Cruz Martínez)'],
-    ['Copia el texto EXACTO de esta lista en la columna "Carrera / especialidad" de la hoja "Estudiantes". Solo se aceptarán estas 5 especialidades al importar.'],
+    ['Copia el texto EXACTO de esta lista en la columna "Carrera / especialidad" de la hoja "Estudiantes", o elígela desde el desplegable de esa columna. Solo se aceptarán estas 5 especialidades al importar.'],
     [''],
     ...especialidades.map(e=>[e]),
   ];
