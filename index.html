@@ -988,47 +988,55 @@ function renderDashboard(){
   <div class="panel" style="margin-bottom:22px">
     <div class="panel-head">
       <h2 style="display:flex;align-items:center;gap:9px"><span class="panel-head-icon">${icon('trendingUp',18)}</span>Estadística por especialidad</h2>
-      <span class="hint">Indicadores desglosados por carrera / especialidad</span>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <span class="hint" style="margin:0">Indicadores desglosados por carrera / especialidad</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn-primary gold" data-action="generar-informe-especialidad-pdf">${icon('download',14)} Descargar PDF</button>
+          <button class="btn-secondary" data-action="export-report" data-report="especialidad">${icon('download',14)} CSV</button>
+        </div>
+      </div>
     </div>
     <div class="panel-body">
-      <div class="table-wrap" style="overflow-x:auto">
-        <table><thead><tr><th>Especialidad</th><th>Estudiantes</th><th>Activas</th><th>Finalizadas</th><th>% Finalizadas</th><th>Horas realizadas / requeridas</th><th>Promedio evaluación docente</th></tr></thead>
+      <div class="chart-card" style="height:300px">
+        <h3>Estudiantes por especialidad, según estado</h3>
+        <div class="chart-wrap"><canvas id="chartEspecialidadEstado"></canvas></div>
+      </div>
+      <div class="table-wrap" style="overflow-x:auto;margin-top:18px">
+        <table><thead><tr><th>Especialidad</th><th>Estudiantes</th><th>Activas</th><th>Finalizadas</th><th>% Finalizadas</th><th>Horas realizadas / requeridas</th><th>Promedio evaluación docente</th><th></th></tr></thead>
         <tbody>
         ${estEsp.length ? estEsp.map(r=>`<tr>
           <td>${r.especialidad}</td><td>${r.total}</td><td>${r.activas}</td><td>${r.finalizadas}</td>
           <td>${r.pctFinal}%</td><td>${r.horasReal.toLocaleString('es-CL')} / ${r.horasReq.toLocaleString('es-CL')} (${r.pctHoras}%)</td>
-          <td>${r.promEval}</td></tr>`).join('') : `<tr><td colspan="7" class="hint" style="text-align:center;padding:16px">Sin datos de especialidades aún.</td></tr>`}
+          <td>${r.promEval}</td>
+          <td><button class="btn-secondary" style="padding:6px 10px;font-size:12px" data-action="generar-informe-especialidad-pdf" data-especialidad="${encodeURIComponent(r.especialidad)}">${icon('download',12)} PDF</button></td></tr>`).join('') : `<tr><td colspan="8" class="hint" style="text-align:center;padding:16px">Sin datos de especialidades aún.</td></tr>`}
         </tbody></table>
-      </div>
-      <div class="chart-card" style="margin-top:18px;height:300px">
-        <h3>Estudiantes por especialidad, según estado</h3>
-        <div class="chart-wrap"><canvas id="chartEspecialidadEstado"></canvas></div>
-      </div>
-      <div style="margin-top:14px">
-        <button class="btn-secondary" data-action="export-report" data-report="especialidad">${icon('download',14)} Exportar estadística por especialidad (CSV)</button>
       </div>
     </div>
   </div>
   <div class="panel" style="margin-bottom:22px">
     <div class="panel-head">
       <h2 style="display:flex;align-items:center;gap:9px"><span class="panel-head-icon">${icon('calendarDays',18)}</span>Estadística general por período</h2>
-      <span class="hint">Años ${PERIODOS_ANIO[0]}–${PERIODOS_ANIO[PERIODOS_ANIO.length-1]}, según fecha de inicio de práctica</span>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <span class="hint" style="margin:0">Años ${PERIODOS_ANIO[0]}–${PERIODOS_ANIO[PERIODOS_ANIO.length-1]}, según fecha de inicio de práctica</span>
+        <div style="display:flex;gap:8px">
+          <button class="btn-primary gold" data-action="generar-informe-periodo-pdf">${icon('download',14)} Descargar PDF</button>
+          <button class="btn-secondary" data-action="export-report" data-report="periodo">${icon('download',14)} CSV</button>
+        </div>
+      </div>
     </div>
     <div class="panel-body">
-      <div class="table-wrap" style="overflow-x:auto">
-        <table><thead><tr><th>Período</th><th>Estudiantes</th><th>Activas</th><th>Finalizadas</th><th>% Finalizadas</th><th>Promedio evaluación docente</th><th>Horas realizadas</th></tr></thead>
-        <tbody>
-        ${estPeriodo.map(r=>`<tr>
-          <td>${r.anio}</td><td>${r.total}</td><td>${r.activas}</td><td>${r.finalizadas}</td>
-          <td>${r.pctFinal}%</td><td>${r.promEval}</td><td>${r.horasTotales.toLocaleString('es-CL')}</td></tr>`).join('')}
-        </tbody></table>
-      </div>
-      <div class="chart-card" style="margin-top:18px;height:300px">
+      <div class="chart-card" style="height:300px">
         <h3>Evolución de estudiantes por período</h3>
         <div class="chart-wrap"><canvas id="chartPeriodo"></canvas></div>
       </div>
-      <div style="margin-top:14px">
-        <button class="btn-secondary" data-action="export-report" data-report="periodo">${icon('download',14)} Exportar estadística por período (CSV)</button>
+      <div class="table-wrap" style="overflow-x:auto;margin-top:18px">
+        <table><thead><tr><th>Período</th><th>Estudiantes</th><th>Activas</th><th>Finalizadas</th><th>% Finalizadas</th><th>Promedio evaluación docente</th><th>Horas realizadas</th><th></th></tr></thead>
+        <tbody>
+        ${estPeriodo.map(r=>`<tr>
+          <td>${r.anio}</td><td>${r.total}</td><td>${r.activas}</td><td>${r.finalizadas}</td>
+          <td>${r.pctFinal}%</td><td>${r.promEval}</td><td>${r.horasTotales.toLocaleString('es-CL')}</td>
+          <td><button class="btn-secondary" style="padding:6px 10px;font-size:12px" data-action="generar-informe-periodo-pdf" data-anio="${r.anio}">${icon('download',12)} PDF</button></td></tr>`).join('')}
+        </tbody></table>
       </div>
     </div>
   </div>
@@ -2446,6 +2454,152 @@ function renderOffscreenChart(type, data, extra, w, h){
     }));
   });
 }
+async function generarInformeEspecialidadPDF(especialidad){
+  toast('Generando informe…');
+  const cfg = config();
+  const jsPDF = collectPDFmakerLib();
+  const pdf = new jsPDF({unit:'mm', format:'a4'});
+  const pw = pdf.internal.pageSize.getWidth();
+  const chartH = (pw-30)*340/700;
+
+  if(especialidad){
+    const list = students().filter(s=>(s.carrera||'Sin especialidad asignada')===especialidad);
+    if(!list.length){ toast('Sin estudiantes en esta especialidad'); return; }
+    const activas = list.filter(s=>s.estado==='En ejecución').length;
+    const finalizadas = list.filter(s=>s.estado==='Finalizada'||s.estado==='Cerrada').length;
+    const notas = list.filter(s=>s.evaluacionDocente).map(s=>s.evaluacionDocente.nota);
+    const promEval = notas.length? (notas.reduce((a,b)=>a+b,0)/notas.length).toFixed(2) : '—';
+    const horasReq = list.reduce((a,s)=>a+(Number(s.horasRequeridas)||0),0);
+    const horasReal = list.reduce((a,s)=>a+(Number(s.horasRealizadas)||0),0);
+
+    const imgHoras = await renderOffscreenChart('bar', {labels:list.map(s=>s.nombre.split(' ')[0]), datasets:[
+      {label:'Requeridas', data:list.map(s=>s.horasRequeridas), backgroundColor:'#DDDFDA', borderRadius:4},
+      {label:'Realizadas', data:list.map(s=>s.horasRealizadas), backgroundColor:'#16213E', borderRadius:4}]}, {}, 700, 340);
+
+    let y = addLetterhead(pdf, cfg, 'Informe Estadístico de Especialidad', especialidad);
+    sectionTitle(pdf,15,y,'Resumen'); y+=8;
+    pdf.autoTable({ startY:y, margin:{left:15,right:15}, styles:{fontSize:9.5}, headStyles:{fillColor:[22,33,62]}, theme:'grid',
+      head:[['Indicador','Valor']],
+      body:[
+        ['Estudiantes en práctica', String(list.length)],
+        ['Prácticas activas', String(activas)],
+        ['Prácticas finalizadas', String(finalizadas)+' ('+(list.length? Math.round(finalizadas/list.length*100):0)+'%)'],
+        ['Horas realizadas / requeridas', `${horasReal.toLocaleString('es-CL')} / ${horasReq.toLocaleString('es-CL')}`],
+        ['Promedio evaluación docente', String(promEval)],
+      ] });
+    y = pdf.lastAutoTable.finalY + 12;
+
+    y = checkPageBreakForBlock(pdf,y,cfg,6+chartH);
+    sectionTitle(pdf,15,y,'Horas por estudiante'); y+=6;
+    y = addChartImage(pdf, imgHoras, 15, y, pw-30, chartH);
+
+    y = checkPageBreak(pdf,y,cfg);
+    sectionTitle(pdf,15,y,'Detalle de estudiantes'); y+=8;
+    pdf.autoTable({ startY:y, margin:{left:15,right:15}, styles:{fontSize:8}, headStyles:{fillColor:[22,33,62]},
+      head:[['Estudiante','Empresa','Horas','Nota','Estado']],
+      body: list.map(s=>[s.nombre, s.empresa||'—', `${s.horasRealizadas}/${s.horasRequeridas}`, s.evaluacionDocente?s.evaluacionDocente.nota:'—', s.estado]) });
+
+    addFooterAll(pdf);
+    savePDF(pdf, `Informe_Especialidad_${especialidad.replace(/[^\w]+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`);
+  } else {
+    const estEsp = statsPorEspecialidad();
+    if(!estEsp.length){ toast('Sin datos de especialidades'); return; }
+    const imgEspEstado = await renderOffscreenChart('bar', {
+      labels: estEsp.map(r=>r.especialidad),
+      datasets:[
+        {label:'Activas', data:estEsp.map(r=>r.activas), backgroundColor:'#2C5F8A', borderRadius:4},
+        {label:'Finalizadas', data:estEsp.map(r=>r.finalizadas), backgroundColor:'#2F6F4E', borderRadius:4},
+        {label:'Otras', data:estEsp.map(r=>r.total-r.activas-r.finalizadas), backgroundColor:'#9C6B12', borderRadius:4},
+      ]}, {scales:{x:{stacked:true},y:{stacked:true}}}, 700, 340);
+
+    let y = addLetterhead(pdf, cfg, 'Informe Estadístico por Especialidad', 'Todas las especialidades · '+students().length+' estudiantes');
+    sectionTitle(pdf,15,y,'Resumen por especialidad'); y+=8;
+    pdf.autoTable({ startY:y, margin:{left:15,right:15}, styles:{fontSize:8.5}, headStyles:{fillColor:[22,33,62]}, theme:'grid',
+      head:[['Especialidad','Estudiantes','Activas','Finalizadas','% Final.','Horas real./req.','Prom. eval. docente']],
+      body: estEsp.map(r=>[r.especialidad, r.total, r.activas, r.finalizadas, r.pctFinal+'%', `${r.horasReal}/${r.horasReq}`, r.promEval]) });
+    y = pdf.lastAutoTable.finalY + 10;
+
+    y = checkPageBreakForBlock(pdf,y,cfg,6+chartH);
+    sectionTitle(pdf,15,y,'Estudiantes por especialidad, según estado'); y+=6;
+    y = addChartImage(pdf, imgEspEstado, 15, y, pw-30, chartH);
+
+    addFooterAll(pdf);
+    savePDF(pdf, `Informe_Estadistica_Especialidades_${new Date().toISOString().slice(0,10)}.pdf`);
+  }
+  toast('Informe generado');
+}
+async function generarInformePeriodoPDF(anio){
+  toast('Generando informe…');
+  const cfg = config();
+  const jsPDF = collectPDFmakerLib();
+  const pdf = new jsPDF({unit:'mm', format:'a4'});
+  const pw = pdf.internal.pageSize.getWidth();
+  const chartH = (pw-30)*340/700;
+
+  if(anio){
+    const list = students().filter(s=>anioDe(s)===anio);
+    if(!list.length){ toast('Sin estudiantes registrados en el período '+anio); return; }
+    const activas = list.filter(s=>s.estado==='En ejecución').length;
+    const finalizadas = list.filter(s=>s.estado==='Finalizada'||s.estado==='Cerrada').length;
+    const notas = list.filter(s=>s.evaluacionDocente).map(s=>s.evaluacionDocente.nota);
+    const promEval = notas.length? (notas.reduce((a,b)=>a+b,0)/notas.length).toFixed(2) : '—';
+    const horasTotales = list.reduce((a,s)=>a+(Number(s.horasRealizadas)||0),0);
+    const carrerasAnio = [...new Set(list.map(s=>s.carrera).filter(Boolean))].sort();
+
+    const imgCarreras = carrerasAnio.length? await renderOffscreenChart('bar', {labels:carrerasAnio, datasets:[{label:'Estudiantes', data:carrerasAnio.map(c=>list.filter(s=>s.carrera===c).length), backgroundColor:'#16213E', borderRadius:4}]}, {}, 700, 340) : null;
+
+    let y = addLetterhead(pdf, cfg, 'Informe Estadístico por Período', 'Período '+anio);
+    sectionTitle(pdf,15,y,'Resumen'); y+=8;
+    pdf.autoTable({ startY:y, margin:{left:15,right:15}, styles:{fontSize:9.5}, headStyles:{fillColor:[22,33,62]}, theme:'grid',
+      head:[['Indicador','Valor']],
+      body:[
+        ['Estudiantes en práctica', String(list.length)],
+        ['Prácticas activas', String(activas)],
+        ['Prácticas finalizadas', String(finalizadas)+' ('+(list.length? Math.round(finalizadas/list.length*100):0)+'%)'],
+        ['Promedio evaluación docente', String(promEval)],
+        ['Horas realizadas', horasTotales.toLocaleString('es-CL')],
+      ] });
+    y = pdf.lastAutoTable.finalY + 12;
+
+    if(imgCarreras){
+      y = checkPageBreakForBlock(pdf,y,cfg,6+chartH);
+      sectionTitle(pdf,15,y,'Estudiantes por especialidad en el período'); y+=6;
+      y = addChartImage(pdf, imgCarreras, 15, y, pw-30, chartH);
+    }
+
+    y = checkPageBreak(pdf,y,cfg);
+    sectionTitle(pdf,15,y,'Detalle de estudiantes'); y+=8;
+    pdf.autoTable({ startY:y, margin:{left:15,right:15}, styles:{fontSize:8}, headStyles:{fillColor:[22,33,62]},
+      head:[['Estudiante','Especialidad','Empresa','Inicio','Nota','Estado']],
+      body: list.map(s=>[s.nombre, s.carrera||'—', s.empresa||'—', s.fechaInicio||'—', s.evaluacionDocente?s.evaluacionDocente.nota:'—', s.estado]) });
+
+    addFooterAll(pdf);
+    savePDF(pdf, `Informe_Periodo_${anio}_${new Date().toISOString().slice(0,10)}.pdf`);
+  } else {
+    const estPeriodo = statsPorPeriodo();
+    const imgPeriodo = await renderOffscreenChart('bar', {
+      labels: estPeriodo.map(r=>String(r.anio)),
+      datasets:[
+        {label:'Estudiantes', data:estPeriodo.map(r=>r.total), backgroundColor:'#16213E', borderRadius:4},
+        {label:'Finalizadas', data:estPeriodo.map(r=>r.finalizadas), backgroundColor:'#B7862B', borderRadius:4},
+      ]}, {}, 700, 340);
+
+    let y = addLetterhead(pdf, cfg, 'Informe Estadístico General por Período', `Años ${PERIODOS_ANIO[0]}–${PERIODOS_ANIO[PERIODOS_ANIO.length-1]}`);
+    sectionTitle(pdf,15,y,'Resumen por período'); y+=8;
+    pdf.autoTable({ startY:y, margin:{left:15,right:15}, styles:{fontSize:9}, headStyles:{fillColor:[22,33,62]}, theme:'grid',
+      head:[['Período','Estudiantes','Activas','Finalizadas','% Final.','Prom. eval. docente','Horas realizadas']],
+      body: estPeriodo.map(r=>[r.anio, r.total, r.activas, r.finalizadas, r.pctFinal+'%', r.promEval, r.horasTotales]) });
+    y = pdf.lastAutoTable.finalY + 10;
+
+    y = checkPageBreakForBlock(pdf,y,cfg,6+chartH);
+    sectionTitle(pdf,15,y,'Evolución de estudiantes por período'); y+=6;
+    y = addChartImage(pdf, imgPeriodo, 15, y, pw-30, chartH);
+
+    addFooterAll(pdf);
+    savePDF(pdf, `Informe_Estadistica_Periodos_${new Date().toISOString().slice(0,10)}.pdf`);
+  }
+  toast('Informe generado');
+}
 async function generarInformePDF(){
   toast('Generando informe…');
   const list = students(); const cfg = config();
@@ -3136,6 +3290,8 @@ document.addEventListener('click', async (e)=>{
     case 'trigger-import': triggerImportFile(); break;
     case 'stat-detail': openStatDetail(t.dataset.metric); break;
     case 'generar-informe-pdf': await generarInformePDF(); break;
+    case 'generar-informe-especialidad-pdf': await generarInformeEspecialidadPDF(t.dataset.especialidad ? decodeURIComponent(t.dataset.especialidad) : null); break;
+    case 'generar-informe-periodo-pdf': await generarInformePeriodoPDF(t.dataset.anio ? Number(t.dataset.anio) : null); break;
     case 'open-empresa': openEmpresaDetail(decodeURIComponent(t.dataset.empresa)); break;
     case 'generar-informe-empresa': await generarInformeEmpresaPDF(decodeURIComponent(t.dataset.empresa)); break;
     case 'save-centro-practica': await handleSaveCentroPractica(decodeURIComponent(t.dataset.empresa)); break;
