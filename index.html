@@ -2421,6 +2421,7 @@ async function handleCreateStudent(){
     const el = document.getElementById('f_'+k); if(el) s[k]= el.type==='number'? Number(el.value)||0 : el.value;
   });
   if(!s.nombre.trim()){ toast('Ingresa al menos el nombre del estudiante'); return; }
+  if(!s.carrera || !ESPECIALIDADES[s.carrera]){ toast('Selecciona una de las 5 especialidades disponibles'); return; }
   s.fotoBase64 = newStudentFotoBase64 || '';
   s.estado = 'Pendiente';
   state.data.students.push(s);
@@ -3229,18 +3230,60 @@ const IMPORT_COLUMNS = [
 function downloadImportTemplate(){
   if(typeof XLSX==='undefined'){ toast('No se pudo cargar la librería de Excel. Revisa tu conexión o desactiva bloqueadores de anuncios y recarga la página.'); return; }
   const headers = IMPORT_COLUMNS.map(c=>c.header);
-  const ejemplo = ['Juan Pérez Soto','12.345.678-9','Servicios de Turismo','4° Medio','juan.perez@correo.cl','+56912345678','Empresa Ejemplo SpA','María López','Atención al cliente','2025-03-01','2025-07-31',180];
-  const wsData = [headers, ejemplo];
-  const ws = XLSX.utils.aoa_to_sheet(wsData);
-  ws['!cols'] = headers.map(h=>({wch: Math.max(18, h.length+2)}));
   const especialidades = Object.keys(ESPECIALIDADES);
-  const wsEsp = XLSX.utils.aoa_to_sheet([['Carreras / especialidades disponibles'], ...especialidades.map(e=>[e])]);
-  wsEsp['!cols'] = [{wch: 40}];
+  // Una fila de ejemplo por cada especialidad oficial, para que sea evidente
+  // cuál es el texto EXACTO que hay que copiar en la columna "Carrera / especialidad".
+  const ejemplosBase = {
+    'Servicios de Turismo': ['Juan Pérez Soto','12.345.678-9','4° Medio','juan.perez@correo.cl','+56912345678','Empresa Ejemplo SpA','María López','Atención al cliente','2025-03-01','2025-07-31',180],
+    'Construcciones Metálicas': ['Camila Muñoz Ríos','13.456.789-0','4° Medio','camila.munoz@correo.cl','+56923456789','Metalúrgica del Sur Ltda.','Pedro Soto','Taller de soldadura','2025-03-01','2025-07-31',180],
+    'Gastronomía Mención Cocina': ['Diego Fernández Vera','14.567.890-1','4° Medio','diego.fernandez@correo.cl','+56934567890','Restaurant Los Nire Ltda.','Ana Torres','Cocina caliente','2025-03-01','2025-07-31',180],
+    'Mecánica Automotriz': ['Valentina Rojas Díaz','15.678.901-2','4° Medio','valentina.rojas@correo.cl','+56945678901','Taller Mecánico Patagonia','Luis Barría','Mantención de vehículos','2025-03-01','2025-07-31',180],
+    'Administración / Recursos Humanos': ['Matías Álvarez Paredes','16.789.012-3','4° Medio','matias.alvarez@correo.cl','+56956789012','Hotel Araucanía Ltda.','Carla Vidal','Administración y RR.HH.','2025-03-01','2025-07-31',180],
+  };
+  const filasEjemplo = especialidades.map(esp=>{
+    const b = ejemplosBase[esp] || ['Nombre Apellido Apellido','11.111.111-1','4° Medio','correo@correo.cl','+56900000000','Empresa Ejemplo','Supervisor/a','Área','2025-03-01','2025-07-31',180];
+    return [b[0], b[1], esp, ...b.slice(2)];
+  });
+  const wsData = [headers, ...filasEjemplo];
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  ws['!cols'] = headers.map((h,i)=> i===2 ? {wch:32} : {wch: Math.max(18, h.length+2)});
+  ws['!freeze'] = {xSplit:0, ySplit:1};
+  ws['!autofilter'] = {ref: XLSX.utils.encode_range({s:{r:0,c:0}, e:{r:0,c:headers.length-1}})};
+  try{
+    const headerFill = {fill:{fgColor:{rgb:'16213E'}}, font:{color:{rgb:'FFFFFF'}, bold:true}, alignment:{vertical:'center', wrapText:true}};
+    for(let c=0;c<headers.length;c++){
+      const ref = XLSX.utils.encode_cell({r:0,c});
+      if(ws[ref]) ws[ref].s = headerFill;
+    }
+    // Resalta la columna "Carrera / especialidad" para dejar claro que debe
+    // copiarse tal cual desde la hoja "Especialidades" (solo hay 5 válidas).
+    for(let r=1;r<wsData.length;r++){
+      const ref = XLSX.utils.encode_cell({r,c:2});
+      if(ws[ref]) ws[ref].s = {fill:{fgColor:{rgb:'F1E3C6'}}};
+    }
+  }catch(e){ /* si el navegador no soporta estilos, la plantilla sigue funcionando */ }
+  const wsEspData = [
+    ['ESPECIALIDADES DISPONIBLES (Liceo Bicentenario Politécnico Luis Cruz Martínez)'],
+    ['Copia el texto EXACTO de esta lista en la columna "Carrera / especialidad" de la hoja "Estudiantes". Solo se aceptarán estas 5 especialidades al importar.'],
+    [''],
+    ...especialidades.map(e=>[e]),
+  ];
+  const wsEsp = XLSX.utils.aoa_to_sheet(wsEspData);
+  wsEsp['!cols'] = [{wch: 55}];
+  wsEsp['!merges'] = [{s:{r:0,c:0}, e:{r:0,c:0}}, {s:{r:1,c:0}, e:{r:1,c:0}}];
+  try{
+    wsEsp['A1'].s = {font:{bold:true, sz:13, color:{rgb:'16213E'}}};
+    wsEsp['A2'].s = {font:{italic:true, color:{rgb:'5B6472'}}, alignment:{wrapText:true}};
+    for(let r=3;r<wsEspData.length;r++){
+      const ref = 'A'+(r+1);
+      if(wsEsp[ref]) wsEsp[ref].s = {fill:{fgColor:{rgb:'E1EFE6'}}, font:{bold:true, color:{rgb:'2F6F4E'}}};
+    }
+  }catch(e){}
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Estudiantes');
   XLSX.utils.book_append_sheet(wb, wsEsp, 'Especialidades');
-  XLSX.writeFile(wb, 'plantilla_estudiantes.xlsx');
-  toast('Plantilla descargada. Complétala y luego usa "Importar Excel".');
+  XLSX.writeFile(wb, 'plantilla_estudiantes.xlsx', {cellStyles:true});
+  toast('Plantilla descargada. Completa una fila por estudiante usando exactamente el nombre de la especialidad (hoja "Especialidades") y luego usa "Importar Excel".');
 }
 
 function triggerImportFile(){
@@ -3264,6 +3307,7 @@ async function handleImportStudentsFile(file){
     Object.keys(ESPECIALIDADES).forEach(e=> especialidadesNorm[normalizeTxt(e)] = e);
 
     let creados = 0, omitidos = 0, carrerasNoReconocidas = 0;
+    const nombresRechazados = [];
     rows.forEach(row=>{
       const mapped = {};
       Object.keys(row).forEach(rawHeader=>{
@@ -3272,9 +3316,16 @@ async function handleImportStudentsFile(file){
       });
       const nombre = (mapped.nombre||'').toString().trim();
       if(!nombre){ omitidos++; return; }
+      // La especialidad es obligatoria y solo se acepta una de las 5 oficiales
+      // del catálogo (ESPECIALIDADES). Cualquier otro valor se rechaza para
+      // evitar que se cree información inconsistente con el plan de práctica.
+      const carreraRaw = (mapped.carrera||'').toString().trim();
+      const match = carreraRaw ? especialidadesNorm[normalizeTxt(carreraRaw)] : null;
+      if(!match){ carrerasNoReconocidas++; nombresRechazados.push(nombre); return; }
       const s = blankStudent();
       s.nombre = nombre;
       s.rut = (mapped.rut||'').toString().trim();
+      s.carrera = match;
       s.curso = (mapped.curso||'').toString().trim();
       s.correo = (mapped.correo||'').toString().trim();
       s.telefono = (mapped.telefono||'').toString().trim();
@@ -3285,12 +3336,6 @@ async function handleImportStudentsFile(file){
       s.fechaTermino = normalizeImportedDate(mapped.fechaTermino);
       const horas = Number(mapped.horasRequeridas);
       s.horasRequeridas = Number.isFinite(horas) && horas>0 ? horas : 180;
-      const carreraRaw = (mapped.carrera||'').toString().trim();
-      if(carreraRaw){
-        const match = especialidadesNorm[normalizeTxt(carreraRaw)];
-        if(match){ s.carrera = match; }
-        else { s.carrera = carreraRaw; carrerasNoReconocidas++; }
-      }
       s.estado = 'Pendiente';
       state.data.students.push(s);
       creados++;
@@ -3298,7 +3343,9 @@ async function handleImportStudentsFile(file){
     if(creados>0){ await saveData(); renderView(); }
     let msg = creados+' estudiante(s) importado(s) correctamente.';
     if(omitidos>0) msg += ' '+omitidos+' fila(s) sin nombre fueron omitidas.';
-    if(carrerasNoReconocidas>0) msg += ' '+carrerasNoReconocidas+' registro(s) con una carrera no reconocida (revisa la hoja "Especialidades" de la plantilla).';
+    if(carrerasNoReconocidas>0){
+      msg += ' '+carrerasNoReconocidas+' estudiante(s) NO se importaron por tener una especialidad inválida o vacía (solo se aceptan las 5 especialidades de la hoja "Especialidades"): '+nombresRechazados.slice(0,5).join(', ')+(nombresRechazados.length>5?'…':'')+'.';
+    }
     toast(msg);
   }catch(err){
     console.error('Error importando estudiantes:', err);
