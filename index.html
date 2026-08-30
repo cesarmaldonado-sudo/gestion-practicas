@@ -354,6 +354,30 @@ select{cursor:pointer;}
 .login-btn:hover{background:var(--navy-3);}
 .login-btn:disabled{opacity:.6;cursor:default;}
 .login-foot{text-align:center;font-size:10.5px;color:var(--slate-2);margin-top:18px;letter-spacing:.2px;}
+
+/* ---------- Firma pública (maestro guía) ---------- */
+#firma-root{min-height:100vh;display:flex;justify-content:center;padding:32px 16px;background:var(--paper);}
+.firma-wrap{width:100%;max-width:680px;}
+.firma-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:26px 28px;margin-bottom:16px;}
+.firma-head{display:flex;align-items:center;gap:12px;margin-bottom:18px;}
+.firma-head img{width:44px;height:44px;}
+.firma-head h1{font-size:17px;margin:0;}
+.firma-head p{margin:2px 0 0;font-size:12px;color:var(--slate);}
+.firma-status-banner{padding:14px 16px;border-radius:8px;font-size:13.5px;margin-bottom:16px;}
+.firma-status-banner.pendiente{background:var(--amber-soft);color:var(--amber);}
+.firma-status-banner.autorizado{background:var(--green-soft);color:var(--green);}
+.firma-status-banner.rechazado{background:var(--wine-soft);color:var(--wine);}
+.captcha-box{border:1px dashed var(--border);border-radius:8px;padding:16px;margin:16px 0;}
+.captcha-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0;}
+.captcha-tile{aspect-ratio:1/1;display:flex;align-items:center;justify-content:center;font-size:32px;
+  border:2px solid var(--border);border-radius:8px;cursor:pointer;background:#fff;user-select:none;transition:.15s;}
+.captcha-tile.selected{border-color:var(--gold);background:var(--gold-soft);}
+.captcha-tile:hover{border-color:var(--slate-2);}
+.firma-form-locked{opacity:.4;pointer-events:none;filter:grayscale(.3);}
+.firma-decision-btns{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+.btn-autorizar{background:var(--green);color:#fff;border:none;border-radius:8px;padding:11px 20px;font-weight:600;cursor:pointer;flex:1;min-width:160px;}
+.btn-rechazar{background:var(--wine);color:#fff;border:none;border-radius:8px;padding:11px 20px;font-weight:600;cursor:pointer;flex:1;min-width:160px;}
+.btn-autorizar:disabled,.btn-rechazar:disabled{opacity:.5;cursor:default;}
 .user-badge{display:flex;align-items:center;gap:8px;margin-left:auto;padding-left:14px;}
 .user-badge .ub-email{font-size:12px;color:var(--slate);}
 .user-badge button{background:transparent;border:1px solid var(--border);color:var(--slate);padding:6px 12px;border-radius:7px;font-size:12px;cursor:pointer;font-family:inherit;font-weight:600;}
@@ -404,6 +428,7 @@ select{cursor:pointer;}
 </div>
 <div id="modal-root"></div>
 <div id="toast-root"></div>
+<div id="firma-root" style="display:none"></div>
 
 <script>
 /* ============================================================
@@ -2042,7 +2067,7 @@ function renderDetalle(){
   }
   if(state.detailTab==='individualizacion') body.innerHTML = tplIndividualizacion(s);
   else if(state.detailTab==='documentos') body.innerHTML = tplDocumentos(s);
-  else if(state.detailTab==='plan') body.innerHTML = tplPlanRegistros(s);
+  else if(state.detailTab==='plan'){ body.innerHTML = tplPlanRegistros(s); loadFirmasHistorial(s.id); }
   else if(state.detailTab==='evaluaciones') body.innerHTML = tplEvaluaciones(s);
   else if(state.detailTab==='cierre') body.innerHTML = tplCierre(s);
 }
@@ -2234,6 +2259,12 @@ function tplPlanRegistros(s){
         <div class="field"><label>Fecha de acuerdo del plan</label><input type="date" id="p_fechaAcuerdo" value="${p.fechaAcuerdo||''}"></div>
       </div>
       <button class="btn-secondary" style="margin-top:8px" data-action="save-plan" data-id="${s.id}">Guardar plan</button>
+    </div>
+    <div class="form-section">
+      <div class="st"><div class="bar"></div><h4>Firma del Maestro Guía</h4></div>
+      <div class="hint" style="margin-bottom:10px">Envía este plan a ${s.correoSupervisor||'(sin correo registrado)'} para que el maestro guía lo revise y lo autorice o rechace desde un enlace único, sin necesidad de iniciar sesión.</div>
+      <button class="btn-primary gold" data-action="generar-enlace-firma" data-id="${s.id}">${icon('send',14)} Enviar plan a firma del maestro guía</button>
+      <div id="firmasHistorial" class="hint" style="margin-top:12px">Cargando historial de solicitudes…</div>
     </div>`;
   return `
   ${planHtml}
@@ -3454,6 +3485,10 @@ document.addEventListener('click', async (e)=>{
     case 'open-empresa': openEmpresaDetail(decodeURIComponent(t.dataset.empresa)); break;
     case 'generar-informe-empresa': await generarInformeEmpresaPDF(decodeURIComponent(t.dataset.empresa)); break;
     case 'save-centro-practica': await handleSaveCentroPractica(decodeURIComponent(t.dataset.empresa)); break;
+    case 'generar-enlace-firma': await handleGenerarEnlaceFirma(id); break;
+    case 'captcha-toggle': handleCaptchaToggle(Number(t.dataset.idx)); break;
+    case 'captcha-verify': handleCaptchaVerify(); break;
+    case 'firma-decidir': await handleFirmaDecidir(t.dataset.decision); break;
     case 'save-encuesta-estudiante': await handleSaveEncuestaEstudiante(t.dataset.id); break;
     case 'scroll-to-encuesta': {
       const target = document.getElementById('enc_'+t.dataset.id);
@@ -3534,9 +3569,277 @@ document.addEventListener('change', async (e)=>{
 });
 
 /* ============================================================
+   FIRMA DIGITAL DEL PLAN DE PRÁCTICA — enlace público para el
+   Maestro Guía (sin necesidad de iniciar sesión)
+   ============================================================ */
+
+/* ---- 1) Generar y enviar el enlace (lado del liceo, ya logueado) ---- */
+async function handleGenerarEnlaceFirma(studentId){
+  const s = getStudent(studentId);
+  if(!s) return;
+  const esp = especialidadDe(s);
+  if(!esp){ toast('Selecciona una especialidad válida antes de enviar el plan a firma.'); return; }
+  if(!s.correoSupervisor){ toast('Registra el correo del maestro guía en "Información del Centro de Práctica" antes de enviar.'); return; }
+
+  const p = s.planPractica || {tareas:{},empleabilidad:{}};
+  const snapshot = {
+    estudiante: s.nombre, rut: s.rut, carrera: s.carrera, empresa: s.empresa,
+    maestroGuia: s.supervisor, correoSupervisor: s.correoSupervisor,
+    fechaAcuerdo: p.fechaAcuerdo||'', observaciones: p.observaciones||'',
+    areas: esp.areas.map(a=>({
+      num:a.num, nombre:a.nombre,
+      tareas: a.tareas.map((t,idx)=>{ const k=tareaKey(a.num,idx); const cur=p.tareas[k]||{}; return {texto:t, nivel:cur.nivel||'', cf:cur.cf||''}; })
+    })),
+    empleabilidad: esp.empleabilidad.map(c=>({texto:c, nivel:p.empleabilidad[c]||''}))
+  };
+
+  const btn = document.querySelector(`[data-action="generar-enlace-firma"][data-id="${studentId}"]`);
+  if(btn){ btn.disabled=true; btn.textContent='Enviando...'; }
+  try{
+    const { data: row, error } = await sb.from('firmas_practica')
+      .insert({ student_id: studentId, snapshot, correo_destino: s.correoSupervisor, created_by: currentUser?.id })
+      .select().single();
+    if(error) throw error;
+
+    const link = `${location.origin}${location.pathname}?firma=${row.id}`;
+    try{
+      await sb.functions.invoke('enviar-correo-firma', { body:{
+        tipo:'invitacion', destino:s.correoSupervisor, nombreMaestro:s.supervisor,
+        nombreEstudiante:s.nombre, empresa:s.empresa, link
+      }});
+      toast('Enlace de firma enviado a '+s.correoSupervisor);
+    }catch(mailErr){
+      console.error('email error', mailErr);
+      toast('Enlace generado, pero no se pudo enviar el correo automáticamente.');
+    }
+    openEnlaceFirmaModal(link);
+    loadFirmasHistorial(studentId);
+  }catch(e){
+    console.error(e);
+    toast('No se pudo generar el enlace: '+(e.message||e));
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent='Enviar plan a firma del maestro guía'; }
+  }
+}
+
+function openEnlaceFirmaModal(link){
+  document.getElementById('modal-root').innerHTML = `
+  <div class="modal-overlay" data-action="close-modal">
+    <div class="modal" style="max-width:520px" data-action="noop">
+      <div class="modal-head"><h2>Enlace de firma generado</h2><button class="close-x" data-action="close-modal">&times;</button></div>
+      <div class="modal-body">
+        <p class="hint">Se envió por correo al maestro guía. También puedes copiarlo y enviarlo manualmente:</p>
+        <div class="field"><input type="text" readonly value="${link.replace(/"/g,'&quot;')}" id="enlaceFirmaTxt" onclick="this.select()"></div>
+        <button class="btn-secondary" style="margin-top:8px" onclick="navigator.clipboard.writeText(document.getElementById('enlaceFirmaTxt').value); toast('Enlace copiado');">${icon('file',13)} Copiar enlace</button>
+      </div>
+      <div class="modal-foot"><button class="btn-secondary" data-action="close-modal">Cerrar</button></div>
+    </div>
+  </div>`;
+}
+
+async function loadFirmasHistorial(studentId){
+  const el = document.getElementById('firmasHistorial');
+  if(!el) return;
+  const { data, error } = await sb.from('firmas_practica')
+    .select('id,status,firmante_nombre,comentario,decided_at,created_at,correo_destino')
+    .eq('student_id', studentId).order('created_at',{ascending:false});
+  const el2 = document.getElementById('firmasHistorial'); if(!el2) return;
+  if(error){ el2.innerHTML = '<span class="hint">No se pudo cargar el historial.</span>'; return; }
+  if(!data || !data.length){ el2.innerHTML = '<span class="hint">Aún no se ha enviado el plan a firma.</span>'; return; }
+  el2.innerHTML = data.map(f=>{
+    const badge = f.status==='autorizado' ? '<span class="pill" style="background:var(--green-soft);color:var(--green)">Autorizado</span>'
+      : f.status==='rechazado' ? '<span class="pill" style="background:var(--wine-soft);color:var(--wine)">Rechazado</span>'
+      : '<span class="pill" style="background:var(--amber-soft);color:var(--amber)">Pendiente</span>';
+    const cuerpo = f.status!=='pendiente'
+      ? `Firmado por: <strong>${f.firmante_nombre||'—'}</strong> el ${f.decided_at? new Date(f.decided_at).toLocaleString('es-CL'):'—'}${f.comentario? '<br>Comentario: '+f.comentario : ''}`
+      : 'Esperando respuesta del maestro guía.';
+    return `<div class="entry-row"><div class="ehead"><span>${new Date(f.created_at).toLocaleString('es-CL')} · enviado a ${f.correo_destino||'—'}</span>${badge}</div>${cuerpo}</div>`;
+  }).join('');
+}
+
+/* ---- 2) Captcha "no soy un robot" (identificar cuáles NO son bicicletas) ---- */
+const CAPTCHA_ICONS = ['🚗','🌳','🏠','⭐','☂️','🐱','☕','🍃','🎈','🐟','⚽','🎸'];
+let captchaState = { correct:new Set(), selected:new Set(), passed:false };
+
+function buildCaptcha(){
+  const total = 9, nBici = 3;
+  const positions = Array.from({length:total}, (_,i)=>i);
+  for(let i=positions.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [positions[i],positions[j]]=[positions[j],positions[i]]; }
+  const biciPos = new Set(positions.slice(0,nBici));
+  const otros = [...CAPTCHA_ICONS].sort(()=>Math.random()-0.5);
+  const tiles = [];
+  let oi=0;
+  for(let i=0;i<total;i++){ tiles.push(biciPos.has(i) ? '🚲' : otros[oi++ % otros.length]); }
+  captchaState.correct = new Set(tiles.map((v,i)=> v!=='🚲' ? i : -1).filter(i=>i>=0));
+  captchaState.selected = new Set();
+  captchaState.passed = false;
+  return tiles;
+}
+
+function captchaTilesHTML(tiles){
+  return tiles.map((v,i)=>`<div class="captcha-tile" data-idx="${i}" data-action="captcha-toggle">${v}</div>`).join('');
+}
+
+function captchaHTML(){
+  const tiles = buildCaptcha();
+  return `
+  <div class="captcha-box" id="captchaBox">
+    <strong>Verificación</strong>
+    <p class="hint" style="margin:4px 0 0">Selecciona todas las imágenes que <strong>NO</strong> sean bicicletas 🚲, luego pulsa "Verificar".</p>
+    <div class="captcha-grid" id="captchaGrid">${captchaTilesHTML(tiles)}</div>
+    <button class="btn-secondary" data-action="captcha-verify" id="captchaVerifyBtn">Verificar</button>
+    <span class="hint" id="captchaMsg" style="margin-left:8px"></span>
+  </div>`;
+}
+
+function resetCaptchaGrid(){
+  const tiles = buildCaptcha();
+  const grid = document.getElementById('captchaGrid');
+  if(grid) grid.innerHTML = captchaTilesHTML(tiles);
+}
+
+function handleCaptchaToggle(idx){
+  if(captchaState.selected.has(idx)) captchaState.selected.delete(idx);
+  else captchaState.selected.add(idx);
+  const tile = document.querySelector(`#captchaGrid [data-idx="${idx}"]`);
+  if(tile) tile.classList.toggle('selected');
+}
+
+function handleCaptchaVerify(){
+  const msg = document.getElementById('captchaMsg');
+  const ok = captchaState.selected.size===captchaState.correct.size &&
+    [...captchaState.selected].every(i=>captchaState.correct.has(i));
+  if(ok){
+    captchaState.passed = true;
+    if(msg){ msg.textContent = '✔ Verificación correcta.'; msg.style.color='var(--green)'; }
+    document.getElementById('captchaBox').style.display='none';
+    const lock = document.getElementById('firmaDecisionArea');
+    if(lock) lock.classList.remove('firma-form-locked');
+  }else{
+    if(msg){ msg.textContent = 'Selección incorrecta, inténtalo de nuevo.'; msg.style.color='var(--wine)'; }
+    resetCaptchaGrid();
+  }
+}
+
+/* ---- 3) Vista pública de firma ---- */
+let firmaTokenActual = null;
+
+function renderFirmaShell(inner){
+  document.getElementById('login-root').style.display='none';
+  document.getElementById('app').style.display='none';
+  const root = document.getElementById('firma-root');
+  root.style.display='flex';
+  root.innerHTML = `<div class="firma-wrap">
+    <div class="firma-card">
+      <div class="firma-head">
+        <div>
+          <h1 class="serif">Liceo Bicentenario Politécnico "Luis Cruz Martínez"</h1>
+          <p>Firma digital del Plan de Práctica · Maestro Guía</p>
+        </div>
+      </div>
+      ${inner}
+    </div>
+  </div>`;
+}
+
+async function initFirmaPublica(token){
+  firmaTokenActual = token;
+  renderFirmaShell('<div class="empty-state">Cargando solicitud de firma…</div>');
+  const { data, error } = await sb.rpc('obtener_firma', { p_token: token });
+  const row = Array.isArray(data) ? data[0] : data;
+  if(error || !row){
+    renderFirmaShell('<div class="firma-status-banner rechazado">Este enlace no es válido. Verifica que lo copiaste completo o solicita uno nuevo al liceo.</div>');
+    return;
+  }
+  renderFirmaSolicitud(row);
+}
+
+function renderFirmaSolicitud(row){
+  const snap = row.snapshot || {};
+  const yaDecidido = row.status !== 'pendiente';
+
+  const areasHtml = (snap.areas||[]).map(a=>`
+    <div style="margin-bottom:12px">
+      <div style="font-weight:700;color:var(--navy);font-size:13px;margin-bottom:4px">${a.num}.- ${a.nombre}</div>
+      <table><tbody>
+        ${a.tareas.map(t=>`<tr><td style="width:70%">${t.texto}</td><td style="width:15%">${t.nivel||'—'}</td><td style="width:15%">${t.cf||'—'}</td></tr>`).join('')}
+      </tbody></table>
+    </div>`).join('');
+
+  const statusBanner = yaDecidido
+    ? `<div class="firma-status-banner ${row.status}">Esta solicitud ya fue <strong>${row.status==='autorizado'?'AUTORIZADA':'RECHAZADA'}</strong> por ${row.firmante_nombre||'—'} el ${row.decided_at? new Date(row.decided_at).toLocaleString('es-CL'):''}.</div>`
+    : '';
+
+  const formHtml = yaDecidido ? '' : `
+    <div class="hint" style="margin:10px 0">Este enlace fue enviado exclusivamente a <strong>${snap.correoSupervisor||'—'}</strong>. Es de un solo uso.</div>
+    ${captchaHTML()}
+    <div id="firmaDecisionArea" class="firma-form-locked">
+      <div class="form-grid cols-2" style="margin-top:10px">
+        <div class="field"><label>Nombre completo de quien firma</label><input type="text" id="firmanteNombre" value="${(snap.maestroGuia||'').replace(/"/g,'&quot;')}"></div>
+        <div class="field"><label>RUT (opcional)</label><input type="text" id="firmanteRut"></div>
+      </div>
+      <div class="field"><label>Comentario (opcional)</label><textarea id="firmanteComentario" placeholder="Observaciones sobre el plan..."></textarea></div>
+      <div class="firma-decision-btns">
+        <button class="btn-autorizar" data-action="firma-decidir" data-decision="autorizado">${icon('check',15)} Autorizar</button>
+        <button class="btn-rechazar" data-action="firma-decidir" data-decision="rechazado">${icon('alertTriangle',15)} Rechazar</button>
+      </div>
+    </div>`;
+
+  renderFirmaShell(`
+    ${statusBanner}
+    <div class="form-grid cols-2" style="margin-bottom:10px">
+      <div class="field"><label>Estudiante</label><div>${snap.estudiante||'—'}</div></div>
+      <div class="field"><label>Carrera</label><div>${snap.carrera||'—'}</div></div>
+      <div class="field"><label>Empresa</label><div>${snap.empresa||'—'}</div></div>
+      <div class="field"><label>Maestro guía</label><div>${snap.maestroGuia||'—'}</div></div>
+    </div>
+    <div class="form-section"><div class="st"><div class="bar"></div><h4>Plan de práctica</h4></div>${areasHtml || '<div class="empty-state">Sin tareas registradas.</div>'}</div>
+    ${formHtml}
+  `);
+}
+
+async function handleFirmaDecidir(decision){
+  const nombre = (document.getElementById('firmanteNombre')?.value||'').trim();
+  if(!nombre){ toast('Ingresa el nombre de quien firma.'); return; }
+  const rut = document.getElementById('firmanteRut')?.value||null;
+  const comentario = document.getElementById('firmanteComentario')?.value||null;
+
+  const btns = document.querySelectorAll('[data-action="firma-decidir"]');
+  btns.forEach(b=>b.disabled=true);
+  try{
+    const { data, error } = await sb.rpc('responder_firma', {
+      p_token: firmaTokenActual, p_decision: decision, p_nombre: nombre, p_rut: rut, p_comentario: comentario
+    });
+    if(error) throw error;
+    const result = Array.isArray(data) ? data[0] : data;
+
+    const { data: fresh } = await sb.rpc('obtener_firma', { p_token: firmaTokenActual });
+    const row = Array.isArray(fresh) ? fresh[0] : fresh;
+    renderFirmaSolicitud(row);
+
+    try{
+      await sb.functions.invoke('enviar-correo-firma', { body:{
+        tipo:'confirmacion', nombreEstudiante: row.snapshot?.estudiante,
+        decision, firmante: nombre,
+        fecha: new Date(result.decided_at).toLocaleString('es-CL'), comentario
+      }});
+    }catch(mailErr){ console.error('email confirmación error', mailErr); }
+  }catch(e){
+    console.error(e);
+    toast('No se pudo registrar tu respuesta: '+(e.message||e));
+    btns.forEach(b=>b.disabled=false);
+  }
+}
+
+/* ============================================================
    INIT
    ============================================================ */
 (async function init(){
+  const firmaToken = new URLSearchParams(location.search).get('firma');
+  if(firmaToken){
+    await initFirmaPublica(firmaToken);
+    return;
+  }
   initAuthUI();
   const { data: { session } } = await sb.auth.getSession();
   if(session && session.user){
