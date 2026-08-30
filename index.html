@@ -17,6 +17,7 @@
 <script>window.supabase || document.write('<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"><\/script>')</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>window.XLSX || document.write('<script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"><\/script>')</script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
 :root{
   --navy:#16213E;
@@ -725,6 +726,32 @@ const SUPABASE_URL = 'https://vpgfoeygkfbspnjanpfp.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_gpw99ynWuhpa6SXgW5d67w_w5doYqqn';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const APP_DATA_ROW_ID = 'main';
+
+/* ---- EmailJS: aviso automático a la empresa cuando se le asigna un alumno ---- */
+const EMAILJS_SERVICE_ID = 'service_6qvbsd8';
+const EMAILJS_TEMPLATE_ID_AVISO_EMPRESA = 'ojhi5tj';
+const EMAILJS_PUBLIC_KEY = 'LZ5H3vQhqc_m8Ez4T';
+try{ if(window.emailjs) emailjs.init({publicKey: EMAILJS_PUBLIC_KEY}); }catch(e){ console.warn('EmailJS no se pudo inicializar', e); }
+
+async function enviarAvisoEmpresaAlumnoAsignado(s){
+  if(!window.emailjs){ console.warn('EmailJS no está cargado, no se envió el aviso.'); return; }
+  if(!s.correoSupervisor){ return; } // sin correo de la empresa no hay a quién avisar
+  const cfg = config();
+  try{
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID_AVISO_EMPRESA, {
+      to_email: s.correoSupervisor,
+      to_name: s.supervisor || (s.empresa||'Empresa'),
+      student_name: s.nombre || '',
+      start_date: s.fechaInicio || 'Por definir',
+      coordinator_name: s.profesorResponsable || cfg.nombreInstitucion || '',
+      coordinator_email: cfg.correo || ''
+    });
+    toast('Aviso enviado a la empresa por correo');
+  }catch(e){
+    console.error('Error enviando aviso EmailJS', e);
+    toast('No se pudo enviar el aviso a la empresa por correo');
+  }
+}
 const DOCS_BUCKET = 'documentos-practicas';
 let currentUser = null;
 
@@ -2508,9 +2535,12 @@ async function handleCreateStudent(){
 
 async function handleSaveIndividualizacion(id){
   const s = getStudent(id); if(!s) return;
+  const empresaAntes = s.empresa; const correoSupervisorAntes = s.correoSupervisor;
   const keys = ['nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','comuna','ciudad','institucion','carrera','curso','jornada','profesorResponsable','jefePractica','tipoPractica','empresa','rutEmpresa','direccionEmpresa','area','cargo','supervisor','cargoSupervisor','correoSupervisor','telefonoSupervisor','fechaInicio','fechaTermino','horasRequeridas','horasRealizadas','jornadaHorario','estado'];
   keys.forEach(k=>{ const el=document.getElementById('f_'+k); if(el){ s[k] = (el.type==='number')? Number(el.value)||0 : el.value; } });
   await saveData(); renderView(); toast('Individualización guardada');
+  const empresaAsignadaOModificada = s.empresa && (s.empresa!==empresaAntes || s.correoSupervisor!==correoSupervisorAntes);
+  if(empresaAsignadaOModificada){ enviarAvisoEmpresaAlumnoAsignado(s); }
 }
 
 function collectPDFmakerLib(){
