@@ -1078,7 +1078,7 @@ function download(blob, filename){
     const a=document.createElement('a');
     a.href=url; a.download=filename;
     document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),2000);
+    setTimeout(()=>URL.revokeObjectURL(url),15000);
   }catch(e){
     console.error('download error', e);
     toast('No se pudo descargar el archivo. Revisa la consola (F12).');
@@ -1266,6 +1266,7 @@ function renderDashboard(){
       <button class="btn-secondary" data-action="export-report" data-report="horas">${icon('download',14)} Reporte de horas (CSV)</button>
       <button class="btn-secondary" data-action="export-report" data-report="evaluaciones">${icon('download',14)} Reporte de evaluaciones (CSV)</button>
       <button class="btn-secondary" data-action="export-report" data-report="finalizadas">${icon('download',14)} Reporte de prácticas finalizadas (CSV)</button>
+      <button class="btn-secondary" data-action="export-backup-json">${icon('download',14)} Respaldo completo (JSON)</button>
     </div>
   </details>`;
   document.getElementById('view-root').innerHTML = html;
@@ -2165,6 +2166,15 @@ function renderConfiguracion(){
       </div>
       <button class="btn-primary" data-action="save-config">Guardar configuración</button>
     </div>
+  </div>
+  <div class="panel" style="margin-top:16px">
+    <div class="panel-head"><h2>Respaldo de datos (JSON)</h2><span class="hint">Copia completa de estudiantes y configuración</span></div>
+    <div class="panel-body" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <button class="btn-primary gold" data-action="export-backup-json">${icon('download',14)} Descargar respaldo JSON</button>
+      <button class="btn-secondary" data-action="trigger-restore-backup">Restaurar desde JSON…</button>
+      <input type="file" id="restoreBackupInput" accept=".json,application/json" style="display:none" />
+      <div class="hint" style="flex-basis:100%;margin:0">El respaldo incluye logos y fotos embebidos, por lo que puede pesar varios MB. Restaurar reemplaza todos los datos actuales.</div>
+    </div>
   </div>`;
   document.getElementById('view-root').innerHTML = html;
 }
@@ -2194,6 +2204,7 @@ function renderDetalle(){
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         ${pillResultado(s)}
+        <button class="btn-secondary" data-action="export-student-json" data-id="${s.id}">${icon('download',13)} JSON</button>
         <button class="btn-danger" data-action="delete-student" data-id="${s.id}">${icon('trash',13)} Eliminar</button>
       </div>
     </div>
@@ -2714,16 +2725,14 @@ function addLetterhead(pdf, cfg, title, subtitle, carrera){
   return subtitle? 62: 57;
 }
 function savePDF(pdf, filename){
-  // Abre el PDF en una pestaña nueva (con su propio visor, botón de descarga y X para cerrar).
-  // Esto es más confiable que pdf.save() cuando la app corre desde un archivo local (file://),
-  // donde Chrome suele bloquear las descargas automáticas sin avisar.
+  // Descarga directa con el nombre correcto del archivo.
+  // Antes se abría el PDF en una pestaña nueva (visor de Chrome con nombre tipo UUID y
+  // diálogo de guardado que a veces quedaba en blanco). Ahora se descarga como blob.
   try{
-    const blobUrl = pdf.output('bloburl');
-    const w = window.open(blobUrl, '_blank');
-    if(!w){ pdf.save(filename); } // si el navegador bloqueó la pestaña emergente, intenta la descarga directa
+    download(pdf.output('blob'), filename);
   }catch(e){
     console.error('savePDF error', e);
-    pdf.save(filename);
+    try{ pdf.save(filename); }catch(e2){ toast('No se pudo descargar el PDF. Revisa la consola (F12).'); }
   }
 }
 function addFooterAll(pdf){
@@ -3548,7 +3557,7 @@ async function generateDocPDF(sid, docKey, silent){
 }
 
 async function generateAllDocs(sid){
-  for(const d of DOC_TYPES){ await generateDocPDF(sid, d.key, true); }
+  for(const d of DOC_TYPES){ await generateDocPDF(sid, d.key, true); await new Promise(r=>setTimeout(r,500)); }
   toast('Documentación generada ('+DOC_TYPES.length+' documentos)');
   renderView();
   refreshOpenDocsModal(sid);
@@ -3786,6 +3795,54 @@ function exportReport(type){
 }
 
 /* ============================================================
+   RESPALDO / EXPORTACIÓN JSON
+   ============================================================ */
+function safeFileName(txt){
+  return String(txt||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\w\-]+/g,'_').replace(/^_+|_+$/g,'') || 'sin_nombre';
+}
+function exportBackupJSON(){
+  const payload = {
+    app: 'Expediente Práctica LCM',
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    data: state.data
+  };
+  const stamp = new Date().toISOString().slice(0,10);
+  download(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}), 'respaldo_expedientes_'+stamp+'.json');
+  toast('Respaldo JSON descargado ('+students().length+' estudiantes)');
+}
+function exportStudentJSON(sid){
+  const s = getStudent(sid); if(!s){ toast('Estudiante no encontrado'); return; }
+  const payload = { app:'Expediente Práctica LCM', version:1, tipo:'estudiante', exportedAt:new Date().toISOString(), student:s };
+  download(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}), 'expediente_'+safeFileName(s.nombre)+'.json');
+  toast('Expediente JSON descargado');
+}
+function triggerRestoreBackup(){
+  const input = document.getElementById('restoreBackupInput');
+  if(input) input.click();
+}
+async function handleRestoreBackupFile(file){
+  if(!file) return;
+  try{
+    const parsed = JSON.parse(await file.text());
+    const data = parsed && parsed.data ? parsed.data : parsed;   // acepta con o sin envoltorio
+    if(!data || !Array.isArray(data.students) || typeof data.config !== 'object' || !data.config){
+      toast('El archivo no parece un respaldo válido (faltan "students" y "config").'); return;
+    }
+    const ok = confirm('Se reemplazarán TODOS los datos actuales ('+students().length+' estudiantes) por los del respaldo ('+data.students.length+' estudiantes).\n\nTe recomiendo descargar un respaldo actual antes de continuar.\n\n¿Restaurar de todos modos?');
+    if(!ok) return;
+    state.data = data;
+    ensureLogosPorCarrera(state.data.config);
+    await saveData();
+    renderView();
+    toast('Respaldo restaurado: '+data.students.length+' estudiantes');
+  }catch(err){
+    console.error('restore error', err);
+    toast('No se pudo leer el archivo JSON. Verifica que sea un respaldo descargado desde esta app.');
+  }
+}
+
+/* ============================================================
    IMPORTAR / EXPORTAR MASIVO (Excel)
    ============================================================ */
 const IMPORT_COLUMNS = [
@@ -3978,6 +4035,9 @@ document.addEventListener('click', async (e)=>{
     case 'save-config': await handleSaveConfig(); break;
     case 'export-csv': exportCSV(); break;
     case 'export-report': exportReport(t.dataset.report); break;
+    case 'export-backup-json': exportBackupJSON(); break;
+    case 'export-student-json': exportStudentJSON(id); break;
+    case 'trigger-restore-backup': triggerRestoreBackup(); break;
     case 'download-import-template': downloadImportTemplate(); break;
     case 'trigger-import': triggerImportFile(); break;
     case 'stat-detail': openStatDetail(t.dataset.metric); break;
@@ -4044,6 +4104,11 @@ document.addEventListener('change', async (e)=>{
     if(!config().logosPorCarrera) config().logosPorCarrera = {};
     config().logosPorCarrera[carrera] = b64;
     await saveData(); renderView(); toast('Logo de '+carrera+' actualizado');
+  }
+  if(e.target.id==='restoreBackupInput'){
+    const f = e.target.files[0];
+    e.target.value = '';
+    await handleRestoreBackupFile(f);
   }
   if(e.target.id==='importStudentsInput'){
     const f = e.target.files[0];
