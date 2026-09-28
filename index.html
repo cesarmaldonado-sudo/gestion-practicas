@@ -3610,10 +3610,10 @@ function fileToBase64(file){ return new Promise((res,rej)=>{ const r=new FileRea
 function sanitizeFileName(name){
   return (name||'archivo').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'_');
 }
-async function handleUploadDoc(sid, docKey){
+async function handleUploadDoc(sid, docKey, droppedFile){
   const input = document.createElement('input'); input.type='file'; input.accept='.pdf,.doc,.docx,image/*';
   input.onchange = async ()=>{
-    const f = input.files[0]; if(!f) return;
+    const f = droppedFile || input.files[0]; if(!f) return;
     const s = getStudent(sid); if(!s) return;
     const prevPath = s.documentos[docKey].filePath;
     const path = sid+'/'+docKey+'/'+Date.now()+'_'+sanitizeFileName(f.name);
@@ -3634,7 +3634,7 @@ async function handleUploadDoc(sid, docKey){
       toast('No se pudo subir el documento: '+(e && e.message ? e.message : 'error desconocido'));
     }
   };
-  input.click();
+  if(droppedFile) input.onchange(); else input.click();
 }
 async function viewDoc(sid, docKey){
   const s = getStudent(sid); if(!s) return;
@@ -4001,6 +4001,20 @@ function normalizeImportedDate(val){
 /* ============================================================
    EVENT DELEGATION
    ============================================================ */
+
+/* ARRASTRAR Y SOLTAR (alternativa al selector de archivos) */
+['dragover','drop'].forEach(ev=>document.addEventListener(ev, e=>{
+  if(!e.dataTransfer || !Array.from(e.dataTransfer.types||[]).includes('Files')) return;
+  e.preventDefault();
+  if(ev!=='drop') return;
+  const f = e.dataTransfer.files[0]; if(!f) return;
+  const row = e.target.closest && e.target.closest('.doc-row');
+  const btn = row && row.querySelector('[data-action="upload-doc"]');
+  if(btn){ handleUploadDoc(btn.dataset.id, btn.dataset.doc, f); return; }
+  if(/\.(xlsx|xls)$/i.test(f.name)) handleImportStudentsFile(f);
+  else if(/\.json$/i.test(f.name)) handleRestoreBackupFile(f);
+  else toast('Para subir un documento, suéltalo sobre la fila del documento correspondiente.');
+}));
 document.addEventListener('click', async (e)=>{
   const t = e.target.closest('[data-action]');
   if(!t) return;
