@@ -1872,20 +1872,6 @@ function renderDashboard(){
 
   const o = state.dashOpen;
   const html = `
-  <details id="acc-video" class="dash-accordion" data-open-key="video" ${o.video!==false?'open':''}>
-    <summary>
-      <h2>${icon('eye',17)} Video del sistema</h2>
-      <span class="acc-meta"><span class="hint" style="margin:0">Presentación de SGP · Sistema Gestión de Prácticas</span><span class="acc-chevron">${icon('chevronDown',16)}</span></span>
-    </summary>
-    <div class="panel-body">
-      <video id="videoSistema" controls preload="metadata" playsinline style="width:100%;max-height:520px;border-radius:12px;background:#000;display:block"
-        onerror="this.style.display='none';document.getElementById('videoSistemaError').style.display='block'">
-        <source src="Video_Sistema_Practicas_LCM.mp4" type="video/mp4"
-          onerror="this.parentNode.style.display='none';document.getElementById('videoSistemaError').style.display='block'">
-      </video>
-      <div id="videoSistemaError" class="hint" style="display:none;padding:14px;border:1px dashed var(--border);border-radius:10px">No se encontró el video. El archivo <strong>Video_Sistema_Practicas_LCM.mp4</strong> debe estar en la misma carpeta que este index.html.</div>
-    </div>
-  </details>
   ${especialidadesPanelHTML('dash', dc)}
   ${dc? `<div class="hint" style="margin:-8px 0 14px">Indicadores, gráficos y estadísticas filtrados por <strong>${dc}</strong>. Haga clic de nuevo en el logo para ver todas las especialidades.</div>` : ''}
   <div class="grid-cards">
@@ -2058,13 +2044,12 @@ function renderDashboard(){
     });
   }
   const accInit = {graficos:initGraficosGenerales, especialidad:initGraficoEspecialidad, periodo:initGraficoPeriodo};
-  ['acc-video','acc-graficos','acc-especialidad','acc-periodo','acc-reportes'].forEach(id=>{
+  ['acc-graficos','acc-especialidad','acc-periodo','acc-reportes'].forEach(id=>{
     const det = document.getElementById(id); if(!det) return;
     const key = det.dataset.openKey;
     if(det.open && accInit[key]) accInit[key]();
     det.addEventListener('toggle', ()=>{
       state.dashOpen[key] = det.open;
-      if(!det.open){ const v=det.querySelector('video'); if(v) v.pause(); }
       if(det.open && accInit[key]) accInit[key]();
     });
   });
