@@ -5461,10 +5461,10 @@ async function descargarPlantillaConListas(wb, listas){
     });
     if(dvs.length){
       const bloque = `<dataValidations count="${dvs.length}">${dvs.join('')}</dataValidations>`;
-      const despues = ['<hyperlinks','<printOptions','<pageMargins','<pageSetup','<headerFooter','<rowBreaks','<colBreaks','<drawing','<legacyDrawing','<tableParts','<extLst'];
+      const despues = ['<hyperlinks','<printOptions','<pageMargins','<pageSetup','<headerFooter','<rowBreaks','<colBreaks','<customProperties','<cellWatches','<ignoredErrors','<smartTags','<drawing','<legacyDrawing','<legacyDrawingHF','<picture','<oleObjects','<controls','<webPublishItems','<tableParts','<extLst'];
       const pos = despues.map(t=>xml.indexOf(t)).filter(i=>i>=0).sort((a,b)=>a-b)[0];
       xml = pos!==undefined ? xml.slice(0,pos)+bloque+xml.slice(pos) : xml.replace('</worksheet>', bloque+'</worksheet>');
-      zip.file(ruta, xml);
+      zip.file(ruta, xml, {createFolders:false});
     }
     const blob = await zip.generateAsync({type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre;
