@@ -3561,10 +3561,13 @@ function gruposEspecialidadHTML(prefijo, lista, fila, vacio){
    matrícula, seguro y plan de práctica), editables uno a uno.
    ============================================================ */
 const FASE_INICIO = 'Documentación inicial';
-/* El Plan de práctica (doc04) vive en Evaluaciones → no se muestra en Inicio */
-const DOCS_FUERA_DE_INICIO = ['doc04'];
+/* El Plan de práctica (doc04) se muestra en Inicio según la especialidad del estudiante;
+   su evaluación se completa en la sección «Plan de práctica». */
+const DOCS_FUERA_DE_INICIO = [];
 /* Qué datos usa cada documento de inicio (se editan aquí y se guardan en la ficha) */
 const INICIO_CAMPOS = {
+  doc04: {fecha:false, intro:'Plan de práctica oficial de la especialidad del estudiante. Se entrega al inicio para acordar las tareas con el maestro guía; la evaluación (escala 1 a 4) se completa después en la sección «Plan de práctica».',
+    campos:[['empresa','Empresa'],['planPractica.fechaAcuerdo','Fecha de acuerdo del plan','date']]},
   doc01: {fecha:true, intro:'Carta dirigida a la empresa para solicitar el cupo de práctica.',
     campos:[['empresa','Empresa'],['nombre','Nombre del estudiante'],['rut','RUT del estudiante'],['horasRequeridas','Horas de práctica','number']]},
   doc12: {fecha:true, intro:'Solicitud dirigida al maestro guía de la empresa.',
@@ -3601,10 +3604,28 @@ function campoDocHTML(s, k, l, t){
   if(t==='textarea') return `<div class="field" style="grid-column:1/-1"><label>${l}</label><textarea id="f_${id}">${(v??'').toString().replace(/</g,'&lt;')}</textarea></div>`;
   return fld(id, l, v, t||'text');
 }
+function planEspecialidadInicioHTML(s){
+  const esp = especialidadDe(s);
+  if(!esp) return `<div class="hint" style="margin:6px 0 12px;color:var(--wine)">${icon('alertTriangle',13)} El estudiante no tiene una especialidad válida. Asígnela en la Ficha del estudiante para cargar su Plan de práctica.</div>
+    <button class="btn-secondary" data-action="open-ficha" data-id="${s.id}" style="margin-bottom:12px">${icon('idcard',14)} Abrir la Ficha del estudiante</button>`;
+  const nT = esp.areas.reduce((n,a)=>n+a.tareas.length,0);
+  return `<div class="plan-inicio" style="border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin:4px 0 12px;background:#fff">
+    <div style="font-weight:700">Plan de práctica · ${s.carrera}</div>
+    <div class="hint" style="margin:2px 0 8px">${esp.areas.length} áreas de competencia · ${nT} tareas consensuadas · ${esp.empleabilidad.length} competencias de empleabilidad</div>
+    <details><summary style="cursor:pointer;font-size:13px;font-weight:600">Ver áreas, tareas y competencias</summary>
+      <ol style="margin:8px 0 0 18px;padding:0;font-size:12.5px;line-height:1.45">
+        ${esp.areas.map((a,ai)=>`<li style="margin-bottom:6px"><strong>${a.nombre}</strong><ul style="margin:3px 0 0 16px;padding:0">${a.tareas.map((t,idx)=>`<li>${t}${typeof detalleHTML==='function'? detalleHTML(detalleTarea(a,idx)) : ''}</li>`).join('')}</ul></li>`).join('')}
+      </ol>
+      <div style="font-weight:600;font-size:12.5px;margin-top:8px">Competencias de empleabilidad</div>
+      <ul style="margin:3px 0 0 18px;padding:0;font-size:12.5px;line-height:1.45">${esp.empleabilidad.map(c=>`<li>${c}</li>`).join('')}</ul>
+    </details>
+  </div>`;
+}
 function inicioEditorHTML(s, key){
   const c = INICIO_CAMPOS[key]; if(!c) return '';
   return `<div class="inicio-editor" id="inicioEditor">
     <div class="hint" style="margin-bottom:10px">${c.intro}${c.campos.some(([k])=>INDIV_KEYS.includes(k))? ' Los datos del estudiante y de la empresa se guardan también en la Ficha del estudiante.' : ''}</div>
+    ${key==='doc04' ? planEspecialidadInicioHTML(s) : ''}
     ${c.campos.length || c.fecha ? `<div class="form-grid cols-3">
       ${c.fecha? fld('docFecha','Fecha del documento',fechaDoc(s,key),'date') : ''}
       ${c.campos.map(([k,l,t])=>campoDocHTML(s,k,l,t)).join('')}
@@ -3614,6 +3635,8 @@ function inicioEditorHTML(s, key){
       <button class="btn-primary gold" data-action="inicio-save" data-pdf="1" data-id="${s.id}" data-doc="${key}">${icon('download',14)} Guardar y generar PDF</button>` :
       `<button class="btn-primary gold" data-action="gen-doc" data-id="${s.id}" data-doc="${key}">${icon('download',14)} Generar PDF</button>`}
       ${key==='doc13' ? `<button class="btn-secondary" data-action="upload-doc" data-id="${s.id}" data-doc="doc13">${icon('upload',14)} Importar ficha física</button>` : ''}
+      ${key==='doc04' && especialidadDe(s) ? `<button class="btn-secondary" data-action="plan-blanco" data-id="${s.id}" title="PDF con las tareas de la especialidad y los círculos vacíos">${icon('download',14)} Descargar plan en blanco</button>
+      <button class="btn-secondary" data-action="open-student-tab" data-id="${s.id}" data-tab="plan">${icon('pencil',14)} Evaluar plan</button>` : ''}
       <button class="btn-ghost" data-action="inicio-edit" data-id="${s.id}" data-doc="${key}">Cerrar</button>
     </div>
   </div>`;
@@ -3658,7 +3681,7 @@ function renderInicioPractica(){
             return fila + (abierto ? inicioEditorHTML(s, d.key) : ''); }).join('')}
         </div>
         <div class="form-section" style="margin-top:18px"><div class="st"><div class="bar"></div><h4>Otros datos</h4></div>
-          <div class="hint" style="margin-bottom:8px">El Plan de práctica se completa y se evalúa en la sección <strong>Plan de práctica</strong>.</div>
+          <div class="hint" style="margin-bottom:8px">El Plan de práctica de la especialidad está en la lista de arriba; su evaluación se completa en la sección <strong>Plan de práctica</strong>.</div>
           <button class="btn-secondary" data-action="open-ficha" data-id="${s.id}">${icon('idcard',14)} Abrir la Ficha del estudiante</button>
         </div>
       </div>
