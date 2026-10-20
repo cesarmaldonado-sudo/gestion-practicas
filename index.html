@@ -5406,7 +5406,7 @@ function downloadImportTemplate(){
     ['INSTRUCCIONES Y LISTAS (Liceo Bicentenario Politécnico Luis Cruz Martínez)'],
     ['Complete una fila por estudiante en la hoja "Estudiantes". Obligatorios: "Nombre completo" y "Carrera / especialidad". El resto puede dejarse en blanco y completarse después en el sistema. Fechas en formato DD-MM-AAAA.'],
     [''],
-    ['ESPECIALIDADES (copie el texto exacto; solo se aceptan estas 5)'],
+    ['ESPECIALIDADES (en la hoja "Estudiantes" elíjala desde la lista desplegable de la columna; solo se aceptan estas 5)'],
     ...especialidades.map(e=>[e]),
     [''],
     ['ESTADOS (opcional; si se deja vacío queda "Pendiente")'],
@@ -5424,10 +5424,65 @@ function downloadImportTemplate(){
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Estudiantes');
   XLSX.utils.book_append_sheet(wb, wsEsp, 'Instrucciones');
-  XLSX.writeFile(wb, 'plantilla_estudiantes.xlsx', {cellStyles:true});
+  descargarPlantillaConListas(wb, [
+    {col:iCarrera, opciones:especialidades, titulo:'Especialidad', msg:'Elija la especialidad del estudiante desde la lista.'},
+    {col:iEstado, opciones:ESTADOS, titulo:'Estado', msg:'Elija un estado de la lista (opcional).'}
+  ]);
   toast('Plantilla descargada con todos los campos de la individualización. Complete una fila por estudiante y luego use "Importar Excel".');
 }
 
+/* Carga JSZip a demanda (para agregar listas desplegables, que SheetJS gratuito no escribe) */
+function cargarJSZip(){
+  if(window.JSZip) return Promise.resolve(window.JSZip);
+  return new Promise((res, rej)=>{
+    const urls = ['https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js', 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js'];
+    const intentar = i => { if(i>=urls.length) return rej(new Error('JSZip no disponible'));
+      const sc = document.createElement('script'); sc.src = urls[i];
+      sc.onload = ()=> window.JSZip ? res(window.JSZip) : intentar(i+1); sc.onerror = ()=> intentar(i+1);
+      document.head.appendChild(sc); };
+    intentar(0);
+  });
+}
+function escXml(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+/* Escribe la plantilla y agrega validación de datos (lista desplegable) en las columnas indicadas
+   de la hoja 1, desde la fila 3 hasta la 1000. Si algo falla, descarga la plantilla sin listas. */
+async function descargarPlantillaConListas(wb, listas){
+  const nombre = 'plantilla_estudiantes.xlsx';
+  try{
+    const JSZip = await cargarJSZip();
+    const buf = XLSX.write(wb, {bookType:'xlsx', type:'array', cellStyles:true});
+    const zip = await JSZip.loadAsync(buf);
+    const ruta = 'xl/worksheets/sheet1.xml';
+    let xml = await zip.file(ruta).async('string');
+    const dvs = listas.filter(l=>l.col>=0).map(l=>{
+      const letra = XLSX.utils.encode_col(l.col);
+      const formula = '"' + l.opciones.map(o=>String(o).replace(/"/g,'')).join(',') + '"';
+      return `<dataValidation type="list" allowBlank="1" showInputMessage="1" showErrorMessage="1" errorStyle="stop" errorTitle="Opción no válida" error="${escXml('Seleccione una opción de la lista desplegable.')}" promptTitle="${escXml(l.titulo)}" prompt="${escXml(l.msg)}" sqref="${letra}3:${letra}1000"><formula1>${escXml(formula)}</formula1></dataValidation>`;
+    });
+    if(dvs.length){
+      const bloque = `<dataValidations count="${dvs.length}">${dvs.join('')}</dataValidations>`;
+      const despues = ['<hyperlinks','<printOptions','<pageMargins','<pageSetup','<headerFooter','<rowBreaks','<colBreaks','<drawing','<legacyDrawing','<tableParts','<extLst'];
+      const pos = despues.map(t=>xml.indexOf(t)).filter(i=>i>=0).sort((a,b)=>a-b)[0];
+      xml = pos!==undefined ? xml.slice(0,pos)+bloque+xml.slice(pos) : xml.replace('</worksheet>', bloque+'</worksheet>');
+      zip.file(ruta, xml);
+    }
+    const blob = await zip.generateAsync({type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre;
+    document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }catch(e){
+    console.warn('Plantilla sin listas desplegables:', e);
+    XLSX.writeFile(wb, nombre, {cellStyles:true});
+  }
+}
+/* Nombres propios: primera letra de cada palabra en mayúscula (MARÍA JOSÉ DE LA FUENTE → María José de la Fuente) */
+const PARTICULAS_NOMBRE = ['de','del','la','las','los','y','van','von','da','di','le'];
+function nombrePropio(txt){
+  const palabras = String(txt||'').trim().replace(/\s+/g,' ').toLocaleLowerCase('es-CL').split(' ');
+  return palabras.map((p,i)=>{
+    if(i>0 && PARTICULAS_NOMBRE.includes(p)) return p;
+    return p.split(/([-'’])/).map(seg=> /^[-'’]$/.test(seg) ? seg : seg.charAt(0).toLocaleUpperCase('es-CL')+seg.slice(1)).join('');
+  }).join(' ');
+}
 function triggerImportFile(){
   const input = document.getElementById('importStudentsInput');
   if(input) input.click();
@@ -5481,7 +5536,7 @@ async function handleImportStudentsFile(file){
         else if(t==='estado') s[k] = estadosNorm[normalizeTxt(String(raw))] || 'Pendiente';
         else s[k] = (raw instanceof Date) ? normalizeImportedDate(raw) : String(raw).trim();
       });
-      s.nombre = nombre;
+      s.nombre = nombrePropio(nombre);
       s.carrera = match;
       if(!(Number(s.horasRequeridas)>0)) s.horasRequeridas = 180;
       if(!s.estado) s.estado = 'Pendiente';
