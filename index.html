@@ -141,6 +141,8 @@ h1,h2,h3,.serif{font-family:'Fraunces',serif;}
 .panel-body{padding:18px 20px;}
 
 /* ---------- Dashboard: paneles desplegables (viñetas) ---------- */
+.dash-video-wrap{max-width:960px;margin:0 auto;border-radius:var(--radius);overflow:hidden;background:#000;aspect-ratio:16/9;box-shadow:var(--shadow);}
+.dash-video-wrap video{width:100%;height:100%;display:block;object-fit:contain;background:#000;}
 .dash-accordion{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden;}
 .dash-accordion>summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;transition:background .12s;}
 .dash-accordion>summary:hover{background:var(--paper);}
@@ -1891,6 +1893,19 @@ function renderDashboard(){
     ${statCardClick(promEval,'Promedio evaluación docente','evaluacion')}
   </div>
   <div class="hint" style="margin:-10px 0 14px">Haz clic en cualquier indicador para ver el detalle.</div>
+  <div class="panel dash-video-panel" style="margin-bottom:16px">
+    <div class="panel-head">
+      <h2 style="display:flex;align-items:center;gap:9px"><span class="panel-head-icon">${icon('star',18)}</span>Conoce el Sistema de Gestión de Prácticas</h2>
+      <span class="hint">Video de presentación · Liceo Bicentenario Politécnico Luis Cruz Martínez</span>
+    </div>
+    <div class="panel-body">
+      <div class="dash-video-wrap">
+        <video controls preload="metadata" playsinline src="Video_Sistema_Practicas_LCM.mp4#t=1">
+          Tu navegador no puede reproducir este video.
+        </video>
+      </div>
+    </div>
+  </div>
   <details id="acc-graficos" class="dash-accordion" data-open-key="graficos" ${o.graficos?'open':''}>
     <summary>
       <h2>${icon('trendingUp',17)} Gráficos generales</h2>
@@ -5461,10 +5476,10 @@ async function descargarPlantillaConListas(wb, listas){
     });
     if(dvs.length){
       const bloque = `<dataValidations count="${dvs.length}">${dvs.join('')}</dataValidations>`;
-      const despues = ['<hyperlinks','<printOptions','<pageMargins','<pageSetup','<headerFooter','<rowBreaks','<colBreaks','<customProperties','<cellWatches','<ignoredErrors','<smartTags','<drawing','<legacyDrawing','<legacyDrawingHF','<picture','<oleObjects','<controls','<webPublishItems','<tableParts','<extLst'];
+      const despues = ['<hyperlinks','<printOptions','<pageMargins','<pageSetup','<headerFooter','<rowBreaks','<colBreaks','<drawing','<legacyDrawing','<tableParts','<extLst'];
       const pos = despues.map(t=>xml.indexOf(t)).filter(i=>i>=0).sort((a,b)=>a-b)[0];
       xml = pos!==undefined ? xml.slice(0,pos)+bloque+xml.slice(pos) : xml.replace('</worksheet>', bloque+'</worksheet>');
-      zip.file(ruta, xml, {createFolders:false});
+      zip.file(ruta, xml);
     }
     const blob = await zip.generateAsync({type:'blob', mimeType:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre;
