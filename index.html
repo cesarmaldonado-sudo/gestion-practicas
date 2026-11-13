@@ -3859,6 +3859,7 @@ function tplCierre(s){
    secciones (cada una se guarda por separado) + documentos por fase.
    ============================================================ */
 const INDIV_SECCIONES = {
+  pago: ['pagoTitular','pagoRutTitular','pagoBanco','pagoTipoCuenta','pagoNumeroCuenta','pagoCorreo'],
   personal: ['nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','comuna','ciudad'],
   academico: ['institucion','carrera','curso','jornada','profesorResponsable','jefePractica'],
   practica: ['tipoPractica','empresa','rutEmpresa','direccionEmpresa','representanteLegal','rutRepresentante','area','cargo','supervisor','cargoSupervisor','correoSupervisor','celularSupervisor','telefonoSupervisor','ciSupervisor','fechaInicio','fechaTermino','horasRequeridas','horasRealizadas','jornadaHorario','estado'],
@@ -3909,7 +3910,8 @@ function fichaHTML(s){
         <input type="file" id="fotoInputDetail" data-id="${s.id}" accept="image/png,image/jpeg"/>
         <div class="hint">Fotografía del estudiante (se guarda al elegirla)</div>
       </div>
-    </div>`;
+    </div>
+    ${cedulaBloqueHTML(s)}`;
   const ir = (k,lbl)=>`<button class="ficha-chip" data-action="ficha-goto" data-target="${k}" data-tab="${k}">${lbl}</button>`;
   return `
   <button class="btn-ghost" data-action="close-ficha" style="margin-bottom:10px">← Todas las fichas</button>
@@ -3925,17 +3927,172 @@ function fichaHTML(s){
       <button class="btn-danger" data-action="delete-student" data-id="${s.id}" title="Eliminar estudiante">${icon('trash',13)} Eliminar estudiante</button>
     </div>
     <div class="ficha-nav">
-      ${ir('fsec_personal','Datos personales')}${ir('fsec_academico','Datos académicos')}${ir('fsec_practica','Datos de la práctica')}${ir('fsec_anexo','Anexo informe')}${ir('ficha_asistencia','Ficha de asistencia')}
+      ${ir('fsec_personal','Datos personales')}${ir('fsec_academico','Datos académicos')}${ir('fsec_practica','Datos de la práctica')}${ir('fsec_anexo','Anexo informe')}${ir('ficha_asistencia','Ficha de asistencia')}${ir('fsec_pago','Pago de práctica (opcional)')}
     </div>
     <div class="panel-body">
       <div class="hint" style="margin-bottom:14px">Elija arriba la sección que desea ver. Cada sección se guarda por separado con su botón «Guardar cambios de esta sección».</div>
       ${seccionesIndividualizacionHTML(s, foto, true)}
       ${fichaAsistenciaBloqueHTML(s, 'ficha_asistencia')}
+      ${pagoPracticaBloqueHTML(s)}
     </div>
   </div>`;
 }
+
+
+/* ============================================================
+   CÉDULA DE IDENTIDAD (C.I.): respaldo del documento del estudiante
+   Se sube desde el computador (imagen o PDF) y se guarda en la nube,
+   en el mismo almacenamiento de los documentos. Frente y reverso.
+   ============================================================ */
+const CEDULA_LADOS = [['frente','Frente'],['reverso','Reverso']];
+function cedulaPaths(s){ const c = s && s.cedula || {}; return CEDULA_LADOS.map(([k])=>c[k] && c[k].filePath).filter(Boolean); }
+function cedulaBloqueHTML(s){
+  const c = s.cedula || {};
+  const esc = v => (v??'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  const fila = ([k,lbl])=>{
+    const m = c[k];
+    const estado = m && m.filePath
+      ? `<span style="color:var(--green);font-weight:600">✓ Cargada</span> <span class="hint">${esc(m.fileName)}${m.updatedAt?' · '+esc(m.updatedAt):''}</span>`
+      : `<span class="hint">Sin archivo</span>`;
+    const acciones = m && m.filePath
+      ? `<button type="button" class="btn-secondary" onclick="verCedula('${s.id}','${k}')">${icon('eye',13)} Ver</button>
+         <button type="button" class="btn-secondary" onclick="subirCedula('${s.id}','${k}')">${icon('upload',13)} Reemplazar</button>
+         <button type="button" class="btn-danger" onclick="eliminarCedula('${s.id}','${k}')" title="Quitar archivo">${icon('trash',13)}</button>`
+      : `<button type="button" class="btn-secondary" onclick="subirCedula('${s.id}','${k}')">${icon('upload',13)} Importar</button>`;
+    return `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 0;border-top:1px dashed var(--border)">
+      <strong style="min-width:70px">${lbl}</strong>
+      <div style="flex:1;min-width:180px">${estado}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${acciones}</div>
+    </div>`;
+  };
+  return `
+  <div id="cedulaBloque" style="margin:4px 0 16px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:#fff">
+    <div style="font-weight:600;color:var(--navy);margin-bottom:2px">Cédula de identidad (C.I.)</div>
+    <div class="hint" style="margin-bottom:6px">Respaldo de la cédula del estudiante. Acepta imagen (JPG, PNG) o PDF. Si tiene un solo PDF con ambas caras, súbalo en «Frente».</div>
+    ${CEDULA_LADOS.map(fila).join('')}
+  </div>`;
+}
+function subirCedula(sid, lado){
+  const input = document.createElement('input'); input.type='file'; input.accept='.pdf,image/*';
+  input.onchange = async ()=>{
+    const f = input.files[0]; if(!f) return;
+    if(f.size > 10*1024*1024){ toast('El archivo supera 10 MB. Reduzca su tamaño e intente de nuevo.'); return; }
+    const s = getStudent(sid); if(!s) return;
+    s.cedula = s.cedula || {};
+    const prev = s.cedula[lado] && s.cedula[lado].filePath;
+    const path = sid+'/cedula/'+lado+'_'+Date.now()+'_'+sanitizeFileName(f.name);
+    toast('Subiendo cédula ('+lado+')…');
+    try{
+      const { error } = await sb.storage.from(DOCS_BUCKET).upload(path, f, { upsert:false, contentType: f.type||undefined });
+      if(error) throw error;
+      if(prev){ try{ await sb.storage.from(DOCS_BUCKET).remove([prev]); }catch(e){} }
+      s.cedula[lado] = { fileName: f.name, filePath: path, updatedAt: new Date().toISOString().slice(0,10) };
+      await saveData(); refrescarCedulaBloque(s);
+      toast('Cédula ('+lado+') guardada como respaldo');
+    }catch(e){
+      console.error('upload cedula error', e);
+      toast('No se pudo subir la cédula: '+(e && e.message ? e.message : 'error desconocido'));
+    }
+  };
+  input.click();
+}
+async function verCedula(sid, lado){
+  const s = getStudent(sid); const m = s && s.cedula && s.cedula[lado];
+  if(!m || !m.filePath){ toast('No hay archivo cargado'); return; }
+  try{
+    const { data, error } = await sb.storage.from(DOCS_BUCKET).createSignedUrl(m.filePath, 300);
+    if(error) throw error;
+    window.open(data.signedUrl, '_blank');
+  }catch(e){
+    console.error('view cedula error', e);
+    toast('No se pudo abrir la cédula: '+(e && e.message ? e.message : 'error desconocido'));
+  }
+}
+async function eliminarCedula(sid, lado){
+  const s = getStudent(sid); const m = s && s.cedula && s.cedula[lado]; if(!m) return;
+  if(!confirm('¿Quitar el archivo de la cédula ('+lado+') de '+(s.nombre||'este estudiante')+'?')) return;
+  try{ if(m.filePath) await sb.storage.from(DOCS_BUCKET).remove([m.filePath]); }catch(e){ console.error('remove cedula error', e); }
+  delete s.cedula[lado];
+  await saveData(); refrescarCedulaBloque(s);
+  toast('Archivo de la cédula eliminado');
+}
+/* Actualiza solo el recuadro de la cédula, sin perder lo que se esté escribiendo en la ficha */
+function refrescarCedulaBloque(s){
+  const el = document.getElementById('cedulaBloque');
+  if(el){ const t = document.createElement('div'); t.innerHTML = cedulaBloqueHTML(s).trim(); el.replaceWith(t.firstElementChild); }
+}
+
+/* ============================================================
+   PAGO DE PRÁCTICA (opcional): datos bancarios del estudiante
+   No cuenta para «datos completos» de la individualización.
+   ============================================================ */
+const BANCOS_CL = ['BancoEstado','Banco de Chile / Edwards','Banco BCI / MACH','Banco Santander','Banco Itaú','Scotiabank','Banco BICE','Banco Security','Banco Consorcio','Banco Falabella','Banco Ripley / Chek','Banco Internacional','Coopeuch','Tenpo','Mercado Pago','Prepago Los Héroes','Tapp Caja Los Andes','And Co.','Otro'];
+const TIPOS_CUENTA = ['CuentaRUT','Corriente','Vista','Ahorro'];
+function pagoPracticaBloqueHTML(s){
+  const esc = v => (v??'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  const banco = s.pagoBanco||'';
+  const tipo = s.pagoTipoCuenta||'';
+  const optsBanco = ['<option value="">Seleccione el banco</option>']
+    .concat(BANCOS_CL.map(b=>`<option value="${esc(b)}" ${b===banco?'selected':''}>${esc(b)}</option>`)).join('');
+  const chips = TIPOS_CUENTA.map(t=>`<button type="button" class="ficha-chip pago-tipo ${t===tipo?'active':''}" data-tipo="${esc(t)}" onclick="seleccionarTipoCuentaPago(this)">${esc(t)}</button>`).join('');
+  return `
+  <div class="form-section" data-sec="pago" id="fsec_pago"><div class="st"><div class="bar"></div><h4>Pago de práctica (opcional)</h4></div>
+    <div class="hint" style="margin-bottom:12px">Complete solo si el estudiante recibirá un pago o incentivo por su práctica. Son los datos que se piden para registrar un <strong>nuevo destinatario</strong> de transferencia.</div>
+    <div class="form-grid cols-3">
+      <div class="field"><label>Estudiante</label><input type="text" value="${esc(s.nombre||'Sin nombre')}" readonly style="background:var(--paper);color:var(--navy);font-weight:600;cursor:default" title="Se toma de Datos personales"></div>
+      <div class="field"><label>Nombre del titular de la cuenta</label><input type="text" id="f_pagoTitular" value="${esc(s.pagoTitular)}" placeholder="${esc(s.nombre||'Nombre del titular')}"></div>
+      <div class="field"><label>RUT del titular</label><input type="text" id="f_pagoRutTitular" value="${esc(s.pagoRutTitular)}" placeholder="${esc(s.rut||'12.345.678-9')}"></div>
+      <div class="field"><label>Banco</label><select id="f_pagoBanco">${optsBanco}</select></div>
+      <div class="field"><label>Número de cuenta</label><input type="text" id="f_pagoNumeroCuenta" value="${esc(s.pagoNumeroCuenta)}" placeholder="Ingrese el N° de cuenta" inputmode="numeric"></div>
+      <div class="field"><label>Correo electrónico</label><input type="email" id="f_pagoCorreo" value="${esc(s.pagoCorreo)}" placeholder="${esc(s.correo||'ejemplo@correo.cl')}"></div>
+    </div>
+    <div class="field" style="margin-top:12px"><label>Tipo de cuenta</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">${chips}</div>
+      <input type="hidden" id="f_pagoTipoCuenta" value="${esc(tipo)}">
+    </div>
+    <div class="ficha-sec-foot" style="flex-wrap:wrap">
+      <button type="button" class="btn-primary" data-action="save-ficha-sec" data-id="${s.id}" data-sec="pago">${icon('check',14)} Guardar cambios de esta sección</button>
+      <button type="button" class="btn-secondary" onclick="copiarDatosPago()">Copiar datos para transferencia</button>
+      <button type="button" class="btn-ghost" onclick="usarDatosEstudiantePago('${s.id}')">Usar nombre, RUT y correo del estudiante</button>
+      <span class="hint ficha-sec-ok" id="fsok_pago"></span>
+    </div>
+  </div>`;
+}
+function seleccionarTipoCuentaPago(btn){
+  const cont = document.getElementById('fsec_pago'); if(!cont) return;
+  const yaActivo = btn.classList.contains('active');
+  cont.querySelectorAll('.pago-tipo').forEach(b=>b.classList.remove('active'));
+  if(!yaActivo) btn.classList.add('active');
+  document.getElementById('f_pagoTipoCuenta').value = yaActivo ? '' : btn.dataset.tipo;
+}
+function usarDatosEstudiantePago(id){
+  const s = getStudent(id); if(!s) return;
+  const set = (k,v)=>{ const el=document.getElementById(k); if(el && !el.value && v) el.value=v; };
+  set('f_pagoTitular', s.nombre); set('f_pagoRutTitular', s.rut); set('f_pagoCorreo', s.correo);
+  toast('Datos del estudiante copiados (recuerde guardar)');
+}
+function copiarDatosPago(){
+  const v = k => (document.getElementById('f_'+k)||{}).value||'';
+  const texto = [
+    'Titular: '+v('pagoTitular'),
+    'RUT: '+v('pagoRutTitular'),
+    'Banco: '+v('pagoBanco'),
+    'Tipo de cuenta: '+v('pagoTipoCuenta'),
+    'N° de cuenta: '+v('pagoNumeroCuenta'),
+    'Correo: '+v('pagoCorreo')
+  ].join('\n');
+  const ok = ()=>toast('Datos copiados al portapapeles');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(texto).then(ok).catch(()=>fallback());
+  } else fallback();
+  function fallback(){
+    const ta=document.createElement('textarea'); ta.value=texto; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); ok(); }catch(e){ toast('No se pudo copiar'); }
+    ta.remove();
+  }
+}
 /* Ficha del estudiante: muestra solo la sección elegida (las demás se ocultan sin perder lo escrito) */
-const FICHA_TABS = ['fsec_personal','fsec_academico','fsec_practica','fsec_anexo','ficha_asistencia'];
+const FICHA_TABS = ['fsec_personal','fsec_academico','fsec_practica','fsec_anexo','ficha_asistencia','fsec_pago'];
 function mostrarSeccionFicha(tab){
   if(!FICHA_TABS.includes(tab)) tab = 'fsec_personal';
   FICHA_TABS.forEach(k=>{ const el=document.getElementById(k); if(el) el.style.display = (k===tab) ? '' : 'none'; });
@@ -5773,7 +5930,7 @@ async function dejarUnoPorEspecialidad(){
     + '\n\nSe ELIMINARÁN ('+borrar.length+'):\n' + borrar.map(s=>'  ✗ '+s.nombre+' — '+(s.carrera||'Sin especialidad')).join('\n')
     + '\n\nEsta acción no se puede deshacer. ¿Continuar?';
   if(!confirm(msg)) return;
-  const paths = borrar.flatMap(s=> Object.values(s.documentos||{}).map(m=>m && m.filePath).filter(Boolean));
+  const paths = borrar.flatMap(s=> Object.values(s.documentos||{}).map(m=>m && m.filePath).filter(Boolean).concat(cedulaPaths(s)));
   if(paths.length){ try{ await sb.storage.from(DOCS_BUCKET).remove(paths); }catch(e){ console.error('cleanup storage error', e); } }
   const ids = new Set(borrar.map(s=>s.id));
   state.data.students = state.data.students.filter(s=>!ids.has(s.id));
@@ -5784,7 +5941,7 @@ async function dejarUnoPorEspecialidad(){
 async function handleDeleteStudent(sid){
   const s = getStudent(sid); if(!s) return;
   if(!confirm('¿Eliminar definitivamente el expediente de '+s.nombre+'?')) return;
-  const paths = Object.values(s.documentos||{}).map(m=>m && m.filePath).filter(Boolean);
+  const paths = Object.values(s.documentos||{}).map(m=>m && m.filePath).filter(Boolean).concat(cedulaPaths(s));
   if(paths.length){ try{ await sb.storage.from(DOCS_BUCKET).remove(paths); }catch(e){ console.error('cleanup storage error', e); } }
   state.data.students = state.data.students.filter(x=>x.id!==sid);
   await saveData();
