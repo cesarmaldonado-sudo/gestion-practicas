@@ -82,6 +82,73 @@ h1,h2,h3,.serif{font-family:'Fraunces',serif;}
 .nav-item svg{width:17px;height:17px;flex-shrink:0;opacity:.85;}
 .nav-item:hover{background:rgba(255,255,255,.06);color:#fff;}
 .nav-item.active{background:rgba(255,176,1,.16);color:#fff;border-left:2px solid var(--gold);}
+.nav-group{margin-bottom:8px;border-radius:10px;background:rgba(255,255,255,.03);}
+.nav-group-head{display:flex;align-items:center;gap:9px;padding:11px 12px;border-radius:10px;cursor:pointer;color:#fff;font-weight:600;font-size:13.5px;}
+.nav-group-head:hover{background:rgba(255,255,255,.06);}
+.nav-group-head .ng-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+.nav-group-head .ng-chev{margin-left:auto;display:flex;transition:transform .15s;opacity:.8;}
+.nav-group.open .nav-group-head .ng-chev{transform:rotate(180deg);}
+.nav-group.current .nav-group-head{background:rgba(255,176,1,.10);}
+.nav-group-body{display:none;padding:0 4px 8px 10px;}
+.nav-group.open .nav-group-body{display:block;}
+.nav-group-body .nav-item{font-size:13px;padding:8px 10px;}
+.pre-banner{display:flex;align-items:center;gap:10px;background:#110833;color:#fff;border-left:4px solid #FFB001;border-radius:10px;padding:10px 16px;margin-bottom:16px;font-size:13px;}
+.pre-banner b{font-family:'Fraunces',serif;font-size:15px;letter-spacing:.06em;color:#FFB001;}
+.horas-bar{height:8px;border-radius:99px;background:#ECEDF1;overflow:hidden;min-width:110px;}
+.horas-bar>div{height:100%;background:linear-gradient(90deg,#FFB001,#2A1670);}
+.horas-input{width:90px;padding:6px 8px;border:1px solid var(--border);border-radius:7px;font:inherit;}
+.alt-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;padding:16px 20px 4px;}
+.alt-kpi{border:1px solid var(--border);border-left:4px solid var(--gold);border-radius:12px;padding:12px 14px;background:#fff;}
+.alt-kpi .n{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--navy);line-height:1.05;}
+.alt-kpi .l{font-size:12px;color:var(--slate);margin-top:3px;}
+.alt-chips{display:flex;flex-wrap:wrap;gap:8px;padding:12px 20px 4px;}
+.alt-chip{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--paper);border-radius:99px;padding:7px 14px;font-size:12.5px;color:var(--navy);}
+.alt-chip svg{color:var(--gold);flex-shrink:0;}
+.alt-chip b{font-weight:600;}
+.alt-contactos{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;padding:14px 20px;}
+.alt-contacto{border:1px solid var(--border);border-radius:12px;padding:12px 14px;background:#fff;display:flex;flex-direction:column;gap:8px;}
+.alt-contacto .rol{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2A1670;}
+.alt-contacto .nom{font-weight:700;color:var(--navy);font-size:14px;line-height:1.25;}
+.alt-contacto .car{font-size:12px;color:var(--slate);}
+.alt-contacto .acc{display:flex;gap:6px;flex-wrap:wrap;}
+.alt-contacto .acc a{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:5px 10px;border-radius:8px;border:1px solid var(--border);color:var(--navy);text-decoration:none;background:var(--paper);}
+.alt-contacto .acc a:hover{border-color:var(--navy);}
+.alt-acciones{display:flex;flex-wrap:wrap;gap:10px;padding:4px 20px 18px;}
+.bit-hoja{background:#fff;border:1px solid var(--border);box-shadow:0 2px 10px rgba(17,8,51,.08);border-radius:6px;max-width:820px;margin:14px auto 0;padding:34px 44px 22px;color:#111;font-family:Arial,Helvetica,sans-serif;}
+.bit-membrete{display:flex;gap:14px;align-items:center;margin-bottom:16px;}
+.bit-membrete img{width:58px;height:58px;object-fit:contain;}
+.bit-liceo{font-weight:700;font-size:13px;}
+.bit-sub{font-size:11.5px;color:#333;}
+.bit-titulo{text-align:center;font-weight:700;font-size:14px;margin:6px 0 4px;}
+.bit-alumno{text-align:center;font-size:12.5px;margin-bottom:10px;}
+.bit-hoja table{width:100%;border-collapse:collapse;margin-bottom:8px;font-size:11.5px;}
+.bit-hoja th,.bit-hoja td{border:1px solid #222;padding:5px 7px;text-align:left;font-weight:400;text-transform:none;letter-spacing:0;color:#111;background:#fff;}
+.bit-hoja th{background:#d9d9d9;font-weight:700;}
+.bit-horas th{width:18%;background:#ececec;}
+.bit-horas input{border:none;width:100%;font:inherit;background:transparent;}
+.bit-caja{border:1px solid #222;margin-bottom:8px;}
+.bit-caja .bit-tit{background:#d9d9d9;font-weight:700;font-size:11.5px;padding:5px 7px;border-bottom:1px solid #222;}
+.bit-caja textarea{display:block;width:100%;border:none;resize:vertical;padding:7px;font:12.5px Arial,Helvetica,sans-serif;background:#fff;min-height:44px;box-sizing:border-box;}
+.bit-caja textarea:focus,.bit-horas input:focus{outline:2px solid var(--gold);}
+.bit-auto th:not(:first-child){text-align:center;width:12.5%;}
+.bit-auto td.c{text-align:center;padding:0;}
+.bit-auto td.c label{display:flex;align-items:center;justify-content:center;min-height:26px;cursor:pointer;}
+.bit-auto td.c input{width:16px;height:16px;accent-color:#110833;margin:0;}
+.bit-auto td.c:hover{background:#fff6dc;}
+.bit-firmas{display:flex;justify-content:space-around;gap:30px;margin-top:38px;font-size:12px;text-align:center;}
+.bit-firmas div{flex:1;max-width:260px;}
+.bit-firmas span{display:block;border-top:1px solid #111;margin-bottom:5px;}
+.bit-pie{text-align:center;font-size:10px;font-style:italic;color:#444;margin-top:26px;}
+.carta-hoja{font-size:12.5px;line-height:1.45;}
+.carta-hoja p{margin:0 0 8px;}
+.carta-hoja ul{margin:0 0 8px 18px;padding:0;}
+.carta-hoja ul li{margin-bottom:4px;text-align:justify;}
+.carta-hoja ol{margin:4px 0 8px 24px;padding:0;}
+.carta-hoja ol li{margin-bottom:2px;}
+.carta-hoja input.carta-linea{border:none!important;border-bottom:1px solid #111!important;border-radius:0!important;width:62%;font:inherit;font-weight:700;padding:1px 6px!important;min-height:0!important;height:auto!important;background:#fffbea!important;text-transform:uppercase;box-shadow:none!important;}
+.carta-linea:focus{outline:2px solid var(--gold);}
+.carta-firmas{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:46px;text-align:center;font-size:11.5px;}
+.carta-firmas span{display:block;border-top:1px solid #111;margin-bottom:5px;}
 .nav-foot{padding:14px 20px 20px;font-size:10.5px;color:#7583A3;border-top:1px solid rgba(255,255,255,.08);}
 
 /* ---------- Main ---------- */
@@ -1738,6 +1805,104 @@ const NAV = [
   {id:'reportes', label:'Reporte y exportación', icon:'download'},
   {id:'configuracion', label:'Configuración', icon:'gear'},
 ];
+const NAV_PRE_EXTRA = {id:'horasPre', label:'Cantidad de horas', icon:'clock'};
+const NAV_ALTER = [{id:'alternancia', label:'Estudiantes y departamentos', icon:'building'},{id:'altPlan', label:'Plan de alternancia', icon:'star'},{id:'altDocs', label:'Documentación', icon:'file'}];
+const MAX_HORAS_PRE = 180;
+const MODO_LABEL = {profesional:'Práctica Profesional 2026', pre:'Pre-práctica', alter:'Plan de Alternancia'};
+function esPre(s){ return !!s && s.modalidad==='pre'; }
+function rutKey(r){ return String(r||'').toLowerCase().replace(/[^0-9k]/g,''); }
+/* Busca el registro de pre-práctica del mismo estudiante (por RUT; si no hay RUT, por nombre) */
+function prePracticaDe(s){
+  if(!s || esPre(s)) return null;
+  const all = (state.data && state.data.students) || [];
+  const rk = rutKey(s.rut), nk = normalizeTxt(s.nombre);
+  return all.find(x=> esPre(x) && ((rk && rutKey(x.rut)===rk) || (!rk && nk && normalizeTxt(x.nombre)===nk))) || null;
+}
+function practicaProfesionalDe(p){
+  const all = (state.data && state.data.students) || [];
+  const rk = rutKey(p.rut), nk = normalizeTxt(p.nombre);
+  return all.find(x=> !esPre(x) && ((rk && rutKey(x.rut)===rk) || (!rk && nk && normalizeTxt(x.nombre)===nk))) || null;
+}
+function horasPreDe(p){ return Math.min(MAX_HORAS_PRE, Math.max(0, Number(p && p.horasRealizadas)||0)); }
+/* Límite de 180 h en pre-práctica y descuento automático en la práctica profesional 2026 */
+const PRE_CAMPOS_COPIA = ['numeroMatricula','nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','comuna','ciudad','institucion','carrera','curso','jornada','profesorResponsable','jefePractica'];
+/* Cada estudiante de la Práctica Profesional 2026 tiene también su registro de pre-práctica (se crea una sola vez) */
+function asegurarRegistrosPre(){
+  if(!state.data || !Array.isArray(state.data.students)) return false;
+  let creados = 0;
+  state.data.students.slice().forEach(s=>{
+    if(esPre(s) || s.preCreado) return;
+    if(!prePracticaDe(s)){
+      const p = blankStudent();
+      p.id = 'pre_'+s.id;   // id fijo: si dos sesiones lo crean a la vez, no se duplica
+      PRE_CAMPOS_COPIA.forEach(k=>{ if(s[k]!=null) p[k] = s[k]; });
+      p.modalidad = 'pre'; p.tipoPractica = 'Pre-práctica';
+      p.horasRequeridas = MAX_HORAS_PRE; p.horasRealizadas = 0; p.estado = 'Pendiente';
+      state.data.students.push(p); creados++;
+    }
+    s.preCreado = true;
+  });
+  return creados>0;
+}
+/* Quita registros de pre-práctica repetidos del mismo estudiante (mismo RUT, o mismo nombre y especialidad si no hay RUT).
+   Se conserva el que tiene más información (alternancia, evaluación, archivos, horas, datos). */
+function puntajeRegistro(s){
+  let p = 0;
+  if(s.alternancia) p+=1000; if(s.planAlternancia) p+=300; if(s.altFicha) p+=200;
+  if(Number(s.horasRealizadas)>0) p+=100; if(s.evaluacionEmpresa||s.evaluacionDocente) p+=80;
+  if(s.planPractica && Object.keys(s.planPractica.tareas||{}).length) p+=60;
+  Object.values(s.documentos||{}).forEach(d=>{ if(d && (d.filePath||d.status==='completo')) p+=10; });
+  if(s.cedula) p+=20;
+  Object.keys(s).forEach(k=>{ const v=s[k]; if(typeof v==='string' && v.trim()) p+=1; });
+  return p;
+}
+function depurarPreDuplicados(){
+  if(!state.data || !Array.isArray(state.data.students)) return 0;
+  const grupos = {};
+  state.data.students.forEach(s=>{
+    if(!esPre(s)) return;
+    const k = rutKey(s.rut) || ('n:'+normalizeTxt(s.nombre)+'|'+normalizeTxt(s.carrera));
+    if(k==='n:|') return;
+    (grupos[k]=grupos[k]||[]).push(s);
+  });
+  const quitar = new Set();
+  Object.values(grupos).forEach(g=>{
+    if(g.length<2) return;
+    g.sort((a,b)=> puntajeRegistro(b)-puntajeRegistro(a));
+    g.slice(1).forEach(x=>quitar.add(x.id));
+  });
+  if(quitar.size){
+    state.data.students = state.data.students.filter(s=>!quitar.has(s.id));
+    if(quitar.has(state.fichaId)) state.fichaId=null;
+  }
+  return quitar.size;
+}
+function sincronizarHorasPre(){
+  const all = (state.data && state.data.students) || [];
+  all.forEach(s=>{
+    if(esPre(s)){
+      if(!(Number(s.horasRequeridas)>0) || Number(s.horasRequeridas)>MAX_HORAS_PRE) s.horasRequeridas = MAX_HORAS_PRE;
+      if(Number(s.horasRealizadas)>MAX_HORAS_PRE) s.horasRealizadas = MAX_HORAS_PRE;
+      if(Number(s.horasRealizadas)<0) s.horasRealizadas = 0;
+    }
+  });
+  all.forEach(s=>{
+    if(esPre(s)) return;
+    const pre = prePracticaDe(s);
+    const desc = pre ? horasPreDe(pre) : 0;
+    const prevDesc = Number(s.horasPrePractica)||0;
+    if(s.horasRequeridasBase==null){
+      if(!desc && !prevDesc) return;
+      s.horasRequeridasBase = (Number(s.horasRequeridas)||0) + prevDesc;
+    } else if(s._horasReqCalc!=null && Number(s.horasRequeridas)!==Number(s._horasReqCalc)){
+      // Se editaron a mano las horas requeridas: se respeta el valor y se mantiene el descuento
+      s.horasRequeridasBase = (Number(s.horasRequeridas)||0) + prevDesc;
+    }
+    s.horasPrePractica = desc;
+    s.horasRequeridas = Math.max(0, Number(s.horasRequeridasBase) - desc);
+    s._horasReqCalc = s.horasRequeridas;
+  });
+}
 const ICONS = {
   home:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5"/>',
   user:'<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c1.4-4 4.2-6 7.5-6s6.1 2 7.5 6"/>',
@@ -1772,6 +1937,10 @@ const ICONS = {
   clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/>',
   eye:'<path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.6"/>',
   play:'<circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5z"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  phone:'<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/>',
+  mapPin:'<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  shirt:'<path d="M8 3l4 3 4-3 5 4-3 4-2-1v11H8V10l-2 1-3-4 5-4z"/>',
   alertTriangle:'<path d="M12 3.5 22 20.5H2L12 3.5z"/><path d="M12 10v4"/><path d="M12 17h.01"/>',
 };
 function icon(name,size=17){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" width="${size}" height="${size}">${ICONS[name]||''}</svg>`;}
@@ -1782,6 +1951,8 @@ function icon(name,size=17){return `<svg viewBox="0 0 24 24" fill="none" stroke=
 let state = {
   data: null,
   view: 'dashboard',
+  modo: (function(){ try{ return localStorage.getItem('sgp_modo')==='pre'?'pre':'profesional'; }catch(e){ return 'profesional'; } })(),
+  navOpen: {},
   selectedId: null,
   detailTab: 'individualizacion',
   search: '',
@@ -2107,6 +2278,8 @@ async function loadData(){
   if(!state.data.config.directorFirmaV2){ delete state.data.config.directorFirmaBase64; state.data.config.directorFirmaV2 = true; try{ await saveData(); }catch(e){} }
   /* Actualiza el teléfono antiguo guardado en la nube al número vigente del liceo */
   if(!state.data.config.telefono || state.data.config.telefono==='61-2414125'){ state.data.config.telefono='45-2925460'; try{ await saveData(); }catch(e){} }
+  if(cargarAlternanciaMuni()){ try{ await saveData(); }catch(e){} }
+  if(depurarPreDuplicados()){ try{ await saveData(); }catch(e){} }
   state.loaded = true;
   startSyncPolling();
   return true;
@@ -2222,7 +2395,7 @@ function toast(msg){
 /* ============================================================
    HELPERS
    ============================================================ */
-function students(){ return state.data.students; }
+function students(){ return state.data.students.filter(s=> state.modo==='pre' ? esPre(s) : !esPre(s)); }
 function config(){ return state.data.config; }
 function normalizeTxt(s){ return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
 function logoForCarrera(cfg, carrera){
@@ -2347,23 +2520,33 @@ function csvEscape(v){ v=String(v??''); return /[",\n]/.test(v)? '"'+v.replace(/
    RENDER: SHELL
    ============================================================ */
 function renderShell(){
-  document.getElementById('navList').innerHTML = NAV.map(n=>`
-    <div class="nav-item ${state.view===n.id?'active':''}" data-action="nav" data-view="${n.id}">
-      ${icon(n.icon)}<span>${n.label}</span>
-    </div>`).join('') + `
-    <div class="nav-item" data-action="open-video" title="Video de presentación del Sistema de Gestión de Prácticas">
-      ${icon('play')}<span>Video del sistema</span>
+  const curGrupo = (state.modo==='pre' && esVistaAlter(state.view)) ? 'alter' : state.modo;
+  const grupo = (g, color, items)=>{
+    const modo = g==='alter' ? 'pre' : g;
+    const open = state.navOpen[g]!=null ? state.navOpen[g] : curGrupo===g;
+    return `<div class="nav-group ${open?'open':''} ${curGrupo===g?'current':''}">
+      <div class="nav-group-head" data-action="nav-toggle" data-modo="${g}">
+        <span class="ng-dot" style="background:${color}"></span><span>${MODO_LABEL[g]}</span><span class="ng-chev">${icon('chevronDown',15)}</span>
+      </div>
+      <div class="nav-group-body">
+        ${items.map(n=>`<div class="nav-item ${curGrupo===g && state.view===n.id?'active':''}" data-action="nav" data-modo="${modo}" data-view="${n.id}">
+          ${icon(n.icon)}<span>${n.label}</span></div>`).join('')}
+        ${g==='profesional' ? `<div class="nav-item" data-action="open-video" title="Video de presentación del Sistema de Gestión de Prácticas">${icon('play')}<span>Video del sistema</span></div>` : ''}
+      </div>
     </div>`;
+  };
+  const navPre = NAV.slice(0,6).concat([NAV_PRE_EXTRA]).concat(NAV.slice(6));
+  document.getElementById('navList').innerHTML = grupo('profesional','#FFB001',NAV) + grupo('pre','#5BC0EB',navPre) + grupo('alter','#7BD389',NAV_ALTER);
   document.getElementById('navFootInst').textContent = config().nombreInstitucion || '—';
 
-  const titles = {dashboard:'Panel General', estudiantes:'Estudiantes', empresas:'Empresas', documentacion:'Proceso de Práctica', fichas:'Ficha del estudiante', inicio:'Documentación inicial', cierre:'Cierre de práctica', reportes:'Reporte y exportación', evaluaciones:'Plan de práctica', seguimiento:'Seguimiento', expedientes:'Expedientes', configuracion:'Configuración', detalle:'Expediente del estudiante'};
+  const titles = {horasPre:'Cantidad de horas', alternancia:'Plan de alternancia · Municipalidad', altPlan:'Plan de alternancia · Evaluación', altDocs:'Documentación · Alternancia', dashboard:'Panel General', estudiantes:'Estudiantes', empresas:'Empresas', documentacion:'Proceso de Práctica', fichas:'Ficha del estudiante', inicio:'Documentación inicial', cierre:'Cierre de práctica', reportes:'Reporte y exportación', evaluaciones:'Plan de práctica', seguimiento:'Seguimiento', expedientes:'Expedientes', configuracion:'Configuración', detalle:'Expediente del estudiante'};
   document.getElementById('topbar').innerHTML = `
-    <h1>${titles[state.view]}</h1>
+    <h1>${state.modo==='pre'?'<span style="color:#2A1670;font-size:12px;display:block;letter-spacing:.08em;text-transform:uppercase">'+(esVistaAlter(state.view)?'Plan de alternancia':'Pre-práctica')+'</span>':''}${titles[state.view]}</h1>
     <div class="search-wrap">${icon('search',15)}<input id="globalSearch" type="text" placeholder="Buscar estudiante, RUT, empresa o carrera..." value="${state.search.replace(/"/g,'&quot;')}"/></div>
     <button class="btn-secondary" data-action="download-import-template">${icon('download',14)} Plantilla Excel</button>
     <button class="btn-secondary" data-action="trigger-import">${icon('upload',14)} Importar Excel</button>
     <input type="file" id="importStudentsInput" accept=".xlsx,.xls" style="display:none" />
-    <button class="btn-primary gold" data-action="new-student">${icon('plus',15)} Nueva práctica</button>
+    <button class="btn-primary gold" data-action="new-student">${icon('plus',15)} ${state.modo==='pre'?'Nueva pre-práctica':'Nueva práctica'}</button>
     <div class="user-badge">
       <span class="ub-email">${(currentUser&&currentUser.email)||''}</span>
       <button data-action="logout">Cerrar sesión</button>
@@ -2409,7 +2592,7 @@ function renderDashboard(){
     ${statCardClick(promEval,'Promedio evaluación docente','evaluacion')}
   </div>
   <div class="hint" style="margin:-10px 0 14px">Haz clic en cualquier indicador para ver el detalle.</div>
-  <div class="panel dash-video-panel" style="margin-bottom:16px">
+  ${state.modo==='pre' ? '' : `<div class="panel dash-video-panel" style="margin-bottom:16px">
     <div class="panel-head">
       <h2 style="display:flex;align-items:center;gap:9px"><span class="panel-head-icon">${icon('star',18)}</span>Conoce el Sistema de Gestión de Prácticas</h2>
       <span class="hint">Video de presentación · Liceo Bicentenario Politécnico Luis Cruz Martínez</span>
@@ -2421,7 +2604,7 @@ function renderDashboard(){
         </video>
       </div>
     </div>
-  </div>
+  </div>`}
   <details id="acc-graficos" class="dash-accordion" data-open-key="graficos" ${o.graficos?'open':''}>
     <summary>
       <h2>${icon('trendingUp',17)} Gráficos generales</h2>
@@ -4617,9 +4800,18 @@ function normalizarInstitucion(){
 }
 function renderView(){
   normalizarInstitucion();
+  { const nuevos = asegurarRegistrosPre(); const dup = depurarPreDuplicados(); if(nuevos || dup) setTimeout(()=>saveData(), 0); }
+  sincronizarHorasPre();
   renderShell();
   const map = {dashboard:renderDashboard, estudiantes:renderEstudiantes, documentacion:renderReportes, reportes:renderReportes, fichas:renderFichas, inicio:renderInicioPractica, cierre:renderCierrePractica, evaluaciones:renderEvaluaciones, seguimiento:renderSeguimiento, configuracion:renderConfiguracion, detalle:renderDetalle};
+  map.horasPre = renderHorasPre; map.alternancia = renderAlternancia; map.altPlan = renderAltPlan; map.altDocs = renderAltDocs;
+  if((state.view==='horasPre'||esVistaAlter(state.view)) && state.modo!=='pre') state.view='dashboard';
   (map[state.view]||renderDashboard)();
+  const vr = document.getElementById('view-root');
+  if(vr && state.modo==='pre' && !vr.querySelector('.pre-banner')){
+    if(esVistaAlter(state.view)) vr.insertAdjacentHTML('afterbegin', `<div class="pre-banner" style="border-left-color:#7BD389">${icon('building',18)}<div><b>PLAN DE ALTERNANCIA</b> · Municipalidad de Puerto Natales · 4° Medio C Administración. Sus ${fmtH(ALTERNANCIA_MUNI.horas)} h se descuentan de las ${HORAS_PRACTICA_ADM} h de la Práctica Profesional 2026.</div></div>`);
+    else vr.insertAdjacentHTML('afterbegin', `<div class="pre-banner">${icon('alertTriangle',18)}<div><b>PRE-PRÁCTICA</b> · Estás trabajando en la pre-práctica (máximo ${MAX_HORAS_PRE} horas). Todos los documentos que generes aquí llevarán el encabezado «PRE-PRÁCTICA».</div></div>`);
+  }
   const gs = document.getElementById('globalSearch');
   if(gs){ gs.addEventListener('input', e=>{ state.search = e.target.value; if(state.view!=='estudiantes'){ state.view='estudiantes'; } renderView(); const el=document.getElementById('globalSearch'); if(el){ el.focus(); el.setSelectionRange(el.value.length,el.value.length);} }); }
 }
@@ -4651,6 +4843,837 @@ function openNewStudentModal(){
       </div>
     </div>
   </div>`;
+}
+
+/* ============================================================
+   PLAN DE ALTERNANCIA · MUNICIPALIDAD DE PUERTO NATALES (Administración, 4° Medio C)
+   Las 22,5 h cuentan como pre-práctica y se descuentan de las 360 h de la Práctica Profesional 2026.
+   ============================================================ */
+const HORAS_PRACTICA_ADM = 360;
+const ALTERNANCIA_MUNI = {
+  nombre:'Plan de alternancia · Municipalidad de Puerto Natales',
+  carrera:'Administración / Recursos Humanos', curso:'4° Medio C',
+  empresa:'Municipalidad de Puerto Natales', rutEmpresa:'69.250.100-4', direccionEmpresa:'Eberhard N° 457, Puerto Natales',
+  representanteLegal:'Ana Mayorga Bahamonde', rutRepresentante:'8.724.428-8', sectorEconomico:'Administración pública local',
+  contraparte:'Katherine Cárcamo Torres', cargoContraparte:'Directora de Recursos Humanos', correoContraparte:'directora.rrhh@muninatales.cl', telefonoContraparte:'61 220 9564',
+  tutor:'César Gonzalo Maldonado Riquelme', correoTutor:'cesar.maldonado@slepm.cl', telefonoTutor:'+56 9 4354 2010',
+  coordinadora:'Ivonne Haro Barría', correoCoordinadora:'ivonne.haro@slepm.cl', telefonoCoordinadora:'+56 9 7614 3001',
+  fechaInicio:'2026-11-16', fechaTermino:'2026-11-18', horas:22.5, jornada:'Lunes 16 a miércoles 18 de noviembre, 09:00 a 17:30 (7,5 h diarias, 1 h de colación)',
+  uniforme:'Traje negro, camisa blanca, corbata azul y zapatos negros',
+  documentos:[
+    {archivo:'Documentos_alternancia_Administracion.docx', titulo:'Documentos de alternancia', detalle:'Oficio al SLEP, listado de estudiantes, cartas de autorización y compromiso, convenio con la Municipalidad (con maestros guía), fichas de asistencia y bitácoras.'},
+    {archivo:'Proyecto_alternancia_Administracion_Municipalidad.docx', titulo:'Proyecto de alternancia', detalle:'Implementación de la formación por alternancia: fundamentación, actividades y tareas por departamento, contrapartes, análisis curricular y plan de aprendizaje.'},
+  ],
+  /* departamento, maestro guía, RUT maestro guía, labores */
+  unidades:{
+    'Departamento de Operaciones':['Ana Montiel','11.692.669-5','Labores operativas y órdenes de trabajo'],
+    'Departamento de Bienestar':['Sandra Ojeda P.','10.300.501-9','Actualización de base de datos'],
+    'Departamento de Recursos Humanos':['Katherine Cárcamo T.','14.228.535-5','Ingreso de datos a la plataforma SIAPER'],
+    'Alcaldía':['Luisa Cortés P.','14.467.684-K','Labores administrativas, recepción y despacho de documentación, audiencias'],
+    'Señalética':['Sergio Ramírez','11.504.658-6','Labores operativas y órdenes de trabajo'],
+    'Juzgado de Policía Local':['Paula Álvarez Calisto','8.702.226-9','Sistematización de archivos y atención de público'],
+    'Atención al Vecino':['Sara Hernández H.','','Atención de público y derivación, labores administrativas'],
+    'Fomento Productivo':['Claudia Sánchez C.','12.936.479-3','Labores administrativas, atención de público, actualización de bases de datos'],
+    'Organizaciones Comunitarias':['Juana Mansilla','16.439.973-7','Actualización de bases de datos, atención de público, apoyo en organización de eventos'],
+    'DIDECO':['Viviana Oyarzo','8.393.037-3','Programas y sistematización de información'],
+  },
+  estudiantes:[
+    ['Rocío Constanza Alvarado Vivanco','22.698.855-6','Fomento Productivo'],
+    ['Antonia Nickol Andrade Cabezas','23.118.530-5','Juzgado de Policía Local'],
+    ['Juan Sebastián Aponza Ferrin','27.886.003-5','DIDECO'],
+    ['Matías Andrés Chacón Levicoy','22.810.238-5','Organizaciones Comunitarias'],
+    ['María José Chiguay Gallardo','22.189.003-5','Señalética'],
+    ['Martín Ignacio Coñuecar Gómez','22.800.269-0','Alcaldía'],
+    ['Génesis González Quintero','28.096.806-4','Departamento de Recursos Humanos'],
+    ['Yanara Sofía Paillacar Tarumán','22.954.424-1','Departamento de Recursos Humanos'],
+    ['Salomé Palma Giraldo','28.121.536-1','Departamento de Bienestar'],
+    ['Julián Andrés Pedroza Rodas','28.121.523-K','Departamento de Operaciones'],
+    ['Joschnaifer Rafael Riera Carvajal','27.901.647-5','Atención al Vecino'],
+    ['Yeliza Alejandra Santana Bórquez','22.917.545-9','Atención al Vecino'],
+  ],
+};
+/* Plan de práctica de la alternancia: módulos que intervienen, con las horas en la Municipalidad
+   (según el análisis curricular del proyecto). 4,5 + 7,5 + 6 + 4,5 = 22,5 h */
+const PLAN_ALTERNANCIA = [
+  {modulo:'Legislación laboral', oa:'OA 1 · Realizar llenado y tramitación de contratos de trabajo, remuneraciones y finiquitos, de acuerdo a la legislación vigente y a las NIC.', criterios:[
+    {ae:'AE 1. Elabora y formaliza los distintos tipos de contratos de trabajo.', ce:'1.3 Tramita el contrato de trabajo al interior de la organización, de acuerdo a los procedimientos establecidos.', tarea:'Reconoce con su maestro guía el flujo de tramitación de un nombramiento o contrato (planta, contrata, honorarios, Código del Trabajo), sin registrar datos personales.', og:'A-C-F', h:1.5},
+    {ae:'AE 2. Confecciona y tramita las remuneraciones.', ce:'2.1 Organiza los antecedentes para la elaboración de una liquidación de sueldos.', tarea:'Identifica los antecedentes que usa la unidad para remuneraciones (asistencia, horas extraordinarias, permisos, licencias).', og:'A-B-C-F', h:1.5},
+    {ae:'AE 2. Confecciona y tramita las remuneraciones.', ce:'2.3 Gestiona la emisión y pago de remuneraciones conforme a los procedimientos.', tarea:'Describe el proceso y los plazos de emisión y pago de remuneraciones municipales y la información que se reporta (SIAPER).', og:'A-C-E-F', h:1.5},
+  ]},
+  {modulo:'Desarrollo y bienestar de personal', oa:'OA 3 · Ingresar, archivar y presentar información sobre bienestar y desarrollo de personas para la toma de decisiones de las jefaturas.', criterios:[
+    {ae:'AE 1. Ingresa en el sistema información fidedigna de cada trabajador.', ce:'1.2 Registra la información en los sistemas de bienestar, capacitación y/o evaluación de desempeño.', tarea:'Ingresa y actualiza datos en bases de datos o plataformas de la unidad (SIAPER, base de datos de bienestar o de usuarios), según instrucción del maestro guía.', og:'A-B-C-H', h:1.5},
+    {ae:'AE 2. Archiva documentación que respalda la información registrada.', ce:'2.1 Selecciona documentación que respalde la información registrada.', tarea:'Selecciona la documentación de respaldo de los registros realizados (solicitudes, formularios, certificados).', og:'B-C-H', h:1.5},
+    {ae:'AE 2. Archiva documentación que respalda la información registrada.', ce:'2.2 Ordena y organiza documentos según el modelo de clasificación definido.', tarea:'Ordena, sistematiza y archiva documentos y expedientes según el sistema de clasificación de la unidad.', og:'B-C-H', h:1.5},
+    {ae:'AE 3. Tramita formularios y documentos para bienestar y desarrollo.', ce:'3.1 Maneja información y normativa sobre beneficios para los trabajadores.', tarea:'Reconoce los beneficios y programas que administra la unidad (bienestar del personal, programas sociales o de fomento).', og:'A-B', h:1.5},
+    {ae:'AE 3. Tramita formularios y documentos para bienestar y desarrollo.', ce:'3.2 Confecciona formularios y documentos para la obtención de beneficios.', tarea:'Completa formularios, órdenes de trabajo o fichas de atención en forma manual o digital.', og:'C-H', h:1.5},
+  ]},
+  {modulo:'Dotación de personal', oa:'OA 4 · Ejecutar tareas sistemáticas de descripción de cargos, de reclutamiento y de selección de personal.', criterios:[
+    {ae:'AE 1. Efectúa tareas de apoyo al proceso de descripción de cargos.', ce:'1.1 Actualiza descripciones de cargo.', tarea:'Entrevista a un funcionario de su departamento y levanta la descripción de su cargo (funciones, requisitos y competencias).', og:'A-C', h:2},
+    {ae:'AE 1. Efectúa tareas de apoyo al proceso de descripción de cargos.', ce:'1.2 Entrega informes para los ajustes de descripción de cargos.', tarea:'Entrega al maestro guía un informe breve con la descripción de cargo levantada y sugerencias de ajuste.', og:'A-C-H', h:1.5},
+    {ae:'AE 1. Efectúa tareas de apoyo al proceso de descripción de cargos.', ce:'1.3 Comunica a través de documentos información de la descripción de cargos.', tarea:'Redacta un documento simple (memo o correo) que comunica la información del cargo a la jefatura.', og:'A-C-H', h:1},
+    {ae:'AE 2. Realiza tareas para apoyar el proceso de reclutamiento.', ce:'2.1 Recopila y registra necesidades y vacantes de personal.', tarea:'Registra las necesidades de personal o de apoyo que informa la jefatura del departamento.', og:'A-C', h:1.5},
+  ]},
+  {modulo:'Emprendimiento y empleabilidad (módulo común)', transversal:true, oa:'Objetivos de Aprendizaje Genéricos.', criterios:[
+    {ae:'AE 2. Maneja la legislación laboral y previsional chilena.', ce:'2.1 Selecciona información sobre derechos laborales y previsionales.', tarea:'Compara los derechos y deberes del funcionario municipal (Ley N° 18.883) con los del Código del Trabajo.', og:'B-F-H', h:1.5},
+    {ae:'AE 3. Prepara su incorporación al mundo del trabajo.', ce:'3.1 Sistematiza información de intermediación laboral.', tarea:'Recopila información sobre el empleo público y sus vías de postulación (concursos, portal Empleos Públicos).', og:'B-G-H', h:1.5},
+    {ae:'AE 4. Selecciona alternativas de capacitación y educación superior.', ce:'4.1 Evalúa las necesidades futuras del mundo laboral en su especialidad.', tarea:'Reflexiona en su bitácora sobre las necesidades futuras del trabajo administrativo municipal y su trayectoria formativa.', og:'B-G-H', h:1.5},
+  ]},
+];
+function fmtH(n){ return String(Math.round(n*10)/10).replace('.',','); }
+function horasModulo(m){ return m.criterios.reduce((a,c)=>a+c.h,0); }
+function esVistaAlter(v){ return v==='alternancia'||v==='altPlan'||v==='altDocs'; }
+/* Carga una sola vez a los 12 estudiantes: registro de pre-práctica (22,5 h) y descuento sobre 360 h de su práctica profesional */
+function cargarAlternanciaMuni(){
+  if(!state.data || !state.data.config || state.data.config.alternanciaMuni2026V2) return false;
+  const A = ALTERNANCIA_MUNI;
+  A.estudiantes.forEach(([nombre,rut,unidad])=>{
+    const U = A.unidades[unidad] || ['','',''];
+    let prof = state.data.students.find(x=> !esPre(x) && rutKey(x.rut)===rutKey(rut));
+    let p = state.data.students.find(x=> esPre(x) && rutKey(x.rut)===rutKey(rut));
+    if(!p){
+      p = blankStudent();
+      p.id = 'pre_alt_'+rutKey(rut);
+      if(prof){ PRE_CAMPOS_COPIA.forEach(k=>{ if(prof[k]!=null && prof[k]!=='') p[k]=prof[k]; }); }
+      p.modalidad = 'pre';
+      state.data.students.push(p);
+    }
+    Object.assign(p, {
+      nombre: p.nombre || nombre, rut: p.rut || rut, carrera:A.carrera, curso:A.curso, institucion:NOMBRE_LICEO,
+      tipoPractica:'Plan de alternancia · Municipalidad', alternancia:'municipalidad2026',
+      empresa:A.empresa, rutEmpresa:A.rutEmpresa, direccionEmpresa:A.direccionEmpresa, representanteLegal:A.representanteLegal, rutRepresentante:A.rutRepresentante, sectorEconomico:A.sectorEconomico,
+      area:unidad, cargo:'Estudiante en alternancia', funciones:U[2],
+      supervisor:U[0], ciSupervisor:U[1], cargoSupervisor:'Maestro guía · '+unidad, correoSupervisor:'', telefonoSupervisor:A.telefonoContraparte,
+      profesorResponsable:A.tutor, jefePractica:A.tutor, profSupNombre:A.tutor, profSupCargo:'Jefe de especialidad · Profesor tutor', profSupTelefono:A.telefonoTutor, profSupCorreo:A.correoTutor,
+      fechaInicio:A.fechaInicio, fechaTermino:A.fechaTermino, horasRequeridas:A.horas, horasCronologicas:A.horas, horasRealizadas:A.horas,
+      jornadaHorario:A.jornada, estado:'En ejecución',
+    });
+    if(!prof){
+      prof = blankStudent();
+      prof.id = 'prof_alt_'+rutKey(rut);
+      ['nombre','rut','carrera','curso','institucion'].forEach(k=> prof[k]=p[k]);
+      Object.assign(prof, {tipoPractica:'Práctica Profesional', profesorResponsable:A.tutor, jefePractica:A.tutor, estado:'Pendiente'});
+      state.data.students.push(prof);
+    }
+    prof.preCreado = true;
+    prof.horasRequeridasBase = HORAS_PRACTICA_ADM; prof.horasPrePractica = 0; delete prof._horasReqCalc;
+  });
+  state.data.config.alternanciaMuni2026V2 = true;
+  sincronizarHorasPre();
+  return true;
+}
+function alumnosAlternancia(){ return ((state.data&&state.data.students)||[]).filter(s=> esPre(s) && s.alternancia==='municipalidad2026'); }
+const ALT_NIVELES = [[1,'Por mejorar'],[2,'Regular'],[3,'Bueno'],[4,'Excelente']];
+/* Sección replegable: recuerda si quedó abierta o cerrada */
+function altAcc(key, titulo, meta, cuerpo, abierta){
+  state.altOpen = state.altOpen || {};
+  const open = state.altOpen[key]!==undefined ? state.altOpen[key] : abierta!==false;
+  return `<details class="dash-accordion" data-acc="${key}" ${open?'open':''}>
+    <summary><h2>${titulo}</h2><span class="acc-meta">${meta?`<span class="hint" style="margin:0">${meta}</span>`:''}<span class="acc-chevron">${icon('chevronDown',16)}</span></span></summary>
+    <div style="border-top:1px solid var(--border)">${cuerpo}</div></details>`;
+}
+/* Evaluación del plan de alternancia: misma escala y conversión a nota que los otros planes (4→7,0 · 1→1,0).
+   Módulos de la mención = competencias técnicas; Emprendimiento y empleabilidad = empleabilidad. */
+function altClave(mi,ci){ return mi+'_'+ci; }
+/* Competencias de empleabilidad: las mismas 9 afirmaciones del plan de práctica de Administración */
+function altEmpleabilidad(){ const e = ESPECIALIDADES['Administración / Recursos Humanos']; return (e && e.empleabilidad) || []; }
+/* Áreas de competencia del plan de alternancia (mismo cálculo que el plan de práctica por competencias).
+   Los 3 módulos de la mención reparten el 80 % según sus horas; A4 (20 %) = módulo común 10 % + empleabilidad 10 %. */
+function altAreas(){
+  const ment = PLAN_ALTERNANCIA.filter(m=>!m.transversal), hT = ment.reduce((a,m)=>a+horasModulo(m),0)||1;
+  const ar = [];
+  PLAN_ALTERNANCIA.forEach((m,mi)=>{ if(!m.transversal) ar.push({id:'A'+(ar.length+1), nombre:m.modulo, partes:[{mi, nombre:'Mód. '+m.modulo, peso:r1(80*horasModulo(m)/hT)}]}); });
+  const ti = PLAN_ALTERNANCIA.findIndex(m=>m.transversal);
+  ar.push({id:'A'+(ar.length+1), nombre:'Emprendimiento, empleabilidad y competencias transversales', partes:[{mi:ti, nombre:'Mód. Emprendimiento y empleabilidad', peso:10},{emp:true, nombre:'Empleabilidad', peso:10}]});
+  return ar;
+}
+function altClaveEmp(i){ return 'emp_'+i; }
+function calcNotaAlternancia(scores){
+  scores = scores||{};
+  const val = k=> scores[k]===undefined ? '' : scores[k];
+  const areas = altAreas().map(a=>{
+    const partes = a.partes.map(p=>{
+      const vals = p.emp ? altEmpleabilidad().map((_,i)=>val(altClaveEmp(i))) : PLAN_ALTERNANCIA[p.mi].criterios.map((_,ci)=>val(altClave(p.mi,ci)));
+      const b = bloqueLikert(vals);
+      return Object.assign({}, p, {b, puntaje:b.prom});
+    });
+    const peso = r1(partes.reduce((x,p)=>x+p.peso,0));
+    const ev = partes.filter(p=>p.puntaje!==null), w = ev.reduce((x,p)=>x+p.peso,0);
+    const puntaje = ev.length ? (w>0? ev.reduce((x,p)=>x+p.puntaje*p.peso,0)/w : ev.reduce((x,p)=>x+p.puntaje,0)/ev.length) : null;
+    const pct = puntaje!==null ? r1(puntaje/4*100) : null;
+    return Object.assign({}, a, {partes, pesoVigente:peso, puntaje, pct, nivel:nivelComp(puntaje), aporte: pct!==null? pct*peso/100 : null});
+  });
+  const ev = areas.filter(a=>a.pct!==null), W = ev.reduce((x,a)=>x+a.pesoVigente,0);
+  const pctFinal = W>0 ? r1(ev.reduce((x,a)=>x+a.pct*a.pesoVigente,0)/W) : null;
+  const comp = {areas, pctFinal, pesoTotal:r1(areas.reduce((x,a)=>x+a.pesoVigente,0)), pesoEvaluado:r1(W),
+    sinEvaluar:areas.filter(a=>a.pct===null), bajoMinimo:ev.filter(a=>a.pct<50), nivelGlobal: pctFinal!==null? nivelComp(pctFinal/100*4) : null};
+  return {comp, nota: notaDesdePctComp(pctFinal)};
+}
+function altResumenHTML(r){
+  const comp = r.comp, ap = (config().escalaAprobacion||4), nv = comp.nivelGlobal;
+  const filas = comp.areas.map(a=>{
+    const bajo = a.pct!==null && a.pct<50;
+    return `<tr${bajo?' style="background:var(--wine-soft)"':''}>
+      <td><strong>${a.id}</strong> ${a.nombre}<div class="hint" style="margin:2px 0 0">${a.partes.map(p=>`${p.nombre}: ${fp(p.peso)}&nbsp;% · ${p.puntaje!==null? fmtPts(p.puntaje) : 'sin evaluar'}`).join(' &nbsp;|&nbsp; ')}</div></td>
+      <td style="text-align:center">${fp(a.pesoVigente)}&nbsp;%</td>
+      <td style="text-align:center">${fmtPts(a.puntaje)}</td>
+      <td style="text-align:center;font-weight:600">${fmtPct(a.pct)}</td>
+      <td style="text-align:center">${a.nivel? `<span class="comp-nivel n${a.nivel.k}">${a.nivel.k} · ${a.nivel.nombre}</span>` : '—'}</td>
+      <td style="text-align:center">${a.aporte!==null? fmtPct(a.aporte) : '—'}</td></tr>`;
+  }).join('');
+  const avisos = [];
+  if(comp.sinEvaluar.length) avisos.push(`Áreas sin evaluar: ${comp.sinEvaluar.map(a=>a.id).join(', ')}. El % final se calcula con las áreas evaluadas (${fp(comp.pesoEvaluado)}&nbsp;% del peso).`);
+  if(comp.bajoMinimo.length) avisos.push(`<strong>Regla de nivel mínimo:</strong> ${comp.bajoMinimo.map(a=>a.id).join(', ')} bajo 50 % (nivel I). Requiere plan de mejora.`);
+  return `<div id="alt_resumen" style="margin-top:4px">
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:150px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+        <div style="font-size:11px;color:var(--slate)">% de logro ponderado</div>
+        <div style="font-family:'Fraunces',serif;font-size:24px;font-weight:700;color:var(--navy)">${fmtPct(comp.pctFinal)}</div>
+        <div style="font-size:11px;color:var(--slate)">Σ (% área × peso área) ÷ Σ pesos evaluados</div></div>
+      <div style="flex:1;min-width:150px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px">
+        <div style="font-size:11px;color:var(--slate)">Nivel de logro global</div>
+        <div style="font-family:'Fraunces',serif;font-size:24px;font-weight:700;color:var(--navy)">${nv? nv.k+' · '+nv.nombre : '—'}</div>
+        <div style="font-size:11px;color:var(--slate)">${nv? nv.decision : 'Responda los criterios de la pauta'}</div></div>
+      <div style="flex:1;min-width:150px;background:var(--navy,#110833);color:#fff;border-radius:10px;padding:10px 12px">
+        <div style="font-size:11px;opacity:.8">Nota final del Plan de Alternancia</div>
+        <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:700">${fmtNota(r.nota)}</div>
+        <div style="font-size:11px;opacity:.8">${r.nota===null? 'Responda las afirmaciones' : (r.nota>=ap? 'Aprobado':'Reprobado')+' · '+conceptoLikert(r.nota)}</div></div>
+    </div>
+    <div class="likert-wrap" style="margin-top:10px"><table class="comp-tabla"><thead><tr><th>Área de competencia · módulos (peso · puntaje)</th><th>Peso</th><th>Puntaje (1–4)</th><th>% logro</th><th>Nivel</th><th>Aporte</th></tr></thead>
+      <tbody>${filas}<tr class="comp-total"><td>Resultado ponderado</td><td style="text-align:center">${fp(comp.pesoTotal)}&nbsp;%</td><td></td><td style="text-align:center">${fmtPct(comp.pctFinal)}</td><td style="text-align:center">${nv? nv.k : '—'}</td><td style="text-align:center">Nota ${fmtNota(r.nota)}</td></tr></tbody></table></div>
+    ${avisos.length? `<div class="comp-aviso">${avisos.map(x=>`<div>${icon('alertTriangle',13)} ${x}</div>`).join('')}</div>`:''}
+  </div>`;
+}
+function altLeerScores(){
+  const sc={};
+  document.querySelectorAll('input[type=radio][name^="alt_"]:checked').forEach(i=>{ sc[i.name.slice(4)] = i.value==='NA' ? 'NA' : Number(i.value); });
+  return sc;
+}
+function recalcAlternanciaVivo(){
+  const sc = altLeerScores();
+  Object.keys(sc).forEach(k=>{ const t=document.getElementById('altpts_'+k); if(t){ const v=sc[k]; t.textContent= v==='NA'?'N/A':v; t.style.color= v==='NA'?'var(--slate)':colorNota(notaDesdeLikert(v)); } });
+  const el=document.getElementById('alt_resumen'); if(!el) return;
+  el.outerHTML = altResumenHTML(calcNotaAlternancia(sc));
+}
+async function guardarEvalAlternancia(id){
+  const s = alumnosAlternancia().find(x=>x.id===id); if(!s) return;
+  const scores = altLeerScores(); const r = calcNotaAlternancia(scores);
+  const obs = (document.getElementById('alt_obs')||{}).value||'';
+  s.planAlternancia = {metodo:'competencias', scores, nota:r.nota, pctLogro:r.comp.pctFinal, nivel:r.comp.nivelGlobal? r.comp.nivelGlobal.k : null, observaciones:obs, fecha:new Date().toISOString().slice(0,10)};
+  await saveData(); state.altEvalId=null; renderView(); window.scrollTo(0,0); toast('Evaluación guardada · '+s.nombre+' · Nota '+fmtNota(r.nota));
+}
+function renderAlternancia(){
+  if(state.altFichaId && altAlumno(state.altFichaId)) return renderAltFicha();
+  const A = ALTERNANCIA_MUNI;
+  const list = alumnosAlternancia();
+  const dato = (k,v)=>`<div><div class="hint" style="margin:0">${k}</div><strong style="color:var(--navy)">${v}</strong></div>`;
+  const deptos = Object.keys(A.unidades).map(u=>({u, d:A.unidades[u], al:list.filter(s=>s.area===u)}));
+  document.getElementById('view-root').innerHTML =
+  altAcc('info', `${icon('building',18)} ${A.nombre}`, A.carrera+' · '+A.curso, (()=>{
+    const evaluados = list.filter(s=>s.planAlternancia && s.planAlternancia.nota!=null).length;
+    const docsOk = list.reduce((a,s)=>a+altAvanceDocs(s).n,0), docsTot = list.length*(1+ALT_DIAS.length);
+    const tel = t=> 'tel:'+String(t||'').replace(/[^\d+]/g,'');
+    const contacto = (rol, nom, car, mail, fono)=>`<div class="alt-contacto">
+        <div class="rol">${rol}</div><div><div class="nom">${nom}</div><div class="car">${car}</div></div>
+        <div class="acc">${mail?`<a href="mailto:${mail}" title="${mail}">${icon('mail',13)} Correo</a>`:''}${fono?`<a href="${tel(fono)}" title="${fono}">${icon('phone',13)} ${fono}</a>`:''}</div></div>`;
+    return `
+    <div class="alt-contactos">
+      ${contacto('Contraparte municipal', A.contraparte, A.cargoContraparte, A.correoContraparte, A.telefonoContraparte)}
+      ${contacto('Profesor tutor', A.tutor, 'Jefe de especialidad Administración', A.correoTutor, A.telefonoTutor)}
+      ${contacto('Coordinación TP', A.coordinadora, 'Coordinadora TP', A.correoCoordinadora, A.telefonoCoordinadora)}
+    </div>
+    <div class="alt-acciones">
+      <button class="btn-primary gold" data-action="nav" data-modo="pre" data-view="altPlan">${icon('star',14)} Evaluar planes de alternancia</button>
+      <button class="btn-secondary" data-action="nav" data-modo="pre" data-view="altDocs">${icon('file',14)} Documentación</button>
+      <button class="btn-secondary" data-action="alt-plan-pdf" data-id="todos">${icon('download',14)} PDF de los ${list.length} planes</button>
+    </div>`; })()) +
+  altAcc('alumnos', `${icon('user',18)} Estudiantes en alternancia (${list.length})`, 'Por departamento · nota del plan, carta y bitácoras', `
+    <div class="panel-body" style="padding:14px 20px">${alternanciaTarjetasHTML(list)}</div>`);
+}
+/* Tarjetas por estudiante, agrupadas por departamento (mismo estilo que «Fichas por especialidad») */
+function alternanciaTarjetasHTML(list){
+  if(!list.length) return '<div class="hint">No hay estudiantes de alternancia cargados.</div>';
+  const A = ALTERNANCIA_MUNI, nCrit = PLAN_ALTERNANCIA.reduce((a,m)=>a+m.criterios.length,0);
+  return Object.keys(A.unidades).map(u=>{
+    const g = list.filter(s=>s.area===u).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+    if(!g.length) return '';
+    const key = 'alt_'+u.replace(/[^\w]+/g,'_');
+    const collapsed = state.docCollapsed && state.docCollapsed[key];
+    return `<div class="carrera-section">
+      <div class="carrera-head" data-action="toggle-doc-carrera" data-key="${key}">
+        <span class="chev ${collapsed?'collapsed':''}">${icon('chevronDown',15)}</span>
+        <span class="carrera-icon">${icon('building',15)}</span>
+        <span class="carrera-name">${u}</span>
+        <span class="hint">Maestro guía: ${A.unidades[u][0]}</span>
+        <span class="badge-count">${g.length}</span>
+      </div>
+      <div class="carrera-body" style="${collapsed?'display:none':''}">
+      ${g.map(x=>{
+        const ev = x.planAlternancia, n = ev && ev.nota;
+        const avd = altAvanceDocs(x);
+        const prof = practicaProfesionalDe(x);
+        return `<div class="doc-group">
+          <div class="doc-group-head">
+            ${avatarHtml(x)}
+            <div class="dgh-info">
+              <div class="dgh-name">${x.nombre||'Sin nombre'}</div>
+              <div class="dgh-meta">RUT ${x.rut||'—'} · ${fmtH(Number(x.horasRealizadas)||0)} h de alternancia${prof?` · Práctica Profesional: ${prof.horasRequeridasBase??prof.horasRequeridas} − ${fmtH(Number(x.horasRealizadas)||0)} = <strong>${fmtH(prof.horasRequeridas)} h</strong>`:''}</div>
+            </div>
+            <div style="text-align:center;min-width:64px">
+              <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:700;line-height:1;color:${colorNota(n)}">${fmtNota(n)}</div>
+              <div style="font-size:10.5px;color:var(--slate)">Nota plan</div>
+            </div>
+            <div class="doc-group-progress">
+              <span class="bar-label" title="Carta de autorización + 3 bitácoras">${avd.n}/${avd.total} doc.</span>
+              <span class="bar-track"><span class="bar-fill" style="width:${Math.round(avd.n/avd.total*100)}%"></span></span>
+            </div>
+            <button class="btn-secondary" data-action="alt-plan-pdf" data-id="${x.id}" title="Descargar plan de alternancia (PDF)">${icon('download',13)} PDF</button>
+            <button class="btn-secondary" data-action="alt-abrir-ficha" data-id="${x.id}">Ver ficha ${icon('arrow',13)}</button>
+          </div>
+        </div>`; }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+/* Lista de estudiantes (mismo estilo que «Plan de práctica»): nota, estado y botón Evaluar plan */
+function renderAltPlan(){
+  const sel = alumnosAlternancia().find(s=>s.id===state.altEvalId);
+  if(sel) return renderAltPlanForm();
+  const A = ALTERNANCIA_MUNI;
+  const ef = state.altEstado||'', qf = state.altEstudiante||'';
+  const todos = alumnosAlternancia();
+  const estadoDe = s=>{ const n=s.planAlternancia&&s.planAlternancia.nota; if(n===null||n===undefined) return 'pendiente'; return n>=((config().escalaAprobacion)||4)?'aprobado':'reprobado'; };
+  const list = todos.filter(s=>(!ef||estadoDe(s)===ef)&&(!qf||s.id===qf));
+  const html = `
+  <div class="panel">
+    <div class="panel-head">
+      <h2 style="display:flex;align-items:center;gap:9px"><span class="panel-head-icon">${icon('star',18)}</span>Plan de alternancia <span class="badge-count" style="margin-left:2px">${list.length}</span></h2>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <select id="altFiltroEst"><option value="">Todos los estudiantes</option>${todos.slice().sort((a,b)=>a.nombre.localeCompare(b.nombre)).map(s=>`<option value="${s.id}" ${qf===s.id?'selected':''}>${s.nombre}</option>`).join('')}</select>
+        <select id="altFiltroEstado"><option value="">Todos los estados</option>${[['pendiente','Pendiente'],['aprobado','Aprobado'],['reprobado','Reprobado']].map(([v,l])=>`<option value="${v}" ${ef===v?'selected':''}>${l}</option>`).join('')}</select>
+        ${(ef||qf)?`<button class="btn-ghost" data-action="alt-limpiar-filtros">Limpiar filtros</button>`:''}
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="hint" style="margin-bottom:12px">${PLAN_ALTERNANCIA.length} módulos · ${fmtH(PLAN_ALTERNANCIA.reduce((a,m)=>a+horasModulo(m),0))} h en la Municipalidad · escala Por mejorar (1), Regular (2), Bueno (3), Excelente (4) · las horas se descuentan de las ${HORAS_PRACTICA_ADM} h de la Práctica Profesional.</div>
+      ${list.length ? Object.keys(A.unidades).map(u=>{
+        const g = list.filter(s=>s.area===u).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
+        if(!g.length) return '';
+        const key = 'altplan_'+u.replace(/[^\w]+/g,'_');
+        const collapsed = state.docCollapsed && state.docCollapsed[key];
+        return `<div class="carrera-section">
+          <div class="carrera-head" data-action="toggle-doc-carrera" data-key="${key}">
+            <span class="chev ${collapsed?'collapsed':''}">${icon('chevronDown',15)}</span>
+            <span class="carrera-icon">${icon('building',15)}</span>
+            <span class="carrera-name">${u}</span>
+            <span class="hint">${g.length} estudiante${g.length===1?'':'s'}</span>
+            <span class="badge-count">${g.length}</span>
+          </div>
+          <div class="carrera-body" style="${collapsed?'display:none':''}">
+          ${g.map(s=>{
+            const est = estadoDe(s), n = s.planAlternancia&&s.planAlternancia.nota;
+            const lbl = est==='pendiente'?'Pendiente':est==='aprobado'?'Aprobado':'Reprobado';
+            const col = est==='pendiente'?'var(--amber)':est==='aprobado'?'var(--green)':'var(--wine)';
+            return `<div class="doc-group"><div class="doc-group-head">
+              ${avatarHtml(s)}
+              <div class="dgh-info">
+                <div class="dgh-name">${s.nombre}</div>
+                <div class="dgh-meta">${A.empresa} · ${u} · Maestro guía ${s.supervisor||'—'}</div>
+              </div>
+              <div class="doc-group-progress">
+                <span class="bar-label" style="color:${col};font-weight:700;font-family:'Fraunces',serif;font-size:15px">${fmtNota(n)}</span>
+                <span class="pill" style="background:${col}18;color:${col}">${lbl}</span>
+              </div>
+              <button class="btn-secondary" data-action="alt-evaluar" data-id="${s.id}">${n!=null ? `${icon('check',13)} Ver plan evaluado` : `Evaluar plan ${icon('arrow',13)}`}</button>
+            </div></div>`;
+          }).join('')}
+          </div></div>`;
+      }).join('') : `<div class="doc-empty-state">${icon('check',40)}<div class="hint">No hay estudiantes que coincidan con el filtro seleccionado.</div></div>`}
+    </div>
+  </div>`;
+  document.getElementById('view-root').innerHTML = html;
+}
+function renderAltPlanForm(){
+  const list = alumnosAlternancia();
+  const total = PLAN_ALTERNANCIA.reduce((a,m)=>a+horasModulo(m),0);
+  const sel = list.find(s=>s.id===state.altEvalId) || null;
+  const ev = (sel && sel.planAlternancia) || {scores:{}, observaciones:''};
+  const sc = ev.scores||{};
+  const radios = (k)=> ALT_NIVELES.map(([v,l])=>`<td class="lk-cell"><label title="${v} · ${l}"><input type="radio" name="alt_${k}" value="${v}" ${String(sc[k])===String(v)?'checked':''} ${sel?'':'disabled'} aria-label="${v} · ${l}"></label></td>`).join('')
+    + `<td class="lk-cell lk-na"><label title="No aplica"><input type="radio" name="alt_${k}" value="NA" ${sc[k]==='NA'?'checked':''} ${sel?'':'disabled'} aria-label="No aplica"></label></td>`
+    + (()=>{ const v=sc[k]; const n=Number(v); return `<td class="lk-pts" id="altpts_${k}" style="color:${n?colorNota(notaDesdeLikert(n)):'var(--slate)'}">${v==='NA'?'N/A':(n||'—')}</td>`; })();
+  const cabNiv = `${ALT_NIVELES.map(([v,l])=>`<th class="lk-col"><b>${v}</b>${l}</th>`).join('')}<th class="lk-col lk-na"><b>N/A</b>No aplica</th><th class="lk-col">Pts</th>`;
+  const areasAlt = altAreas();
+  const tagArea = mi => { const a = areasAlt.find(x=>x.partes.some(p=>p.mi===mi)); const p = a && a.partes.find(x=>x.mi===mi); return a? `Área de competencia ${a.id} · ${a.nombre} · peso módulo ${fp(p.peso)}\u00a0%` : ''; };
+  const encabezado = `<div style="padding:16px 20px 4px">
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px">
+        ${avatarHtml(sel)}
+        <div style="flex:1"><div style="font-weight:700;color:var(--navy);font-size:15px">${sel.nombre}</div>
+          <div class="hint" style="margin:0">RUT ${sel.rut||'—'} · ${sel.area||''} · Maestro guía: <strong>${sel.supervisor||'—'}</strong></div></div>
+      </div>
+      <div class="hint" style="margin-bottom:4px">Escala: Por mejorar (1), Regular (2), Bueno (3), Excelente (4) y N/A (no aplica). La nota se calcula igual que en el plan de práctica por competencias: puntaje promedio de cada área → % de logro (puntaje ÷ 4) → % ponderado por el peso de cada área → nota (25 % = 1,0 · 62,5 % = 4,0 · 100 % = 7,0). Los tres módulos de la mención pesan según sus horas y el área A4 reúne el módulo común y las competencias de empleabilidad.</div>
+    </div>`;
+  const modulos = PLAN_ALTERNANCIA.map((m,mi)=> altAcc('mod'+mi, `${icon('star',17)} ${m.modulo} · ${fmtH(horasModulo(m))} h`, m.transversal?'Módulo común · empleabilidad':'Módulo de la mención · técnico', `
+      <div style="padding:10px 20px 16px">
+        <div class="hint" style="margin-bottom:8px">${m.oa}<br><strong style="color:var(--navy)">${tagArea(mi)}</strong></div>
+        <div class="likert-wrap"><table class="likert"><thead><tr><th>Criterio de evaluación y tarea en la Municipalidad</th><th class="lk-col">Horas</th>${cabNiv}</tr></thead><tbody>
+        ${m.criterios.map((c,ci)=>`<tr class="lk-row"><td><span class="lk-num">${ci+1}.</span>${c.ce}<div style="font-size:11.5px;color:var(--slate);margin-top:3px">Tarea: ${c.tarea}</div></td><td style="text-align:center">${fmtH(c.h)}</td>${radios(altClave(mi,ci))}</tr>`).join('')}
+        </tbody></table></div>
+      </div>`)).join('');
+  document.getElementById('view-root').innerHTML =
+    `<button class="btn-ghost" data-action="alt-volver-lista" style="margin-bottom:10px">← Volver a la lista de estudiantes</button>` +
+    altAcc('evalHead', `${icon('star',18)} Plan de alternancia · ${fmtH(total)} horas`, `Descuento: ${HORAS_PRACTICA_ADM} − ${fmtH(total)} = ${fmtH(HORAS_PRACTICA_ADM-total)} h de Práctica Profesional`, encabezado) +
+    modulos +
+    altAcc('evalEmp', `${icon('userCheck',17)} Competencias de empleabilidad`, 'Área A4 · peso 10 %', `
+      <div style="padding:10px 20px 16px">
+        <div class="hint" style="margin-bottom:6px"><strong style="color:var(--navy)">Competencias de empleabilidad</strong> — «Durante la alternancia, el estudiante evidencia…» · Área de competencia A4 · Emprendimiento, empleabilidad y competencias transversales · peso 10 %</div>
+        <div class="likert-wrap"><table class="likert"><thead><tr><th>Afirmación</th>${cabNiv}</tr></thead><tbody>
+        ${altEmpleabilidad().map((t,i)=>`<tr class="lk-row"><td><span class="lk-num">${i+1}.</span>${t}</td>${radios(altClaveEmp(i))}</tr>`).join('')}
+        </tbody></table></div>
+      </div>`) +
+    altAcc('evalRes', `${icon('award',17)} Resultado y nota final`, 'Se calcula al marcar los círculos', `<div style="padding:14px 20px">${altResumenHTML(calcNotaAlternancia(sc))}</div>`) +
+    altAcc('evalObs', `${icon('pencil',17)} Observaciones y guardar`, sel? (sel.planAlternancia? 'Última evaluación: '+sel.planAlternancia.fecha : 'Sin evaluación guardada') : '', `
+      <div style="padding:14px 20px">
+        <div class="field"><label>Observaciones del maestro guía / profesor tutor</label><textarea id="alt_obs" rows="3" ${sel?'':'disabled'}>${(ev.observaciones||'').replace(/</g,'&lt;')}</textarea></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+          <button class="btn-primary gold" data-action="alt-guardar-eval" data-id="${sel?sel.id:''}" ${sel?'':'disabled'}>${icon('check',14)} Guardar evaluación y nota</button>
+          ${sel? `<button class="btn-secondary" data-action="alt-plan-pdf" data-id="${sel.id}">${icon('download',14)} PDF del plan de ${sel.nombre.split(' ')[0]}</button>`:''}
+          <button class="btn-secondary" data-action="alt-plan-pdf" data-id="todos">${icon('download',14)} PDF de los 12 planes</button>
+        </div>
+      </div>`);
+}
+function renderAltDocs(){
+  const A = ALTERNANCIA_MUNI;
+  const tarjeta = (ic,titulo,detalle,boton)=>`<div style="border:1px solid var(--border);border-radius:10px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start">
+        <span style="color:var(--navy)">${icon(ic,22)}</span>
+        <div style="flex:1"><div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#2A1670">PLAN DE ALTERNANCIA</div><strong style="color:var(--navy)">${titulo}</strong><div class="hint">${detalle}</div>${boton}</div></div>`;
+  document.getElementById('view-root').innerHTML =
+  altAcc('docsWord', `${icon('file',18)} Documentos Word`, A.documentos.length+' archivos', `
+    <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px">
+      ${A.documentos.map(d=>tarjeta('fileCheck', d.titulo, d.detalle, `<a class="btn-secondary" style="margin-top:8px;display:inline-flex;gap:6px;text-decoration:none" href="${d.archivo}" download>${icon('download',14)} Descargar Word</a>`)).join('')}
+    </div>
+    <div class="hint" style="padding:0 20px 16px">Los archivos Word deben estar en el repositorio, en la misma carpeta que index.html.</div>`) +
+  altAcc('docsPdf', `${icon('star',18)} Planes de alternancia (PDF)`, 'Con nota de evaluación', `
+    <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px">
+      ${tarjeta('star','Planes de alternancia de los 12 estudiantes', 'Módulos, tareas en la Municipalidad, nivel marcado en cada criterio, nota del plan y descuento de '+fmtH(A.horas)+' h sobre las '+HORAS_PRACTICA_ADM+' h.', `<button class="btn-secondary" style="margin-top:8px" data-action="alt-plan-pdf" data-id="todos">${icon('download',14)} Descargar PDF</button>`)}
+    </div>`);
+}
+async function planAlternanciaPDF(id){
+  const lista = id==='todos' ? alumnosAlternancia() : alumnosAlternancia().filter(s=>s.id===id);
+  if(!lista.length){ toast('No hay estudiantes de alternancia'); return; }
+  toast('Generando plan de alternancia…');
+  const cfg = config(); const A = ALTERNANCIA_MUNI;
+  const jsPDF = collectPDFmakerLib(); const pdf = new jsPDF({unit:'mm',format:PAGE_FORMAT});
+  pdf.__pre = true;                      // no se cambia «práctica» por «pre-práctica»: es un plan de alternancia
+  pdf.__banda = 'PLAN DE ALTERNANCIA';
+  const pw = pdf.internal.pageSize.getWidth();
+  const total = PLAN_ALTERNANCIA.reduce((a,m)=>a+horasModulo(m),0);
+  lista.forEach((s,idx)=>{
+    if(idx>0) pdf.addPage();
+    const ev = s.planAlternancia || {scores:{}};
+    const r = calcNotaAlternancia(ev.scores||{});
+    let y = addLetterhead(pdf, cfg, 'Plan de Alternancia', s.nombre, s.carrera);
+    y = addFieldGrid(pdf,y,[
+      {label:'Estudiante',value:s.nombre},{label:'RUT',value:s.rut},
+      {label:'Curso',value:A.curso},{label:'Especialidad',value:'Administración mención Recursos Humanos'},
+      {label:'Institución',value:A.empresa},{label:'Departamento',value:s.area||'—'},
+      {label:'Maestro guía',value:(s.supervisor||'—')+(s.ciSupervisor?' · RUT '+s.ciSupervisor:'')},{label:'Profesor tutor',value:A.tutor},
+      {label:'Fechas',value:'16, 17 y 18 de noviembre de 2026'},{label:'Jornada',value:'09:00 a 17:30 · 7,5 h diarias'},
+    ],pw);
+    y+=3;
+    pdf.setFillColor(255,246,224); pdf.setDrawColor(255,176,1); pdf.rect(18,y,pw-36,15,'FD');
+    pdf.setFont('helvetica','bold'); pdf.setFontSize(9.5); pdf.setTextColor(17,8,51);
+    pdf.text('Horas del plan de alternancia: '+fmtH(total)+' h', 22, y+6);
+    pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5);
+    pdf.text('Se descuentan de la Práctica Profesional 2026: '+HORAS_PRACTICA_ADM+' h - '+fmtH(total)+' h = '+fmtH(HORAS_PRACTICA_ADM-total)+' h por realizar.', 22, y+11.5);
+    y+=20;
+    const U = A.unidades[s.area];
+    if(U){ y = sectionTitle(pdf,18,y,'Labores en el departamento'); y+=6; y = paragraph(pdf,18,y,U[2]+'.',pw-36)+4; }
+    PLAN_ALTERNANCIA.forEach((m,mi)=>{
+      y = checkPageBreak(pdf,y,cfg);
+      y = sectionTitle(pdf,18,y,m.modulo+' · '+fmtH(horasModulo(m))+' h'); y+=5;
+      pdf.setFont('helvetica','italic'); pdf.setFontSize(8); pdf.setTextColor(90,90,90);
+      const ol = pdf.splitTextToSize(m.oa, pw-36); pdf.text(ol,18,y); y+= ol.length*3.6+1;
+      pdf.autoTable({ startY:y, margin:{left:18,right:18}, theme:'grid',
+        styles:{fontSize:7.2, cellPadding:1.4, valign:'middle'}, headStyles:{fillColor:[17,8,51], fontSize:6.8},
+        head:[['Criterio de evaluación','Tarea en la Municipalidad','Horas','Por mejorar\n(1)','Regular\n(2)','Bueno\n(3)','Excelente\n(4)']],
+        body: m.criterios.map((c,ci)=>{ const v=Number((ev.scores||{})[altClave(mi,ci)]); return [c.ce, c.tarea, fmtH(c.h)].concat([1,2,3,4].map(k=> v===k?'X':'')); }),
+        columnStyles:{0:{cellWidth:48},1:{cellWidth:'auto'},2:{cellWidth:10,halign:'center'},3:{cellWidth:15,halign:'center',fontStyle:'bold'},4:{cellWidth:13,halign:'center',fontStyle:'bold'},5:{cellWidth:12,halign:'center',fontStyle:'bold'},6:{cellWidth:15,halign:'center',fontStyle:'bold'}} });
+      y = pdf.lastAutoTable.finalY + 6;
+    });
+    y = checkPageBreak(pdf,y,cfg);
+    y = sectionTitle(pdf,18,y,'Competencias de empleabilidad · área A4 · 10 %'); y+=5;
+    pdf.autoTable({ startY:y, margin:{left:18,right:18}, theme:'grid',
+      styles:{fontSize:7.4, cellPadding:1.4, valign:'middle'}, headStyles:{fillColor:[17,8,51], fontSize:6.8},
+      head:[['Afirmación: «Durante la alternancia, el estudiante evidencia…»','Por mejorar\n(1)','Regular\n(2)','Bueno\n(3)','Excelente\n(4)','N/A']],
+      body: altEmpleabilidad().map((t,i)=>{ const v=(ev.scores||{})[altClaveEmp(i)]; return [(i+1)+'. '+t].concat([1,2,3,4].map(k=> Number(v)===k?'X':'')).concat([v==='NA'?'X':'']); }),
+      columnStyles:{1:{cellWidth:15,halign:'center',fontStyle:'bold'},2:{cellWidth:13,halign:'center',fontStyle:'bold'},3:{cellWidth:12,halign:'center',fontStyle:'bold'},4:{cellWidth:15,halign:'center',fontStyle:'bold'},5:{cellWidth:10,halign:'center',fontStyle:'bold'}} });
+    y = pdf.lastAutoTable.finalY + 6;
+    y = checkPageBreak(pdf,y,cfg);
+    const cp = r.comp, nv = cp.nivelGlobal;
+    y = sectionTitle(pdf,18,y,'Resultado por área de competencia'); y+=5;
+    pdf.autoTable({ startY:y, margin:{left:18,right:18}, theme:'grid', styles:{fontSize:7.8, cellPadding:1.6}, headStyles:{fillColor:[17,8,51], fontSize:7.4},
+      head:[['Área de competencia','Peso','Puntaje (1–4)','% logro','Nivel','Aporte']],
+      body: cp.areas.map(a=>[a.id+' '+a.nombre, fp(a.pesoVigente)+' %', fmtPts(a.puntaje), fmtPct(a.pct).replace(' ',' '), a.nivel? a.nivel.k+' · '+a.nivel.nombre : '—', a.aporte!==null? fmtPct(a.aporte).replace(' ',' ') : '—'])
+        .concat([['Resultado ponderado', fp(cp.pesoTotal)+' %', '', fmtPct(cp.pctFinal).replace(' ',' '), nv? nv.k+' · '+nv.nombre : '—', 'Nota '+fmtNota(r.nota)]]),
+      columnStyles:{1:{cellWidth:16,halign:'center'},2:{cellWidth:22,halign:'center'},3:{cellWidth:18,halign:'center'},4:{cellWidth:30,halign:'center'},5:{cellWidth:20,halign:'center'}},
+      didParseCell:(d)=>{ if(d.section==='body' && d.row.index===cp.areas.length){ d.cell.styles.fontStyle='bold'; d.cell.styles.fillColor=[255,246,224]; } } });
+    y = pdf.lastAutoTable.finalY + 5;
+    pdf.setFillColor(17,8,51); pdf.rect(18,y,pw-36,12,'F');
+    pdf.setFont('helvetica','bold'); pdf.setFontSize(10.5); pdf.setTextColor(255,255,255);
+    pdf.text('NOTA FINAL DEL PLAN DE ALTERNANCIA: '+fmtNota(r.nota)+(r.nota!==null? '  ·  '+(r.nota>=((cfg.escalaAprobacion)||4)?'Aprobado':'Reprobado')+' · '+conceptoLikert(r.nota):''), 22, y+7.8);
+    y += 20;
+    y = checkPageBreak(pdf,y,cfg);
+    /* Espacio de observaciones: siempre se deja el cuadro con líneas para anotar a mano (con lo registrado, si lo hay) */
+    y = checkPageBreakForBlock(pdf,y,cfg,56);
+    y = sectionTitle(pdf,18,y,'Observaciones del maestro guía / profesor tutor'); y+=5;
+    y = cuadroLineasEscritura(pdf, y, pw, ev.observaciones||'', 5)+6;
+    y += 6; y = paragraph(pdf,18,y,'Escala: Por mejorar (1), Regular (2), Bueno (3), Excelente (4). % de logro de cada área = puntaje ÷ 4; % ponderado por el peso de cada área; nota: 25 % = 1,0 · 62,5 % = 4,0 · 100 % = 7,0.',pw-36)+4;
+    addSignatures(pdf,y+10,['Estudiante',{label:'Maestro guía', name:s.supervisor||''},docenteSignature(cfg,s,'supervisor','Profesor tutor'),coordSignature(cfg,'Coordinadora TP')],pw);
+  });
+  addFooterAll(pdf);
+  savePDF(pdf, (id==='todos'?'Planes_de_alternancia_Municipalidad':'Plan_de_alternancia_'+lista[0].nombre.replace(/[\/\s]+/g,'_'))+'.pdf');
+}
+/* ============================================================
+   FICHA DE ALTERNANCIA: carta de autorización y bitácoras (subir archivo y registrar)
+   ============================================================ */
+const ALT_DIAS = [{n:1, txt:'Día 1 – lunes 16 de noviembre de 2026'},{n:2, txt:'Día 2 – martes 17 de noviembre de 2026'},{n:3, txt:'Día 3 – miércoles 18 de noviembre de 2026'}];
+const ALT_AUTOEVAL = ['Puntualidad y asistencia','Presentación personal (uniforme de la especialidad)','Cumplimiento de las tareas asignadas','Trato respetuoso con funcionarios y usuarios','Confidencialidad de la información','Trabajo en equipo y disposición a aprender'];
+const ALT_PREGUNTAS = [['actividades','1. Actividades realizadas durante la jornada'],['aprendi','2. ¿Qué aprendí hoy? (relaciónalo con los módulos de la especialidad)'],['dificultades','3. Dificultades que se me presentaron y cómo las resolví'],['interaccion','4. Una atención o interacción destacada con un usuario o funcionario']];
+function altAlumno(id){ return alumnosAlternancia().find(s=>s.id===id); }
+function altFichaDe(s){ s.altFicha = s.altFicha || {carta:{}, bitacoras:{}}; s.altFicha.carta = s.altFicha.carta||{}; s.altFicha.bitacoras = s.altFicha.bitacoras||{}; return s.altFicha; }
+function altBit(s,n){ const f=altFichaDe(s); f.bitacoras[n] = f.bitacoras[n]||{autoeval:{}}; f.bitacoras[n].autoeval = f.bitacoras[n].autoeval||{}; return f.bitacoras[n]; }
+/* avance: carta + 3 bitácoras (cada una cuenta si tiene archivo o registro) */
+function altAvanceDocs(s){
+  const f = s.altFicha||{}; const c = f.carta||{}; const b = f.bitacoras||{};
+  let n = (c.file || c.estado==='Recibida firmada') ? 1 : 0;
+  ALT_DIAS.forEach(d=>{ const x=b[d.n]; if(x && (x.file || x.registrada)) n++; });
+  return {n, total: 1+ALT_DIAS.length};
+}
+function altArchivoHTML(s, tipo, meta){
+  return meta && meta.file
+    ? `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff">
+        <span style="color:var(--green)">${icon('fileCheck',20)}</span>
+        <div style="flex:1;min-width:180px"><strong style="color:var(--navy)">${meta.file.fileName}</strong><div class="hint" style="margin:0">Subido el ${meta.file.updatedAt}</div></div>
+        <button class="btn-secondary" data-action="alt-ver-archivo" data-id="${s.id}" data-tipo="${tipo}">${icon('eye',13)} Ver</button>
+        <button class="btn-secondary" data-action="alt-subir-archivo" data-id="${s.id}" data-tipo="${tipo}">${icon('upload',13)} Reemplazar</button>
+        <button class="btn-danger" data-action="alt-quitar-archivo" data-id="${s.id}" data-tipo="${tipo}" title="Quitar archivo">${icon('trash',13)}</button>
+      </div>`
+    : `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border:1px dashed var(--border);border-radius:10px;background:var(--paper)">
+        <span style="color:var(--slate)">${icon('file',20)}</span>
+        <div style="flex:1;min-width:180px" class="hint">Sin archivo. Sube el documento escaneado o fotografiado (PDF o imagen, máx. 10 MB).</div>
+        <button class="btn-secondary" data-action="alt-subir-archivo" data-id="${s.id}" data-tipo="${tipo}">${icon('upload',13)} Subir archivo</button>
+      </div>`;
+}
+function renderAltFicha(){
+  const s = altAlumno(state.altFichaId);
+  if(!s){ state.altFichaId=null; return renderAlternancia(); }
+  const A = ALTERNANCIA_MUNI, f = altFichaDe(s), c = f.carta, av = altAvanceDocs(s);
+  const n = s.planAlternancia && s.planAlternancia.nota;
+  const esc = v => String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  const estadoPill = ok => `<span class="pill" style="background:${ok?'var(--green)':'var(--amber)'}18;color:${ok?'var(--green)':'var(--amber)'}">${ok?'Registrada':'Pendiente'}</span>`;
+  const cabecera = `
+    <button class="btn-ghost" data-action="alt-cerrar-ficha" style="margin-bottom:10px">← Volver a estudiantes y departamentos</button>
+    <div class="panel" style="margin-bottom:16px"><div style="padding:16px 20px;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+      ${avatarHtml(s)}
+      <div style="flex:1;min-width:240px">
+        <div style="font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--navy)">${s.nombre}</div>
+        <div class="hint" style="margin:0">RUT ${s.rut||'—'} · ${A.curso} · ${A.empresa} · <strong>${s.area||'—'}</strong> · Maestro guía: ${s.supervisor||'—'}</div>
+      </div>
+      <div style="text-align:center"><div style="font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:${colorNota(n)}">${fmtNota(n)}</div><div class="hint" style="margin:0">Nota plan</div></div>
+      <div style="text-align:center"><div style="font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--navy)">${av.n}/${av.total}</div><div class="hint" style="margin:0">Documentos</div></div>
+      <button class="btn-secondary" data-action="open-ficha" data-id="${s.id}">${icon('idcard',13)} Ficha completa</button>
+    </div></div>`;
+  const carta = altAcc('afCarta', `${icon('fileSigned',18)} Carta de autorización y compromiso`, (c.file||c.estado==='Recibida firmada')? 'Registrada' : 'Pendiente', `
+    <div style="padding:14px 20px">
+      <div class="hint" style="margin-bottom:10px">Formato oficial de la carta con los datos del estudiante. Escribe el nombre del apoderado(a), descárgala en PDF para imprimir y firmar, y luego sube la carta firmada.</div>
+      ${altArchivoHTML(s,'carta',c)}
+      ${altCartaHTML(s)}
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px">
+        <div class="field"><label>Estado</label><select id="afc_estado">${['Pendiente','Entregada al apoderado','Recibida firmada'].map(o=>`<option ${c.estado===o?'selected':''}>${o}</option>`).join('')}</select></div>
+        <div class="field"><label>RUT del apoderado(a)</label><input id="afc_rutApoderado" type="text" value="${esc(c.rutApoderado)}"/></div>
+        <div class="field"><label>Fecha de firma</label><input id="afc_fecha" type="date" value="${esc(c.fecha)}"/></div>
+      </div>
+      <div class="field" style="margin-top:8px"><label>Observaciones</label><textarea id="afc_obs" rows="2">${esc(c.obs)}</textarea></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <button class="btn-primary gold" data-action="alt-guardar-carta" data-id="${s.id}">${icon('check',14)} Guardar carta</button>
+        <button class="btn-secondary" data-action="alt-carta-pdf" data-id="${s.id}">${icon('download',14)} Descargar carta (PDF)</button>
+      </div>
+    </div>`);
+  const logoAdm = logoForCarrera(config(), 'Administración / Recursos Humanos') || config().logoBase64;
+  const bitacoras = ALT_DIAS.map(d=>{
+    const b = altBit(s,d.n);
+    const caja = (k,l,rows)=>`<div class="bit-caja"><div class="bit-tit">${l}</div><textarea id="afb${d.n}_${k}" rows="${rows}">${esc(b[k])}</textarea></div>`;
+    return altAcc('afBit'+d.n, `${icon('notebook',18)} Bitácora · ${d.txt}`, (b.file||b.registrada)? 'Registrada' : 'Pendiente', `
+    <div style="padding:14px 20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <div class="hint" style="margin:0">Sube la bitácora escrita a mano y/o complétala aquí: es el mismo formato del documento oficial.</div>${estadoPill(!!(b.file||b.registrada))}</div>
+      ${altArchivoHTML(s,'bit'+d.n,b)}
+      <div class="bit-hoja">
+        <div class="bit-membrete">
+          ${logoAdm?`<img src="${logoAdm}" alt="Logo"/>`:''}
+          <div><div class="bit-liceo">LICEO BICENTENARIO POLITÉCNICO LUIS CRUZ MARTÍNEZ</div>
+          <div class="bit-sub">Dirección – Especialidad Administración mención Recursos Humanos</div>
+          <div class="bit-sub">RBD 8411-5 · Bernardo Philippi N° 474 · Puerto Natales</div></div>
+        </div>
+        <div class="bit-titulo">BITÁCORA DE ALTERNANCIA · ${d.txt.toUpperCase()}</div>
+        <div class="bit-alumno"><b>Estudiante:</b> ${(s.nombre||'').toUpperCase()} · RUT ${s.rut||'—'} &nbsp; <b>Unidad:</b> ${s.area||'—'}</div>
+        <table class="bit-horas"><tr><th>Hora de llegada</th><td><input id="afb${d.n}_llegada" type="time" value="${esc(b.llegada)}"/></td><th>Hora de salida</th><td><input id="afb${d.n}_salida" type="time" value="${esc(b.salida)}"/></td></tr></table>
+        ${caja('actividades','1. Actividades realizadas durante la jornada',4)}
+        ${caja('aprendi','2. ¿Qué aprendí hoy? (relaciónalo con los módulos de la especialidad)',3)}
+        ${caja('dificultades','3. Dificultades que se me presentaron y cómo las resolví',2)}
+        ${caja('interaccion','4. Una atención o interacción destacada con un usuario o funcionario',2)}
+        <table class="bit-auto"><thead><tr><th>5. Autoevaluación</th>${ALT_NIVELES.map(([v,l])=>`<th>${l} (${v})</th>`).join('')}</tr></thead><tbody>
+          ${ALT_AUTOEVAL.map((t,i)=>`<tr><td>${t}</td>${ALT_NIVELES.map(([v,l])=>`<td class="c"><label><input type="radio" name="afb${d.n}_ae${i}" value="${v}" ${Number(b.autoeval[i])===v?'checked':''} aria-label="${l}"></label></td>`).join('')}</tr>`).join('')}
+        </tbody></table>
+        ${caja('obsMaestro','6. Observaciones del maestro guía',2)}
+        <div class="bit-firmas"><div><span></span>Firma del estudiante</div><div><span></span>Firma y timbre del maestro guía</div></div>
+        <div class="bit-pie">Formación por alternancia 2026 · Municipalidad de Puerto Natales</div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px">
+        <button class="btn-primary gold" data-action="alt-guardar-bit" data-id="${s.id}" data-dia="${d.n}">${icon('check',14)} Registrar bitácora del día ${d.n}</button>
+        <button class="btn-secondary" data-action="alt-bit-pdf" data-id="${s.id}" data-dia="${d.n}">${icon('download',14)} Descargar bitácora (PDF)</button>
+        ${b.registrada? `<span class="hint" style="margin:0">Registrada el ${b.registrada}</span>`:''}
+      </div>
+    </div>`, false);
+  }).join('');
+  document.getElementById('view-root').innerHTML = cabecera + carta + bitacoras;
+}
+async function altGuardarCarta(id){
+  const s = altAlumno(id); if(!s) return; const c = altFichaDe(s).carta;
+  const v = k => (document.getElementById('afc_'+k)||{}).value||'';
+  Object.assign(c, {estado:v('estado'), apoderado:v('apoderado'), rutApoderado:v('rutApoderado'), fecha:v('fecha'), obs:v('obs'), registrada:new Date().toISOString().slice(0,10)});
+  await saveData(); renderView(); toast('Carta de autorización guardada');
+}
+async function altGuardarBitacora(id, n){
+  const s = altAlumno(id); if(!s) return; const b = altBit(s,n);
+  const v = k => (document.getElementById('afb'+n+'_'+k)||{}).value||'';
+  ['llegada','salida','actividades','aprendi','dificultades','interaccion','obsMaestro'].forEach(k=> b[k]=v(k));
+  ALT_AUTOEVAL.forEach((_,i)=>{ const r=document.querySelector(`input[name="afb${n}_ae${i}"]:checked`); b.autoeval[i] = r? Number(r.value) : ''; });
+  b.registrada = new Date().toISOString().slice(0,10);
+  state.altOpen = state.altOpen||{}; state.altOpen['afBit'+n] = true;
+  await saveData(); renderView(); toast('Bitácora del día '+n+' registrada');
+}
+/* PDF de la bitácora con el mismo formato del documento oficial (Word) */
+async function altBitacoraPDF(id, n){
+  const s = altAlumno(id); if(!s) return; const b = altBit(s,n); const d = ALT_DIAS.find(x=>x.n===n);
+  const cfg = config();
+  const jsPDF = collectPDFmakerLib(); const pdf = new jsPDF({unit:'mm',format:'letter'});
+  const pw = pdf.internal.pageSize.getWidth(), L = 22, W = pw-44;
+  pdf.__banda = 'PLAN DE ALTERNANCIA'; // nombre de archivo propio (sin prefijo de pre-práctica)
+  const logo = logoForCarrera(cfg, 'Administración / Recursos Humanos') || cfg.logoBase64;
+  if(logo){ try{ pdf.addImage(logo,'PNG',L,14,18,18); }catch(e){} }
+  pdf.setTextColor(0,0,0);
+  pdf.setFont('helvetica','bold'); pdf.setFontSize(10.5); pdf.text('LICEO BICENTENARIO POLITÉCNICO LUIS CRUZ MARTÍNEZ', L+22, 19);
+  pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5);
+  pdf.text('Dirección – Especialidad Administración mención Recursos Humanos', L+22, 23.5);
+  pdf.text('RBD 8411-5 · Bernardo Philippi N° 474 · Puerto Natales', L+22, 27.5);
+  pdf.setFont('helvetica','bold'); pdf.setFontSize(11); pdf.text('BITÁCORA DE ALTERNANCIA · '+d.txt.toUpperCase(), pw/2, 40, {align:'center'});
+  pdf.setFontSize(9.5);
+  const linea = [['Estudiante: ', true], [(s.nombre||'').toUpperCase()+' · RUT '+(s.rut||'—')+'   ', false], ['Unidad: ', true], [s.area||'—', false]];
+  let tw = 0; linea.forEach(([t,bo])=>{ pdf.setFont('helvetica', bo?'bold':'normal'); tw += pdf.getTextWidth(t); });
+  let x = pw/2 - tw/2; linea.forEach(([t,bo])=>{ pdf.setFont('helvetica', bo?'bold':'normal'); pdf.text(t, x, 45.5); x += pdf.getTextWidth(t); });
+  const base = {margin:{left:L,right:L}, theme:'grid', styles:{fontSize:8.5, textColor:[0,0,0], lineColor:[0,0,0], lineWidth:0.25, cellPadding:1.8, font:'helvetica'}, headStyles:{fillColor:[217,217,217], textColor:[0,0,0], fontStyle:'bold'}};
+  pdf.autoTable(Object.assign({}, base, {startY:49, body:[[{content:'Hora de llegada',styles:{fontStyle:'bold',fillColor:[236,236,236]}}, b.llegada||'', {content:'Hora de salida',styles:{fontStyle:'bold',fillColor:[236,236,236]}}, b.salida||'']],
+    columnStyles:{0:{cellWidth:W*0.23},1:{cellWidth:W*0.27},2:{cellWidth:W*0.23},3:{cellWidth:W*0.27}}}));
+  let y = pdf.lastAutoTable.finalY + 2.5;
+  const caja = (titulo, texto, minH)=>{
+    pdf.autoTable(Object.assign({}, base, {startY:y, head:[[titulo]], body:[[texto||'']], bodyStyles:{minCellHeight:minH, valign:'top'}}));
+    y = pdf.lastAutoTable.finalY + 2.5;
+  };
+  caja('1. Actividades realizadas durante la jornada', b.actividades, 20);
+  caja('2. ¿Qué aprendí hoy? (relaciónalo con los módulos de la especialidad)', b.aprendi, 15);
+  caja('3. Dificultades que se me presentaron y cómo las resolví', b.dificultades, 11);
+  caja('4. Una atención o interacción destacada con un usuario o funcionario', b.interaccion, 11);
+  pdf.autoTable(Object.assign({}, base, {startY:y, head:[['5. Autoevaluación','Por mejorar\n(1)','Regular (2)','Bueno (3)','Excelente\n(4)']],
+    body: ALT_AUTOEVAL.map((t,i)=>[t].concat([1,2,3,4].map(k=> Number(b.autoeval[i])===k?'X':''))),
+    columnStyles:{1:{cellWidth:W*0.125,halign:'center',fontStyle:'bold'},2:{cellWidth:W*0.125,halign:'center',fontStyle:'bold'},3:{cellWidth:W*0.125,halign:'center',fontStyle:'bold'},4:{cellWidth:W*0.125,halign:'center',fontStyle:'bold'}},
+    didParseCell:(c)=>{ if(c.section==='head' && c.column.index>0) c.cell.styles.halign='center'; } }));
+  y = pdf.lastAutoTable.finalY + 2.5;
+  caja('6. Observaciones del maestro guía', b.obsMaestro, 10);
+  y += 16;
+  pdf.setDrawColor(0,0,0); pdf.setLineWidth(0.3);
+  pdf.line(L+4, y, L+W/2-8, y); pdf.line(L+W/2+8, y, L+W-4, y);
+  pdf.setFont('helvetica','normal'); pdf.setFontSize(9);
+  pdf.text('Firma del estudiante', L+4+(W/2-12)/2, y+5, {align:'center'});
+  pdf.text('Firma y timbre del maestro guía', L+W/2+8+(W/2-12)/2, y+5, {align:'center'});
+  pdf.setFont('helvetica','italic'); pdf.setFontSize(7.5); pdf.setTextColor(60,60,60);
+  pdf.text('Formación por alternancia 2026 · Municipalidad de Puerto Natales', pw/2, pdf.internal.pageSize.getHeight()-12, {align:'center'});
+  savePDF(pdf, 'Bitacora_dia_'+n+'_'+(s.nombre||'estudiante').replace(/[\/\s]+/g,'_')+'.pdf');
+}
+/* ---------- Carta de autorización y compromiso (mismo formato del documento oficial) ---------- */
+const CARTA_DEBERES = [
+  'Cumplir ordenadamente los Aprendizajes Esperados establecidos en el Plan de Aprendizaje.',
+  'Cumplir con los horarios y respetar las normas y reglamentos internos de la Municipalidad.',
+  'Cuidar los equipos, documentos, materiales y la información que la Municipalidad le confíe, resguardando su confidencialidad.',
+  'Ejecutar con dedicación y seriedad los trabajos y las tareas que se le encomienden.',
+  'Mantener con los funcionarios municipales y con los usuarios el respeto que debe existir en todo lugar de trabajo.',
+  'Dar cuenta a su Maestro Guía de todo problema que detecte o surja en su función.',
+  'Dar cuenta inmediatamente a su Profesor Tutor de cualquier conducta indebida del Maestro Guía o de otro funcionario de la Municipalidad.',
+  'Completar diariamente la bitácora de aprendizajes, señalando las actividades realizadas y evaluando su desempeño.',
+  'Dado que el porcentaje de asistencia exigido es del 100%, cualquier inasistencia deberá ser justificada.',
+];
+/* Párrafos de la carta como segmentos [texto, negrita] */
+function cartaParrafos(s){
+  const nombre = (s.nombre||'').toUpperCase(), unidad = s.area||'—';
+  return {
+    intro: [['Declaro estar en conocimiento de los objetivos y del funcionamiento de la pasantía. Como apoderado(a), me comprometo a apoyar y responsabilizarme de mi pupilo(a) y, a la vez, autorizo para que comience esta etapa educativa en la Educación Media Técnico-Profesional, de acuerdo con la información proporcionada por el Establecimiento.',false]],
+    vinetas: [
+      [['Estoy de acuerdo con que mi pupilo(a) asista a la ',false],['Municipalidad de Puerto Natales',true],[', unidad ',false],[unidad,true],[', los días ',false],['16, 17 y 18 de noviembre de 2026',true],[', a una pasantía de 22,5 horas prácticas, en jornadas de 09:00 a 17:30 horas.',false]],
+      [['En la reunión informativa del día 16 de noviembre de 2026 sobre la pasantía, me fueron explicados y me han quedado claros todos los aspectos relevantes de los distintos actores (Profesor Tutor, Maestro Guía e institución) y todos los documentos (Plan de Aprendizaje, bitácora del estudiante y Carta de Autorización y Compromiso). También es de mi conocimiento que todos los estudiantes están protegidos contra los accidentes que sufran durante su estadía en la institución o en el trayecto, de acuerdo con las condiciones y modalidades del seguro escolar establecido en el artículo 3° de la Ley N° 16.744 y en el Decreto Supremo N° 313 de 1972.',false]],
+      [['Durante su pasantía, mi pupilo(a) tendrá un comportamiento acorde a lo requerido por la institución y asistirá con el ',false],['uniforme de la especialidad: traje negro, camisa blanca, corbata azul y zapatos negros',true],['. Me comprometo a verificar que esto se cumpla diariamente.',false]],
+    ],
+    cierre: [['Por lo anterior, reitero mi compromiso con el Establecimiento, autorizando a mi pupilo(a) para que asista a la pasantía, y a cumplir fielmente con mi rol de apoderado(a) titular.',false]],
+    alumno: [['del alumno(a) ',false],[nombre,true],[',  RUT: ',false],[s.rut||'—',true]],
+    liceo: [['del ',false],['Liceo Bicentenario Politécnico Luis Cruz Martínez',true],[', ESPECIALIDAD ',false],['Administración mención Recursos Humanos',true],[', CURSO ',false],[ALTERNANCIA_MUNI.curso,true],['.',false]],
+  };
+}
+function altCartaHTML(s){
+  const c = altFichaDe(s).carta, P = cartaParrafos(s);
+  const seg = arr => arr.map(([t,b])=> b? `<b>${t}</b>` : t).join('');
+  const logo = logoForCarrera(config(), 'Administración / Recursos Humanos') || config().logoBase64;
+  return `<div class="bit-hoja carta-hoja">
+    <div class="bit-membrete">${logo?`<img src="${logo}" alt="Logo"/>`:''}
+      <div><div class="bit-liceo">LICEO BICENTENARIO POLITÉCNICO LUIS CRUZ MARTÍNEZ</div>
+      <div class="bit-sub">Dirección – Especialidad Administración mención Recursos Humanos</div>
+      <div class="bit-sub">RBD 8411-5 · Bernardo Philippi N° 474 · Puerto Natales</div></div></div>
+    <div class="bit-titulo" style="font-size:15px;margin:14px 0 14px">CARTA DE AUTORIZACIÓN Y COMPROMISO DE ALTERNANCIA</div>
+    <p>Yo, <input id="afc_apoderado" class="carta-linea" type="text" placeholder="nombre del apoderado(a)" value="${String(c.apoderado||'').replace(/"/g,'&quot;')}"/>, apoderado(a)</p>
+    <p>${seg(P.alumno)}</p>
+    <p>${seg(P.liceo)}</p>
+    <p style="text-align:justify">${seg(P.intro)}</p>
+    <ul>${P.vinetas.map(v=>`<li>${seg(v)}</li>`).join('')}</ul>
+    <p>Entiendo que serán deberes de mi pupilo(a):</p>
+    <ol type="a">${CARTA_DEBERES.map(t=>`<li>${t}</li>`).join('')}</ol>
+    <p style="text-align:justify">${seg(P.cierre)}</p>
+    <div class="carta-firmas">
+      <div><span></span>Firma Apoderado(a)</div><div><span></span>Firma Estudiante</div>
+      <div><span></span>César Maldonado R.<br>Profesor Tutor</div><div><span></span>Juan Crovetto F.<br>Director del Liceo</div>
+    </div>
+    <div class="bit-pie">Formación por alternancia 2026 · Municipalidad de Puerto Natales</div>
+  </div>`;
+}
+/* Escribe segmentos con negrita dentro de un ancho, con salto de línea; devuelve la nueva y */
+function pdfRico(pdf, segs, x, y, w, lh){
+  /* Arma líneas por palabras y dibuja cada tramo con el mismo formato como un solo texto (espaciado correcto) */
+  const palabras = [];
+  segs.forEach(([t,b])=> String(t).split(/\s+/).forEach((p,i,arr)=>{ if(p!=='') palabras.push({p, b, sp: true}); }));
+  // marca palabras que van pegadas a la anterior (sin espacio), p. ej. «,» tras un tramo en negrita
+  let k = 0;
+  let prevFinEsp = true;
+  segs.forEach(([t,b])=>{ const str=String(t); const toks=str.split(/\s+/).filter(Boolean); if(toks.length && k>0 && !prevFinEsp && !/^\s/.test(str)) palabras[k].sp=false; if(str.length) prevFinEsp = /\s$/.test(str); k+=toks.length; });
+  const ancho = (txt,b)=>{ pdf.setFont('helvetica', b?'bold':'normal'); return pdf.getTextWidth(txt); };
+  const lineas = []; let linea = []; let lw = 0;
+  palabras.forEach(o=>{
+    const add = ((linea.length && o.sp)? ' ' : '') + o.p;
+    const wAdd = ancho(add, o.b);
+    if(linea.length && lw + wAdd > w){ lineas.push(linea); linea=[]; lw=0; }
+    linea.push({t: linea.length? add : o.p, b:o.b}); lw += ancho(linea[linea.length-1].t, o.b);
+  });
+  if(linea.length) lineas.push(linea);
+  lineas.forEach(l=>{
+    const runs = []; l.forEach(o=>{ const r=runs[runs.length-1]; if(r && r.b===o.b) r.t+=o.t; else runs.push({t:o.t,b:o.b}); });
+    let cx = x; runs.forEach(r=>{ pdf.setFont('helvetica', r.b?'bold':'normal'); pdf.text(r.t, cx, y); cx += pdf.getTextWidth(r.t); });
+    y += lh;
+  });
+  return y;
+}
+async function altCartaPDF(id){
+  const s = altAlumno(id); if(!s) return;
+  const v = (document.getElementById('afc_apoderado')||{}).value;
+  const apod = (v!==undefined ? v : (altFichaDe(s).carta.apoderado||'')).trim();
+  const P = cartaParrafos(s), cfg = config();
+  const jsPDF = collectPDFmakerLib(); const pdf = new jsPDF({unit:'mm',format:'letter'});
+  pdf.__banda = 'PLAN DE ALTERNANCIA';
+  const pw = pdf.internal.pageSize.getWidth(), L = 22, W = pw-44, LH = 4.3;
+  const logo = logoForCarrera(cfg, 'Administración / Recursos Humanos') || cfg.logoBase64;
+  if(logo){ try{ pdf.addImage(logo,'PNG',L,12,18,18); }catch(e){} }
+  pdf.setTextColor(0,0,0);
+  pdf.setFont('helvetica','bold'); pdf.setFontSize(10.5); pdf.text('LICEO BICENTENARIO POLITÉCNICO LUIS CRUZ MARTÍNEZ', L+22, 17);
+  pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5);
+  pdf.text('Dirección – Especialidad Administración mención Recursos Humanos', L+22, 21.5);
+  pdf.text('RBD 8411-5 · Bernardo Philippi N° 474 · Puerto Natales', L+22, 25.5);
+  pdf.setFont('helvetica','bold'); pdf.setFontSize(12); pdf.text('CARTA DE AUTORIZACIÓN Y COMPROMISO DE ALTERNANCIA', pw/2, 38, {align:'center'});
+  pdf.setFontSize(9.3);
+  let y = 47;
+  pdf.setFont('helvetica','normal'); pdf.text('Yo,', L, y);
+  if(apod){ pdf.setFont('helvetica','bold'); pdf.text(apod.toUpperCase(), L+8, y); }
+  pdf.setLineWidth(0.2); pdf.line(L+7, y+0.8, L+W-30, y+0.8);
+  pdf.setFont('helvetica','normal'); pdf.text(', apoderado(a)', L+W-29, y);
+  y += 6.5; y = pdfRico(pdf, P.alumno, L, y, W, LH) + 2;
+  y = pdfRico(pdf, P.liceo, L, y, W, LH) + 2;
+  y = pdfRico(pdf, P.intro, L, y, W, LH) + 1.5;
+  P.vinetas.forEach(vn=>{ pdf.setFont('helvetica','bold'); pdf.text('•', L+4, y); y = pdfRico(pdf, vn, L+9, y, W-9, LH) + 1; });
+  y += 0.5; pdf.setFont('helvetica','normal'); pdf.text('Entiendo que serán deberes de mi pupilo(a):', L, y); y += LH+1;
+  CARTA_DEBERES.forEach((t,i)=>{ pdf.setFont('helvetica','normal'); pdf.text(String.fromCharCode(97+i)+'.', L+5, y); y = pdfRico(pdf, [[t,false]], L+10, y, W-10, LH) + 0.6; });
+  y += 1; y = pdfRico(pdf, P.cierre, L, y, W, LH);
+  y = Math.max(y + 22, 232);
+  const firmas = [['Firma Apoderado(a)'],['Firma Estudiante'],['César Maldonado R.','Profesor Tutor'],['Juan Crovetto F.','Director del Liceo']];
+  const cw = W/4;
+  firmas.forEach((f,i)=>{ const cx = L+cw*i+cw/2; pdf.line(cx-17, y, cx+17, y); pdf.setFont('helvetica','normal'); pdf.setFontSize(8.8); f.forEach((t,j)=>pdf.text(t, cx, y+4.5+j*4, {align:'center'})); });
+  pdf.setFont('helvetica','italic'); pdf.setFontSize(7.5); pdf.setTextColor(60,60,60);
+  pdf.text('Formación por alternancia 2026 · Municipalidad de Puerto Natales', pw/2, pdf.internal.pageSize.getHeight()-10, {align:'center'});
+  savePDF(pdf, 'Carta_autorizacion_'+(s.nombre||'estudiante').replace(/[\/\s]+/g,'_')+'.pdf');
+}
+function altMetaTipo(s, tipo){ const f=altFichaDe(s); return tipo==='carta' ? f.carta : altBit(s, Number(tipo.slice(3))); }
+function altSubirArchivo(id, tipo){
+  const input = document.createElement('input'); input.type='file'; input.accept='.pdf,image/*';
+  input.onchange = async ()=>{
+    const fl = input.files[0]; if(!fl) return;
+    if(fl.size > 10*1024*1024){ toast('El archivo supera 10 MB. Reduzca su tamaño e intente de nuevo.'); return; }
+    const s = altAlumno(id); if(!s) return; const m = altMetaTipo(s, tipo);
+    const prev = m.file && m.file.filePath;
+    const path = id+'/alternancia/'+tipo+'_'+Date.now()+'_'+sanitizeFileName(fl.name);
+    toast('Subiendo archivo…');
+    try{
+      const { error } = await sb.storage.from(DOCS_BUCKET).upload(path, fl, { upsert:false, contentType: fl.type||undefined });
+      if(error) throw error;
+      if(prev){ try{ await sb.storage.from(DOCS_BUCKET).remove([prev]); }catch(e){} }
+      m.file = { fileName: fl.name, filePath: path, updatedAt: new Date().toISOString().slice(0,10) };
+      if(tipo==='carta' && (!m.estado || m.estado==='Pendiente')) m.estado = 'Recibida firmada';
+      await saveData(); renderView(); toast(tipo==='carta' ? 'Carta de autorización subida' : 'Bitácora del día '+tipo.slice(3)+' subida');
+    }catch(e){ console.error('upload alternancia error', e); toast('No se pudo subir el archivo: '+(e && e.message ? e.message : 'error desconocido')); }
+  };
+  input.click();
+}
+async function altVerArchivo(id, tipo){
+  const s = altAlumno(id); const m = s && altMetaTipo(s, tipo);
+  if(!m || !m.file || !m.file.filePath){ toast('No hay archivo cargado'); return; }
+  try{ const { data, error } = await sb.storage.from(DOCS_BUCKET).createSignedUrl(m.file.filePath, 300); if(error) throw error; window.open(data.signedUrl, '_blank'); }
+  catch(e){ console.error('view alternancia error', e); toast('No se pudo abrir el archivo: '+(e && e.message ? e.message : 'error desconocido')); }
+}
+async function altQuitarArchivo(id, tipo){
+  const s = altAlumno(id); const m = s && altMetaTipo(s, tipo); if(!m || !m.file) return;
+  if(!confirm('¿Quitar el archivo «'+m.file.fileName+'»?')) return;
+  try{ if(m.file.filePath) await sb.storage.from(DOCS_BUCKET).remove([m.file.filePath]); }catch(e){ console.error('remove alternancia error', e); }
+  delete m.file; await saveData(); renderView(); toast('Archivo eliminado');
+}
+function renderHorasPre(){
+  const fc = state.horasCarrera || '';
+  const q = normalizeTxt(state.horasBusqueda||'');
+  const list = students().filter(s=> (!fc || (s.carrera||'Sin especialidad asignada')===fc) && (!q || normalizeTxt([s.nombre,s.rut,s.carrera].join(' ')).includes(q)));
+  const conHoras = list.filter(p=>horasPreDe(p)>0).length;
+  document.getElementById('view-root').innerHTML = `
+  ${especialidadesPanelHTML('horas', fc)}
+  <div class="panel">
+    <div class="panel-head">
+      <h2 style="display:flex;align-items:center;gap:9px"><span class="panel-head-icon">${icon('clock',18)}</span>Cantidad de horas de pre-práctica <span class="badge-count" style="margin-left:2px">${list.length}</span></h2>
+      <input type="search" id="horasBuscar" class="ficha-buscar" placeholder="Buscar por nombre, RUT o especialidad" value="${(state.horasBusqueda||'').replace(/"/g,'&quot;')}">
+    </div>
+    <div class="panel-body">
+      <div class="hint" style="margin-bottom:12px">Máximo <strong>${MAX_HORAS_PRE} h</strong> por estudiante. Las horas se <strong>descuentan automáticamente</strong> de su Práctica Profesional 2026 (mismo RUT). Escribe las horas y presiona Enter o sal del recuadro para guardar. · ${conHoras} de ${list.length} con horas registradas.</div>
+      ${gruposEspecialidadHTML('hrs', list, p=>{
+        const hh = horasPreDe(p), prof = practicaProfesionalDe(p);
+        return {
+          meta: `RUT ${p.rut||'—'}${prof? ` · Práctica Profesional: ${prof.horasRequeridasBase??prof.horasRequeridas} − ${fmtH(hh)} = <strong>${fmtH(prof.horasRequeridas)} h</strong>` : ' · Aún sin registro de Práctica Profesional'}${p.alternancia?' · <span style="color:#2A1670;font-weight:600">Plan de alternancia</span>':''}`,
+          label: `${fmtH(hh)}/${MAX_HORAS_PRE} h`, pct: hh/MAX_HORAS_PRE*100,
+          botones: `<span style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap"><input class="horas-input" style="width:78px" type="number" min="0" max="${MAX_HORAS_PRE}" step="0.5" value="${hh}" data-horas-pre="${p.id}" title="Horas realizadas en pre-práctica"/> h</span>
+                    <button class="btn-secondary" data-action="open-ficha" data-id="${p.id}">Ver ficha ${icon('arrow',13)}</button>`
+        };
+      }, q||fc ? 'Ningún estudiante coincide con la búsqueda.' : 'No hay estudiantes en pre-práctica.')}
+    </div>
+  </div>`;
+  const b = document.getElementById('horasBuscar');
+  if(b) b.addEventListener('input', ev=>{ state.horasBusqueda = ev.target.value; renderView(); const el=document.getElementById('horasBuscar'); if(el){ el.focus(); el.setSelectionRange(el.value.length, el.value.length); } });
 }
 function closeModal(){ document.getElementById('modal-root').innerHTML=''; }
 /* Video de presentación del sistema (archivo junto a index.html en el repositorio) */
@@ -4686,7 +5709,10 @@ async function handleCreateStudent(){
   if(!s.carrera || !ESPECIALIDADES[s.carrera]){ toast('Selecciona una de las 5 especialidades disponibles'); return; }
   s.fotoBase64 = newStudentFotoBase64 || '';
   if(!s.estado) s.estado = 'Pendiente';
+  s.modalidad = state.modo;
+  if(esPre(s)){ s.tipoPractica = 'Pre-práctica'; if(!(Number(s.horasRequeridas)>0) || s.horasRequeridas>MAX_HORAS_PRE) s.horasRequeridas = MAX_HORAS_PRE; if(Number(s.horasRealizadas)>MAX_HORAS_PRE){ s.horasRealizadas = MAX_HORAS_PRE; toast('La pre-práctica no puede superar '+MAX_HORAS_PRE+' horas'); } }
   state.data.students.push(s);
+  sincronizarHorasPre();
   await saveData();
   closeModal();
   state.view='fichas'; state.fichaId=s.id;
@@ -4721,7 +5747,26 @@ const PAGE_FORMAT = [216, 330];
 function pageBottomLimit(pdf, margin){ return pdf.internal.pageSize.getHeight() - (margin===undefined?27:margin); }
 
 /* ---- PDF generation core ---- */
+/* En los documentos de pre-práctica, «práctica» se escribe «Pre - Práctica».
+   Se usan espacios no separables para que «Pre - Práctica» nunca se corte entre dos líneas
+   (y para no volver a reemplazar un texto que ya fue convertido). */
+const PRE_NB = 'Pre - ';
+function textoPre(t){
+  if(typeof t!=='string' || /Sistema Gesti[oó]n/i.test(t)) return t;
+  return t.replace(/(^|[^A-Za-zÁÉÍÓÚáéíóúÑñ-])(?<!pre[\s ]-[\s ])(pr[aá]ctica)(s?)(\s+profesional(?:es)?)?(?![A-Za-zÁÉÍÓÚáéíóúÑñ])/gi, (m,pre,w,pl)=>{
+    const out = (w===w.toUpperCase()) ? ('PRE - PRÁCTICA'+(pl?'S':'')) : (PRE_NB+'Práctica'+(pl?'s':''));
+    return pre+out;
+  });
+}
+function aplicarTextoPre(pdf){
+  if(state.modo!=='pre' || !pdf || pdf.__pre) return;
+  pdf.__pre = true;
+  const tx = pdf.text.bind(pdf); pdf.__textRaw = tx;
+  pdf.text = function(t, ...rest){ return tx(Array.isArray(t)? t.map(textoPre) : textoPre(t), ...rest); };
+  if(pdf.splitTextToSize){ const sp = pdf.splitTextToSize.bind(pdf); pdf.splitTextToSize = function(t, ...rest){ return sp(textoPre(t), ...rest); }; }
+}
 function addLetterhead(pdf, cfg, title, subtitle, carrera){
+  aplicarTextoPre(pdf);
   const pw = pdf.internal.pageSize.getWidth();
   const specialtyLogo = logoForCarrera(cfg, carrera);
   const institutionalLogo = cfg.logoBase64;
@@ -4751,6 +5796,8 @@ function addLetterhead(pdf, cfg, title, subtitle, carrera){
   return subtitle? 62: 57;
 }
 function savePDF(pdf, filename){
+  if(pdf && pdf.__banda) { /* plan de alternancia: nombre propio */ }
+  else if(state.modo==='pre' && !/^PRE - PRÁCTICA_/.test(filename)) filename = 'PRE - PRÁCTICA_'+filename.replace(/(^|[^A-Za-zÁÉÍÓÚáéíóú-])pr[aá]ctica/gi, (m,a)=>a+'Pre - Práctica');
   // Descarga directa con el nombre correcto del archivo.
   // Antes se abría el PDF en una pestaña nueva (visor de Chrome con nombre tipo UUID y
   // diálogo de guardado que a veces quedaba en blanco). Ahora se descarga como blob.
@@ -4764,6 +5811,13 @@ function savePDF(pdf, filename){
 function addFooterAll(pdf){
   const n = pdf.internal.getNumberOfPages();
   for(let i=1;i<=n;i++){ pdf.setPage(i); const w=pdf.internal.pageSize.getWidth(), h=pdf.internal.pageSize.getHeight();
+    const banda = pdf.__banda || (state.modo==='pre' ? 'PRE - PRÁCTICA' : '');
+    if(banda){
+      pdf.setFillColor(17,8,51); pdf.rect(0,0,w,8,'F');
+      pdf.setFillColor(255,176,1); pdf.rect(0,8,w,1.2,'F');
+      pdf.setFont('helvetica','bold'); pdf.setFontSize(11); pdf.setTextColor(255,255,255);
+      pdf.text(banda, w/2, 5.6, {align:'center', charSpace:1});
+    }
     pdf.setDrawColor(226,221,211); pdf.setLineWidth(0.3); pdf.line(18,h-14,w-18,h-14);
     pdf.setFillColor(255,176,1); pdf.rect(18,h-14,14,0.6,'F');
     pdf.setFont('helvetica','normal'); pdf.setFontSize(7); pdf.setTextColor(160,160,160);
@@ -5369,8 +6423,8 @@ function contentSupervision(pdf,s,cfg,y,pw){
   y = paragraph(pdf,18,y,'Describa brevemente las actividades desarrolladas por el estudiante, las competencias observadas y el nivel de cumplimiento del Plan de Práctica Profesional.', pw-36)+3;
   y = paragraph(pdf,18,y,sup.avancePlan||'—',pw-36)+8;
   y = checkPageBreak(pdf,y,cfg);
-  y = sectionTitle(pdf,18,y,'Observaciones del maestro guía'); y+=7;
-  y = paragraph(pdf,18,y,sup.observacionesMaestroGuia||'—',pw-36)+8;
+  y = sectionTitle(pdf,18,y,'Observaciones del maestro guía'); y+=5;
+  y = cuadroLineasEscritura(pdf, y, pw, sup.observacionesMaestroGuia||'', 4)+8;
   y = checkPageBreak(pdf,y,cfg);
   y = sectionTitle(pdf,18,y,'Fortalezas observadas'); y+=7;
   y = addChecklistGrid(pdf, y+2, [...SEG_FORTALEZAS, 'Otra: '+(sup.fortalezaOtra||'—')], pw, [...(sup.fortalezas||[]), ...(sup.fortalezaOtra?['Otra: '+sup.fortalezaOtra]:[])])+2;
@@ -5386,8 +6440,8 @@ function contentSupervision(pdf,s,cfg,y,pw){
   y = sectionTitle(pdf,18,y,'Tiempo utilizado en la visita'); y+=7;
   y = addFieldGrid(pdf,y,[{label:'Hora de llegada',value:sup.horaLlegada},{label:'Hora de salida',value:sup.horaSalida},{label:'Duración de la visita',value:sup.duracionVisita}],pw);
   y = checkPageBreak(pdf,y,cfg,pageBottomLimit(pdf,62));
-  y = sectionTitle(pdf,18,y,'Observaciones del profesor supervisor'); y+=7;
-  y = paragraph(pdf,18,y,sup.observacionesProfesor||'—',pw-36)+10;
+  y = sectionTitle(pdf,18,y,'Observaciones del profesor supervisor'); y+=5;
+  y = cuadroLineasEscritura(pdf, y, pw, sup.observacionesProfesor||'', 4)+10;
   addSignatures(pdf,y,['Estudiante','Maestro guía'],pw); y+=22;
   addSignatures(pdf,y,[docenteSignature(cfg,s,'supervisor','Profesor supervisor')],pw);
 }
@@ -5408,8 +6462,8 @@ function contentPostergacion(pdf,s,cfg,y,pw){
   { const pg=s.postergacion||{}; const otrosLbl='Otros: '+(pg.otros||'—'); y = addChecklistGrid(pdf, y, [...SEG_ANTECEDENTES, otrosLbl], pw, [...(pg.antecedentes||[]), ...(pg.otros?[otrosLbl]:[])]); }
   y+=4;
   y = checkPageBreak(pdf,y,cfg);
-  y = sectionTitle(pdf,18,y,'Observaciones del profesor supervisor'); y+=7;
-  y = paragraph(pdf,18,y,(s.postergacion&&s.postergacion.observaciones)||'—',pw-36)+8;
+  y = sectionTitle(pdf,18,y,'Observaciones del profesor supervisor'); y+=5;
+  y = cuadroLineasEscritura(pdf, y, pw, (s.postergacion&&s.postergacion.observaciones)||'', 4)+8;
   y = checkPageBreak(pdf,y,cfg,pageBottomLimit(pdf,57));
   y = sectionTitle(pdf,18,y,'Declaración'); y+=7;
   y = paragraph(pdf,18,y,'Por medio de la presente, declaro que la información proporcionada es fidedigna y que conozco las implicancias asociadas a la postergación de mi proceso de práctica profesional y posterior titulación.', pw-36)+5;
@@ -5668,7 +6722,8 @@ function contentSeguimiento(pdf,s,cfg,y,pw){
     pdf.setFont('helvetica','bold'); pdf.setFontSize(9.5); pdf.setTextColor(17,8,51);
     pdf.text(`${r.fecha}  ·  Estado: ${r.estado||'—'}`,18,y); y+=6;
     y = paragraph(pdf,18,y,'Avance / cumplimiento: '+(r.avance||'—'),pw-36)+2;
-    y = paragraph(pdf,18,y,'Observaciones: '+(r.observaciones||'—'),pw-36)+6;
+    pdf.setFont('helvetica','bold'); pdf.setFontSize(9); pdf.setTextColor(17,8,51); pdf.text('Observaciones:',18,y); y+=2;
+    y = cuadroLineasEscritura(pdf, y, pw, r.observaciones||'', 3)+6;
     pdf.setDrawColor(220,220,220); pdf.line(15,y-3,pw-18,y-3);
   });
 }
@@ -5711,8 +6766,8 @@ function contentInformeFinal(pdf,s,cfg,y,pw){
   y = sectionTitle(pdf,18,y,'Otros antecedentes'); y+=7;
   y = addFieldGrid(pdf,y,[{label:'Nombre profesor supervisor',value:i.nombreProfesorSupervisor},{label:'Fecha inicio',value:s.fechaInicio},{label:'Fecha término',value:s.fechaTermino},{label:'Duración (horas)',value:s.horasRequeridas}],pw);
   y = checkPageBreak(pdf,y,cfg);
-  y = sectionTitle(pdf,18,y,'Observaciones relevantes'); y+=7;
-  y = paragraph(pdf,18,y,i.observacionesRelevantes||'—',pw-36)+8;
+  y = sectionTitle(pdf,18,y,'Observaciones relevantes'); y+=5;
+  y = cuadroLineasEscritura(pdf, y, pw, i.observacionesRelevantes||'', 4)+8;
   y = checkPageBreak(pdf,y,cfg,pageBottomLimit(pdf,72));
   y = sectionTitle(pdf,18,y,'Evaluación de la práctica'); y+=8;
   y = addFieldGrid(pdf,y,[{label:'Maestro guía',value:s.evaluacionEmpresa? s.evaluacionEmpresa.nota.toFixed(1):'—'},{label:'Informe final',value:(s.informeFinal&&s.informeFinal.nota)? Number(s.informeFinal.nota).toFixed(1):'—'},{label:'Nota final',value:(s.evaluacionEmpresa)? weightedNota(s).toFixed(2):'—'}],pw);
@@ -6374,10 +7429,12 @@ async function handleImportStudentsFile(file){
       /* Si la empresa ya existe en otros expedientes, completa los datos de empresa vacíos */
       const otra = s.empresa ? students().find(x=>normalizeTxt(x.empresa)===normalizeTxt(s.empresa)) : null;
       if(otra){ ['rutEmpresa','direccionEmpresa','representanteLegal','rutRepresentante'].forEach(k=>{ if(!s[k] && otra[k]) s[k]=otra[k]; }); }
+      s.modalidad = state.modo;
+      if(esPre(s)){ s.tipoPractica = 'Pre-práctica'; if(s.horasRequeridas>MAX_HORAS_PRE) s.horasRequeridas = MAX_HORAS_PRE; if(Number(s.horasRealizadas)>MAX_HORAS_PRE) s.horasRealizadas = MAX_HORAS_PRE; }
       state.data.students.push(s);
       creados++;
     });
-    if(creados>0){ await saveData(); renderView(); }
+    if(creados>0){ sincronizarHorasPre(); await saveData(); renderView(); }
     let msg = creados+' estudiante(s) importado(s) correctamente.';
     if(omitidos>0) msg += ' '+omitidos+' fila(s) sin nombre fueron omitidas.';
     if(carrerasNoReconocidas>0){
@@ -6422,6 +7479,12 @@ function normalizeImportedDate(val){
   else if(/\.json$/i.test(f.name)) handleRestoreBackupFile(f);
   else toast('Para subir un documento, suéltalo sobre la fila del documento correspondiente.');
 }));
+function cambiarModo(m){
+  state.modo = m==='pre'?'pre':'profesional';
+  try{ localStorage.setItem('sgp_modo', state.modo); }catch(e){}
+  state.fichaId=null; state.cierreId=null; state.inicioId=null; state.reporteId=null; state.selectedId=null;
+  state.navOpen[state.modo]=true;
+}
 document.addEventListener('click', async (e)=>{
   const t = e.target.closest('[data-action]');
   if(!t) return;
@@ -6429,7 +7492,22 @@ document.addEventListener('click', async (e)=>{
   const id = t.dataset.id;
   try{
   switch(action){
-    case 'nav': state.view = t.dataset.view; state.search=''; state.volverAFicha=null; if(t.dataset.view==='fichas') state.fichaId=null; if(t.dataset.view==='cierre') state.cierreId=null; if(t.dataset.view==='inicio') state.inicioId=null; if(t.dataset.view==='reportes') state.reporteId=null; renderView(); break;
+    case 'alt-plan-pdf': await planAlternanciaPDF(id); break;
+    case 'alt-evaluar': state.altEvalId=id; state.view='altPlan'; renderView(); window.scrollTo(0,0); break;
+    case 'alt-abrir-ficha': state.altFichaId=id; state.view='alternancia'; renderView(); window.scrollTo(0,0); break;
+    case 'alt-cerrar-ficha': state.altFichaId=null; renderView(); window.scrollTo(0,0); break;
+    case 'alt-guardar-carta': await altGuardarCarta(id); break;
+    case 'alt-carta-pdf': await altCartaPDF(id); break;
+    case 'alt-bit-pdf': await altBitacoraPDF(id, Number(t.dataset.dia)); break;
+    case 'alt-guardar-bit': await altGuardarBitacora(id, Number(t.dataset.dia)); break;
+    case 'alt-subir-archivo': altSubirArchivo(id, t.dataset.tipo); break;
+    case 'alt-ver-archivo': await altVerArchivo(id, t.dataset.tipo); break;
+    case 'alt-quitar-archivo': await altQuitarArchivo(id, t.dataset.tipo); break;
+    case 'alt-volver-lista': state.altEvalId=null; renderView(); window.scrollTo(0,0); break;
+    case 'alt-limpiar-filtros': state.altEstado=''; state.altEstudiante=''; renderView(); break;
+    case 'alt-guardar-eval': if(id) await guardarEvalAlternancia(id); break;
+    case 'nav-toggle': { const m=t.dataset.modo; const cg=(state.modo==='pre'&&esVistaAlter(state.view))?'alter':state.modo; const ab = state.navOpen[m]!=null ? state.navOpen[m] : cg===m; state.navOpen[m] = !ab; renderView(); break; }
+    case 'nav': if(t.dataset.view==='altPlan') state.altEvalId=null; if(t.dataset.view==='alternancia') state.altFichaId=null; if(t.dataset.modo && t.dataset.modo!==state.modo) cambiarModo(t.dataset.modo); state.view = t.dataset.view; state.search=''; state.volverAFicha=null; if(t.dataset.view==='fichas') state.fichaId=null; if(t.dataset.view==='cierre') state.cierreId=null; if(t.dataset.view==='inicio') state.inicioId=null; if(t.dataset.view==='reportes') state.reporteId=null; renderView(); break;
     case 'open-ficha': state.fichaTab='fsec_personal'; state.volverAFicha=null; closeModal(); state.view='fichas'; state.fichaId=id; renderView(); window.scrollTo(0,0); break;
     case 'close-ficha': state.fichaId=null; renderView(); break;
     case 'open-cierre': closeModal(); state.view='cierre'; state.inicioEdit=null; state.cierreId=id; renderView(); window.scrollTo(0,0); break;
@@ -6521,6 +7599,7 @@ document.addEventListener('click', async (e)=>{
       else if(sc==='dash') state.dashCarrera = state.dashCarrera===c ? '' : c;
       else if(sc==='reporte') state.reporteCarrera = state.reporteCarrera===c ? '' : c;
       else if(sc==='inicio') state.inicioCarrera = state.inicioCarrera===c ? '' : c;
+      else if(sc==='horas') state.horasCarrera = state.horasCarrera===c ? '' : c;
       else if(sc==='ficha') state.fichaCarrera = state.fichaCarrera===c ? '' : c;
       renderView(); break; }
     case 'doc-carrera-filter': { const c=decodeURIComponent(t.dataset.carrera); state.docFilters.carrera = (state.docFilters.carrera===c)? '' : c; renderView(); break; }
@@ -6551,7 +7630,22 @@ document.addEventListener('click', async (e)=>{
 document.addEventListener('input', (e)=>{
   if(e.target && e.target.classList && e.target.classList.contains('pm-input')) actualizarTotalesPesos(e.target.dataset.esp);
 });
+document.addEventListener('toggle', (e)=>{ const d=e.target; if(d && d.dataset && d.dataset.acc){ state.altOpen = state.altOpen||{}; state.altOpen[d.dataset.acc] = d.open; } }, true);
 document.addEventListener('change', async (e)=>{
+  if(e.target && e.target.id==='altFiltroEst'){ state.altEstudiante = e.target.value; renderView(); return; }
+  if(e.target && e.target.id==='altFiltroEstado'){ state.altEstado = e.target.value; renderView(); return; }
+  if(e.target && e.target.name && /^alt_/.test(e.target.name)){ recalcAlternanciaVivo(); return; }
+  if(e.target && e.target.dataset && e.target.dataset.horasPre){
+    const p = (state.data.students||[]).find(x=>x.id===e.target.dataset.horasPre); if(!p) return;
+    let v = Math.round((Number(String(e.target.value).replace(',','.'))||0)*2)/2;
+    if(v>MAX_HORAS_PRE){ v=MAX_HORAS_PRE; toast('La pre-práctica no puede superar las '+MAX_HORAS_PRE+' horas'); }
+    if(v<0) v=0;
+    p.horasRealizadas = v; if(!p.alternancia) p.horasRequeridas = MAX_HORAS_PRE;
+    sincronizarHorasPre(); await saveData(); renderView();
+    const prof = practicaProfesionalDe(p);
+    toast(prof? `Guardado: se descuentan ${v} h de la práctica profesional de ${prof.nombre}` : `Guardado: ${v} h de pre-práctica`);
+    return;
+  }
   if(e.target && e.target.id){
     if(/^p[te]_/.test(e.target.id)) recalcNivelesVivo('plan');
     else if(/^pl_[te]\d/.test(e.target.id)) recalcLikertVivo('pl');
