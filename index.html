@@ -2536,7 +2536,7 @@ function renderShell(){
     </div>`;
   };
   const navPre = NAV.slice(0,6).concat([NAV_PRE_EXTRA]).concat(NAV.slice(6));
-  document.getElementById('navList').innerHTML = grupo('profesional','#FFB001',NAV) + grupo('pre','#5BC0EB',navPre) + grupo('alter','#7BD389',NAV_ALTER);
+  document.getElementById('navList').innerHTML = grupo('alter','#7BD389',NAV_ALTER) + grupo('pre','#5BC0EB',navPre) + grupo('profesional','#FFB001',NAV);
   document.getElementById('navFootInst').textContent = config().nombreInstitucion || '—';
 
   const titles = {horasPre:'Cantidad de horas', alternancia:'Plan de alternancia · Municipalidad', altPlan:'Plan de alternancia · Evaluación', altDocs:'Documentación · Alternancia', dashboard:'Panel General', estudiantes:'Estudiantes', empresas:'Empresas', documentacion:'Proceso de Práctica', fichas:'Ficha del estudiante', inicio:'Documentación inicial', cierre:'Cierre de práctica', reportes:'Reporte y exportación', evaluaciones:'Plan de práctica', seguimiento:'Seguimiento', expedientes:'Expedientes', configuracion:'Configuración', detalle:'Expediente del estudiante'};
@@ -5337,7 +5337,8 @@ async function planAlternanciaPDF(id){
    FICHA DE ALTERNANCIA: carta de autorización y bitácoras (subir archivo y registrar)
    ============================================================ */
 const ALT_DIAS = [{n:1, txt:'Día 1 – lunes 16 de noviembre de 2026'},{n:2, txt:'Día 2 – martes 17 de noviembre de 2026'},{n:3, txt:'Día 3 – miércoles 18 de noviembre de 2026'}];
-const ALT_AUTOEVAL = ['Puntualidad y asistencia','Presentación personal (uniforme de la especialidad)','Cumplimiento de las tareas asignadas','Trato respetuoso con funcionarios y usuarios','Confidencialidad de la información','Trabajo en equipo y disposición a aprender'];
+/* Autoevaluación de la bitácora: las mismas 9 afirmaciones de la evaluación del plan de alternancia */
+const ALT_AUTOEVAL = ESPECIALIDADES['Administración / Recursos Humanos'].empleabilidad.map((t,i)=>(i+1)+'. '+t);
 const ALT_PREGUNTAS = [['actividades','1. Actividades realizadas durante la jornada'],['aprendi','2. ¿Qué aprendí hoy? (relaciónalo con los módulos de la especialidad)'],['dificultades','3. Dificultades que se me presentaron y cómo las resolví'],['interaccion','4. Una atención o interacción destacada con un usuario o funcionario']];
 function altAlumno(id){ return alumnosAlternancia().find(s=>s.id===id); }
 function altFichaDe(s){ s.altFicha = s.altFicha || {carta:{}, bitacoras:{}}; s.altFicha.carta = s.altFicha.carta||{}; s.altFicha.bitacoras = s.altFicha.bitacoras||{}; return s.altFicha; }
@@ -5388,6 +5389,7 @@ function renderAltFicha(){
       <div class="hint" style="margin-bottom:10px">Formato oficial de la carta con los datos del estudiante. Escribe el nombre del apoderado(a), descárgala en PDF para imprimir y firmar, y luego sube la carta firmada.</div>
       ${altArchivoHTML(s,'carta',c)}
       ${altCartaHTML(s)}
+      ${altCiApoHTML(s)}
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px">
         <div class="field"><label>Estado</label><select id="afc_estado">${['Pendiente','Entregada al apoderado','Recibida firmada'].map(o=>`<option ${c.estado===o?'selected':''}>${o}</option>`).join('')}</select></div>
         <div class="field"><label>RUT del apoderado(a)</label><input id="afc_rutApoderado" type="text" value="${esc(c.rutApoderado)}"/></div>
@@ -5437,6 +5439,70 @@ function renderAltFicha(){
     </div>`, false);
   }).join('');
   document.getElementById('view-root').innerHTML = cabecera + carta + bitacoras;
+}
+/* Carnet de identidad del estudiante: usa la misma cédula (frente) de la ficha del estudiante */
+function altCiApoHTML(s){
+  const m = s.cedula && s.cedula.frente;
+  const esc = v => (v??'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  const estado = m && m.filePath
+    ? `<span style="color:var(--green);font-weight:600">✓ Cargado</span> <span class="hint">${esc(m.fileName)}${m.updatedAt?' · '+esc(m.updatedAt):''}</span>`
+    : `<span class="hint">Sin archivo</span>`;
+  const acciones = m && m.filePath
+    ? `<button type="button" class="btn-secondary" onclick="altVerCiApo('${s.id}')">${icon('eye',13)} Ver</button>
+       <button type="button" class="btn-secondary" onclick="altSubirCiApo('${s.id}')">${icon('upload',13)} Importar</button>
+       <button type="button" class="btn-danger" onclick="altQuitarCiApo('${s.id}')" title="Quitar archivo">${icon('trash',13)}</button>`
+    : `<button type="button" class="btn-secondary" onclick="altSubirCiApo('${s.id}')">${icon('upload',13)} Importar</button>`;
+  return `<div id="altCiApoBloque" style="margin:12px 0 4px;padding:12px 14px;border:1px solid var(--border);border-radius:10px;background:#fff">
+    <div style="font-weight:600;color:var(--navy);margin-bottom:6px">Carnet de identidad del estudiante</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px">${estado}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">${acciones}</div>
+    </div>
+  </div>`;
+}
+function altRefrescarCiApo(s){
+  const el = document.getElementById('altCiApoBloque');
+  if(el){ const t = document.createElement('div'); t.innerHTML = altCiApoHTML(s).trim(); el.replaceWith(t.firstElementChild); }
+}
+function altSubirCiApo(id){
+  const input = document.createElement('input'); input.type='file'; input.accept='.pdf,image/*';
+  input.onchange = async ()=>{
+    const f = input.files[0]; if(!f) return;
+    if(f.size > 10*1024*1024){ toast('El archivo supera 10 MB. Reduzca su tamaño e intente de nuevo.'); return; }
+    const s = altAlumno(id); if(!s) return; s.cedula = s.cedula || {}; const c = s.cedula;
+    const prev = c.frente && c.frente.filePath;
+    const path = id+'/cedula/frente_'+Date.now()+'_'+sanitizeFileName(f.name);
+    toast('Subiendo carnet de identidad…');
+    try{
+      const { error } = await sb.storage.from(DOCS_BUCKET).upload(path, f, { upsert:false, contentType: f.type||undefined });
+      if(error) throw error;
+      if(prev){ try{ await sb.storage.from(DOCS_BUCKET).remove([prev]); }catch(e){} }
+      c.frente = { fileName: f.name, filePath: path, updatedAt: new Date().toISOString().slice(0,10) };
+      await saveData(); altRefrescarCiApo(s);
+      toast('Carnet de identidad del estudiante guardado');
+    }catch(e){
+      console.error('upload ci apoderado error', e);
+      toast('No se pudo subir el carnet: '+(e && e.message ? e.message : 'error desconocido'));
+    }
+  };
+  input.click();
+}
+async function altVerCiApo(id){
+  const s = altAlumno(id); const m = s && s.cedula && s.cedula.frente;
+  if(!m || !m.filePath){ toast('No hay archivo cargado'); return; }
+  try{
+    const { data, error } = await sb.storage.from(DOCS_BUCKET).createSignedUrl(m.filePath, 300);
+    if(error) throw error;
+    window.open(data.signedUrl, '_blank');
+  }catch(e){ toast('No se pudo abrir el carnet: '+(e && e.message ? e.message : 'error desconocido')); }
+}
+async function altQuitarCiApo(id){
+  const s = altAlumno(id); if(!s) return; const c = s.cedula || {}; const m = c.frente; if(!m) return;
+  if(!confirm('¿Quitar el carnet de identidad de '+(s.nombre||'este estudiante')+'?')) return;
+  try{ if(m.filePath) await sb.storage.from(DOCS_BUCKET).remove([m.filePath]); }catch(e){ console.error('remove ci error', e); }
+  delete c.frente;
+  await saveData(); altRefrescarCiApo(s);
+  toast('Carnet de identidad eliminado');
 }
 async function altGuardarCarta(id){
   const s = altAlumno(id); if(!s) return; const c = altFichaDe(s).carta;
