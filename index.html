@@ -1825,7 +1825,7 @@ function practicaProfesionalDe(p){
 }
 function horasPreDe(p){ return Math.min(MAX_HORAS_PRE, Math.max(0, Number(p && p.horasRealizadas)||0)); }
 /* Límite de 180 h en pre-práctica y descuento automático en la práctica profesional 2026 */
-const PRE_CAMPOS_COPIA = ['numeroMatricula','nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','sector','comuna','ciudad','apoderado','rutApoderado','institucion','carrera','curso','jornada','profesorResponsable','jefePractica','anoEgreso'];
+const PRE_CAMPOS_COPIA = ['numeroMatricula','nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','comuna','ciudad','apoderado','rutApoderado','institucion','carrera','curso','jornada','profesorResponsable','jefePractica','anoEgreso'];
 /* Cada estudiante de la Práctica Profesional 2026 tiene también su registro de pre-práctica (se crea una sola vez) */
 function asegurarRegistrosPre(){
   if(!state.data || !Array.isArray(state.data.students)) return false;
@@ -3657,7 +3657,7 @@ function renderDetalle(){
 }
 
 /* Campos que componen la Individualización (se usan al crear y al editar) */
-const INDIV_KEYS = ['numeroMatricula','nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','sector','comuna','ciudad','apoderado','rutApoderado','institucion','carrera','curso','jornada','profesorResponsable','jefePractica','anoEgreso','tipoPractica','empresa','rutEmpresa','direccionEmpresa','area','cargo','supervisor','cargoSupervisor','correoSupervisor','telefonoSupervisor','celularSupervisor','ciSupervisor','representanteLegal','rutRepresentante','fechaInicio','fechaTermino','horasRequeridas','horasRealizadas','jornadaHorario','estado','horasCronologicas','resolDualNum','resolDualFecha','resolDualHoras','resolAlterNum','resolAlterFecha','resolAlterHoras','profSupNombre','profSupCI','profSupCargo','profSupTelefono','profSupCorreo'];
+const INDIV_KEYS = ['numeroMatricula','nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','comuna','ciudad','apoderado','rutApoderado','institucion','carrera','curso','jornada','profesorResponsable','jefePractica','anoEgreso','tipoPractica','empresa','rutEmpresa','direccionEmpresa','area','cargo','supervisor','cargoSupervisor','correoSupervisor','telefonoSupervisor','celularSupervisor','ciSupervisor','representanteLegal','rutRepresentante','fechaInicio','fechaTermino','horasRequeridas','horasRealizadas','jornadaHorario','estado','horasCronologicas','resolDualNum','resolDualFecha','resolDualHoras','resolAlterNum','resolAlterFecha','resolAlterHoras','profSupNombre','profSupCI','profSupCargo','profSupTelefono','profSupCorreo'];
 function tplIndividualizacion(s){
   const foto = `
     <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px">
@@ -3690,7 +3690,6 @@ function seccionesIndividualizacionHTML(s, fotoHTML, porSeccion){
       ${fld('telefono','Teléfono',s.telefono)}
       ${fld('correo','Correo electrónico',s.correo)}
       ${fld('direccion','Dirección',s.direccion)}
-      ${fld('sector','Población / sector',s.sector)}
       ${fld('comuna','Comuna',s.comuna)}
       ${fld('ciudad','Ciudad',s.ciudad)}
       ${fld('apoderado','Nombre del apoderado(a) / tutor(a)',s.apoderado)}
@@ -4050,7 +4049,7 @@ function tplCierre(s){
    ============================================================ */
 const INDIV_SECCIONES = {
   pago: ['pagoTitular','pagoRutTitular','pagoBanco','pagoTipoCuenta','pagoNumeroCuenta','pagoCorreo'],
-  personal: ['numeroMatricula','nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','sector','comuna','ciudad','apoderado','rutApoderado'],
+  personal: ['numeroMatricula','nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','comuna','ciudad','apoderado','rutApoderado'],
   academico: ['institucion','carrera','curso','jornada','profesorResponsable','jefePractica','anoEgreso'],
   practica: ['tipoPractica','empresa','rutEmpresa','direccionEmpresa','representanteLegal','rutRepresentante','area','cargo','supervisor','cargoSupervisor','correoSupervisor','celularSupervisor','telefonoSupervisor','ciSupervisor','fechaInicio','fechaTermino','horasRequeridas','horasRealizadas','jornadaHorario','estado'],
   anexo: ['horasCronologicas','resolDualNum','resolDualFecha','resolDualHoras','resolAlterNum','resolAlterFecha','resolAlterHoras','profSupNombre','profSupCI','profSupCargo','profSupTelefono','profSupCorreo'],
@@ -6574,7 +6573,7 @@ function cuadroLineasEscritura(pdf, y, pw, texto, minLineas){
 function contentRechazo(pdf,s,cfg,y,pw){
   y = sectionTitle(pdf,18,y,'Ficha de rechazo de práctica / rechazo lugar de práctica'); y+=8;
   y = addFieldGrid(pdf,y,[{label:'Fecha',value:fmtDate((s.rechazo&&s.rechazo.fecha)||new Date().toISOString().slice(0,10))},{label:'Especialidad',value:s.carrera}],pw);
-  y = addFieldGrid(pdf,y,[{label:'Nombre estudiante',value:s.nombre},{label:'C.I.',value:s.rut},{label:'Nombre apoderado',value:s.apoderado},{label:'C.I. apoderado',value:s.rutApoderado},{label:'Fecha de nacimiento',value:s.fechaNacimiento},{label:'Celular',value:s.telefono},{label:'Año egreso',value:s.anoEgreso||s.anioEgreso},{label:'Dirección',value:s.direccion},{label:'Población/Sector',value:s.sector}],pw);
+  y = addFieldGrid(pdf,y,[{label:'Nombre estudiante',value:s.nombre},{label:'C.I.',value:s.rut},{label:'Nombre apoderado',value:s.apoderado},{label:'C.I. apoderado',value:s.rutApoderado},{label:'Fecha de nacimiento',value:s.fechaNacimiento},{label:'Celular',value:s.telefono},{label:'Año egreso',value:s.anoEgreso||s.anioEgreso},{label:'Dirección',value:s.direccion}],pw);
   y = checkPageBreak(pdf,y,cfg);
   y = addFieldGrid(pdf,y,[{label:'Rechazo práctica',value:(s.rechazo&&s.rechazo.rechazoPractica)},{label:'Rechazo lugar de práctica',value:(s.rechazo&&s.rechazo.rechazoLugar)||s.empresa}],pw);
   y = sectionTitle(pdf,18,y,'Motivo'); y+=5;
@@ -7293,7 +7292,6 @@ const IMPORT_COLUMNS = [
   {sec:'Datos personales', header:'Teléfono', key:'telefono'},
   {sec:'Datos personales', header:'Correo electrónico', key:'correo'},
   {sec:'Datos personales', header:'Dirección', key:'direccion'},
-  {sec:'Datos personales', header:'Población / sector', key:'sector'},
   {sec:'Datos personales', header:'Comuna', key:'comuna'},
   {sec:'Datos personales', header:'Ciudad', key:'ciudad'},
   {sec:'Datos personales', header:'Nombre apoderado(a) / tutor(a)', key:'apoderado'},
