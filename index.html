@@ -1810,10 +1810,13 @@ const NAV_ALTER = [{id:'alternancia', label:'Estudiantes y departamentos', icon:
 const MAX_HORAS_PRE = 180;
 const MODO_LABEL = {profesional:'Práctica Profesional 2026', pre:'Pre-práctica', alter:'Plan de Alternancia'};
 function esPre(s){ return !!s && s.modalidad==='pre'; }
+/* El Plan de Alternancia es un lugar distinto: registro propio (modalidad 'alt'), nunca se mezcla con la pre-práctica ni con la práctica profesional */
+function esAltReg(s){ return !!s && s.modalidad==='alt'; }
+function esProf(s){ return !!s && !esPre(s) && !esAltReg(s); }
 function rutKey(r){ return String(r||'').toLowerCase().replace(/[^0-9k]/g,''); }
 /* Busca el registro de pre-práctica del mismo estudiante (por RUT; si no hay RUT, por nombre) */
 function prePracticaDe(s){
-  if(!s || esPre(s)) return null;
+  if(!s || !esProf(s)) return null;
   const all = (state.data && state.data.students) || [];
   const rk = rutKey(s.rut), nk = normalizeTxt(s.nombre);
   return all.find(x=> esPre(x) && ((rk && rutKey(x.rut)===rk) || (!rk && nk && normalizeTxt(x.nombre)===nk))) || null;
@@ -1821,7 +1824,14 @@ function prePracticaDe(s){
 function practicaProfesionalDe(p){
   const all = (state.data && state.data.students) || [];
   const rk = rutKey(p.rut), nk = normalizeTxt(p.nombre);
-  return all.find(x=> !esPre(x) && ((rk && rutKey(x.rut)===rk) || (!rk && nk && normalizeTxt(x.nombre)===nk))) || null;
+  return all.find(x=> esProf(x) && ((rk && rutKey(x.rut)===rk) || (!rk && nk && normalizeTxt(x.nombre)===nk))) || null;
+}
+/* Registro del Plan de Alternancia del mismo estudiante (por RUT; si no hay RUT, por nombre) */
+function alternanciaDe(s){
+  if(!s || esAltReg(s)) return null;
+  const all = (state.data && state.data.students) || [];
+  const rk = rutKey(s.rut), nk = normalizeTxt(s.nombre);
+  return all.find(x=> esAltReg(x) && ((rk && rutKey(x.rut)===rk) || (!rk && nk && normalizeTxt(x.nombre)===nk))) || null;
 }
 function horasPreDe(p){ return Math.min(MAX_HORAS_PRE, Math.max(0, Number(p && p.horasRealizadas)||0)); }
 /* Límite de 180 h en pre-práctica y descuento automático en la práctica profesional 2026 */
@@ -1831,7 +1841,7 @@ function asegurarRegistrosPre(){
   if(!state.data || !Array.isArray(state.data.students)) return false;
   let creados = 0;
   state.data.students.slice().forEach(s=>{
-    if(esPre(s) || s.preCreado) return;
+    if(!esProf(s) || s.preCreado) return;
     if(!prePracticaDe(s)){
       const p = blankStudent();
       p.id = 'pre_'+s.id;   // id fijo: si dos sesiones lo crean a la vez, no se duplica
@@ -1887,9 +1897,9 @@ function sincronizarHorasPre(){
     }
   });
   all.forEach(s=>{
-    if(esPre(s)) return;
-    const pre = prePracticaDe(s);
-    const desc = (s.insercion && typeof descuentoInsercion==='function') ? descuentoInsercion(s) : (pre ? horasPreDe(pre) : 0);
+    if(!esProf(s)) return;
+    const pre = prePracticaDe(s), alt = alternanciaDe(s);
+    const desc = (s.insercion && typeof descuentoInsercion==='function') ? descuentoInsercion(s) : Math.min(MAX_HORAS_PRE, (pre ? horasPreDe(pre) : 0) + (alt ? horasPreDe(alt) : 0));
     const prevDesc = Number(s.horasPrePractica)||0;
     if(s.horasRequeridasBase==null){
       if(!desc && !prevDesc) return;
@@ -2279,6 +2289,7 @@ async function loadData(){
   /* Actualiza el teléfono antiguo guardado en la nube al número vigente del liceo */
   if(!state.data.config.telefono || state.data.config.telefono==='61-2414125'){ state.data.config.telefono='45-2925460'; try{ await saveData(); }catch(e){} }
   if(cargarAlternanciaMuni()){ try{ await saveData(); }catch(e){} }
+  if(separarAlternanciaDePre()){ try{ await saveData(); }catch(e){} }
   if(depurarPreDuplicados()){ try{ await saveData(); }catch(e){} }
   state.loaded = true;
   startSyncPolling();
@@ -2395,7 +2406,7 @@ function toast(msg){
 /* ============================================================
    HELPERS
    ============================================================ */
-function students(){ return state.data.students.filter(s=> state.modo==='pre' ? esPre(s) : !esPre(s)); }
+function students(){ return state.data.students.filter(s=> state.modo==='pre' ? esPre(s) : esProf(s)); }
 function config(){ return state.data.config; }
 function normalizeTxt(s){ return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
 function logoForCarrera(cfg, carrera){
@@ -2418,7 +2429,12 @@ function ensureLogosPorCarrera(cfg){
   Object.keys(defaults).forEach(k=>{ if(!cfg.logosPorCarrera[k]) cfg.logosPorCarrera[k] = defaults[k]; });
   return cfg;
 }
-function getStudent(id){ return students().find(s=>s.id===id); }
+function getStudent(id){
+  const s = students().find(s=>s.id===id); if(s) return s;
+  /* La ficha completa del Plan de Alternancia se abre solo desde la sección de alternancia */
+  return state.modo==='pre' ? ((state.data&&state.data.students)||[]).find(x=>x.id===id && esAltReg(x)) || null : null;
+}
+function fichaActualEsAlt(){ return state.view==='fichas' && !!state.fichaId && esAltReg(((state.data&&state.data.students)||[]).find(x=>x.id===state.fichaId)); }
 function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00'); if(isNaN(dt)) return d; return dt.toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'}); }
 function initials(name){ return (name||'—').split(' ').filter(Boolean).slice(0,2).map(p=>p[0]).join('').toUpperCase(); }
 const FOTO_PLACEHOLDER = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60'><rect width='60' height='60' fill='%23DDDFDA'/><circle cx='30' cy='22' r='10' fill='%23fff'/><ellipse cx='30' cy='50' rx='18' ry='14' fill='%23fff'/></svg>";
@@ -2520,7 +2536,7 @@ function csvEscape(v){ v=String(v??''); return /[",\n]/.test(v)? '"'+v.replace(/
    RENDER: SHELL
    ============================================================ */
 function renderShell(){
-  const curGrupo = (state.modo==='pre' && esVistaAlter(state.view)) ? 'alter' : state.modo;
+  const curGrupo = (state.modo==='pre' && (esVistaAlter(state.view) || fichaActualEsAlt())) ? 'alter' : state.modo;
   const grupo = (g, color, items)=>{
     const modo = g==='alter' ? 'pre' : g;
     const open = state.navOpen[g]!=null ? state.navOpen[g] : curGrupo===g;
@@ -2542,7 +2558,7 @@ function renderShell(){
 
   const titles = {horasPre:'Cantidad de horas', alternancia:'Plan de alternancia · Municipalidad', altPlan:'Plan de alternancia · Evaluación', altDocs:'Documentación · Alternancia', dashboard:'Panel General', estudiantes:'Estudiantes', empresas:'Empresas', documentacion:'Proceso de Práctica', fichas:'Ficha del estudiante', inicio:'Documentación inicial', cierre:'Cierre de práctica', reportes:'Reporte y exportación', evaluaciones:'Plan de práctica', seguimiento:'Seguimiento', expedientes:'Expedientes', configuracion:'Configuración', detalle:'Expediente del estudiante'};
   document.getElementById('topbar').innerHTML = `
-    <h1>${state.modo==='pre'?'<span style="color:#2A1670;font-size:12px;display:block;letter-spacing:.08em;text-transform:uppercase">'+(esVistaAlter(state.view)?'Plan de alternancia':'Pre-práctica')+'</span>':''}${titles[state.view]}</h1>
+    <h1>${state.modo==='pre'?'<span style="color:#2A1670;font-size:12px;display:block;letter-spacing:.08em;text-transform:uppercase">'+((esVistaAlter(state.view)||fichaActualEsAlt())?'Plan de alternancia':'Pre-práctica')+'</span>':''}${titles[state.view]}</h1>
     <div class="search-wrap">${icon('search',15)}<input id="globalSearch" type="text" placeholder="Buscar estudiante, RUT, empresa o carrera..." value="${state.search.replace(/"/g,'&quot;')}"/></div>
     <button class="btn-secondary" data-action="download-import-template">${icon('download',14)} Plantilla Excel</button>
     <button class="btn-secondary" data-action="trigger-import">${icon('upload',14)} Importar Excel</button>
@@ -4104,7 +4120,7 @@ function fichaHTML(s){
     ${cvBloqueHTML(s)}`;
   const ir = (k,lbl)=>`<button class="ficha-chip" data-action="ficha-goto" data-target="${k}" data-tab="${k}">${lbl}</button>`;
   return `
-  <button class="btn-ghost" data-action="close-ficha" style="margin-bottom:10px">← Todas las fichas</button>
+  ${esAltReg(s) ? `<button class="btn-ghost" data-action="alt-abrir-ficha" data-id="${s.id}" style="margin-bottom:10px">← Volver a la ficha de alternancia</button>` : `<button class="btn-ghost" data-action="close-ficha" style="margin-bottom:10px">← Todas las fichas</button>`}
   <div class="panel ficha-panel">
     <div class="ficha-head">
       <img src="${s.fotoBase64||FOTO_PLACEHOLDER}" alt="" id="fichaHeadFoto">
@@ -4935,13 +4951,13 @@ function cargarAlternanciaMuni(){
   const A = ALTERNANCIA_MUNI;
   A.estudiantes.forEach(([nombre,rut,unidad])=>{
     const U = A.unidades[unidad] || ['','',''];
-    let prof = state.data.students.find(x=> !esPre(x) && rutKey(x.rut)===rutKey(rut));
-    let p = state.data.students.find(x=> esPre(x) && rutKey(x.rut)===rutKey(rut));
+    let prof = state.data.students.find(x=> esProf(x) && rutKey(x.rut)===rutKey(rut));
+    let p = state.data.students.find(x=> esAltReg(x) && rutKey(x.rut)===rutKey(rut));
     if(!p){
       p = blankStudent();
-      p.id = 'pre_alt_'+rutKey(rut);
+      p.id = 'alt_'+rutKey(rut);
       if(prof){ PRE_CAMPOS_COPIA.forEach(k=>{ if(prof[k]!=null && prof[k]!=='') p[k]=prof[k]; }); }
-      p.modalidad = 'pre';
+      p.modalidad = 'alt';
       state.data.students.push(p);
     }
     Object.assign(p, {
@@ -4961,14 +4977,43 @@ function cargarAlternanciaMuni(){
       Object.assign(prof, {tipoPractica:'Práctica Profesional', profesorResponsable:A.tutor, jefePractica:A.tutor, estado:'Pendiente'});
       state.data.students.push(prof);
     }
-    prof.preCreado = true;
     prof.horasRequeridasBase = HORAS_PRACTICA_ADM; prof.horasPrePractica = 0; delete prof._horasReqCalc;
   });
   state.data.config.alternanciaMuni2026V2 = true;
+  state.data.config.alternanciaSeparadaV1 = true;
   sincronizarHorasPre();
   return true;
 }
-function alumnosAlternancia(){ return ((state.data&&state.data.students)||[]).filter(s=> esPre(s) && s.alternancia==='municipalidad2026'); }
+/* Corrección (una sola vez): antes la alternancia se guardaba DENTRO del registro de pre-práctica y lo sobrescribía.
+   Se convierte ese registro en un registro propio de alternancia y se crea al estudiante una pre-práctica limpia
+   (solo con sus datos personales y académicos; empresa, maestro guía, fechas y horas quedan en blanco). */
+function separarAlternanciaDePre(){
+  if(!state.data || !Array.isArray(state.data.students) || !state.data.config || state.data.config.alternanciaSeparadaV1) return false;
+  const all = state.data.students;
+  all.slice().forEach(a=>{
+    if(!esPre(a) || a.alternancia!=='municipalidad2026') return;
+    a.modalidad = 'alt';
+    a.tipoPractica = 'Plan de alternancia · Municipalidad';
+    const rk = rutKey(a.rut), nk = normalizeTxt(a.nombre);
+    const mismo = x=> (rk && rutKey(x.rut)===rk) || (!rk && nk && normalizeTxt(x.nombre)===nk);
+    if(all.some(x=> esPre(x) && mismo(x))) return;
+    const prof = all.find(x=> esProf(x) && mismo(x));
+    const p = blankStudent();
+    p.id = 'pre_'+(rk || a.id);
+    while(all.some(x=>x.id===p.id)) p.id += '_p';
+    [...PRE_CAMPOS_COPIA, 'fotoBase64'].forEach(k=>{
+      const v = (a[k]!=null && a[k]!=='') ? a[k] : (prof && prof[k]!=null && prof[k]!=='' ? prof[k] : null);
+      if(v!=null) p[k] = v;
+    });
+    p.modalidad = 'pre'; p.tipoPractica = 'Pre-práctica';
+    p.horasRequeridas = MAX_HORAS_PRE; p.horasRealizadas = 0; p.estado = 'Pendiente';
+    all.push(p);
+  });
+  state.data.config.alternanciaSeparadaV1 = true;
+  sincronizarHorasPre();
+  return true;
+}
+function alumnosAlternancia(){ return ((state.data&&state.data.students)||[]).filter(s=> esAltReg(s) && s.alternancia==='municipalidad2026'); }
 const ALT_NIVELES = [[1,'Por mejorar'],[2,'Regular'],[3,'Bueno'],[4,'Excelente']];
 /* Sección replegable: recuerda si quedó abierta o cerrada */
 function altAcc(key, titulo, meta, cuerpo, abierta){
@@ -7949,17 +7994,17 @@ function insNotaRegistro(rec){
 
 /* Calcula las tres etapas y la nota final de un estudiante de práctica profesional */
 function insercionDe(s){
-  const pre = prePracticaDe(s);
-  const esAlt = !!(pre && pre.alternancia==='municipalidad2026');
+  const pre = prePracticaDe(s), alt = alternanciaDe(s);
+  const esAlt = !!alt;
   const ins = s.insercion || {};
-  // Alternancia
+  // Alternancia (registro propio)
   const altAplica = ins.altAplica!=null ? !!ins.altAplica : esAlt;
-  const altHoras = altAplica ? Math.max(0, ins.altHoras!=null ? insNum(ins.altHoras) : (esAlt ? horasPreDe(pre) : 0)) : 0;
-  const altNota = (altAplica && esAlt && pre.planAlternancia && pre.planAlternancia.nota!=null) ? Number(pre.planAlternancia.nota) : null;
-  // Pre-práctica (máximo MAX_HORAS_PRE horas se descuentan)
-  const preHorasDef = esAlt ? 0 : (pre ? (Number(pre.horasRealizadas)||0) : 0);
+  const altHoras = altAplica ? Math.max(0, ins.altHoras!=null ? insNum(ins.altHoras) : (esAlt ? horasPreDe(alt) : 0)) : 0;
+  const altNota = (altAplica && esAlt && alt.planAlternancia && alt.planAlternancia.nota!=null) ? Number(alt.planAlternancia.nota) : null;
+  // Pre-práctica (registro propio; máximo MAX_HORAS_PRE horas se descuentan)
+  const preHorasDef = pre ? (Number(pre.horasRealizadas)||0) : 0;
   const preNotaRaw = insNotaRegistro(pre);
-  const preEstado = ins.preEstado || ((preHorasDef>0 || (!esAlt && preNotaRaw!=null)) ? 'aplica' : 'no');
+  const preEstado = ins.preEstado || ((preHorasDef>0 || preNotaRaw!=null) ? 'aplica' : 'no');
   const preHoras = Math.max(0, ins.preHoras!=null ? insNum(ins.preHoras) : preHorasDef);
   const preCuenta = preEstado==='aplica' ? Math.min(preHoras, MAX_HORAS_PRE) : 0;
   const preNota = preEstado==='no' ? null : preNotaRaw;
@@ -7969,8 +8014,8 @@ function insercionDe(s){
   const praHoras = s.insercion ? Math.max(0, base - altHoras - preCuenta) : Math.max(0, Number(s.horasRequeridas)||0);
   const praNota = insNotaRegistro(s);
   const etapas = [
-    {k:'alt', nombre:'Plan de alternancia', corto:'Alt.', aplica:altAplica, horas:altHoras, nota:altNota, lugar: altAplica ? (pre && pre.empresa) || ALTERNANCIA_MUNI.empresa : ''},
-    {k:'pre', nombre:'Pre-práctica', corto:'Pre', aplica:preEstado==='aplica', estado:preEstado, horas:preCuenta, horasReal:preHoras, nota:preNota, lugar: (!esAlt && pre && pre.empresa) || ''},
+    {k:'alt', nombre:'Plan de alternancia', corto:'Alt.', aplica:altAplica, horas:altHoras, nota:altNota, lugar: altAplica ? (alt && alt.empresa) || ALTERNANCIA_MUNI.empresa : ''},
+    {k:'pre', nombre:'Pre-práctica', corto:'Pre', aplica:preEstado==='aplica', estado:preEstado, horas:preCuenta, horasReal:preHoras, nota:preNota, lugar: (pre && pre.empresa) || ''},
     {k:'pra', nombre:'Práctica profesional', corto:'Prác.', aplica:true, horas:praHoras, horasReal:Number(s.horasRealizadas)||0, nota:praNota, lugar:s.empresa||''},
   ];
   const aplicables = etapas.filter(e=>e.aplica && e.horas>0);
@@ -7988,7 +8033,7 @@ function insercionDe(s){
   else if(conNota.length) estado = {k:'curso', label:'En curso · nota parcial', color:'var(--slate)', bg:'#ECEAE6'};
   else estado = {k:'sin', label:'Sin notas aún', color:'var(--slate)', bg:'#ECEAE6'};
   const tipo = (altAplica?'A':'')+(preEstado==='aplica'?'P':'');
-  return {s, pre, esAlt, base, etapas, conNota, H, suma, exacta,
+  return {s, pre, alt, esAlt, base, etapas, conNota, H, suma, exacta,
     nota: preEstado==='rechazada' ? null : insR1(exacta), completa, estado, tipo,
     preEstado, preHorasReal:preHoras, sobreTope: preEstado==='aplica' && preHoras>MAX_HORAS_PRE};
 }
@@ -7997,15 +8042,13 @@ function descuentoInsercion(s){ const d = insercionDe(s); return d.etapas[0].hor
 
 /* Aplica un cambio de horas o de estado y deja todo sincronizado */
 async function insAplicar(id, cambios){
-  const s = (state.data.students||[]).find(x=>x.id===id && !esPre(x)); if(!s) return;
+  const s = (state.data.students||[]).find(x=>x.id===id && esProf(x)); if(!s) return;
   const d = insercionDe(s);
   s.insercion = Object.assign({altAplica:d.etapas[0].aplica, altHoras:d.etapas[0].horas, preEstado:d.preEstado, preHoras:d.preHorasReal}, s.insercion||{}, cambios);
   if(s.insercion.preHoras!=null && s.insercion.preHoras>MAX_HORAS_PRE) toast(`La pre-práctica se cuenta hasta ${MAX_HORAS_PRE} h: las ${insH(s.insercion.preHoras-MAX_HORAS_PRE)} h restantes no se descuentan`);
-  const pre = prePracticaDe(s);
-  if(pre){
-    if(pre.alternancia==='municipalidad2026'){ if(s.insercion.altAplica) pre.horasRealizadas = Math.min(MAX_HORAS_PRE, insNum(s.insercion.altHoras)); }
-    else if(s.insercion.preEstado==='aplica'){ pre.horasRealizadas = Math.min(MAX_HORAS_PRE, insNum(s.insercion.preHoras)); }
-  }
+  const pre = prePracticaDe(s), alt = alternanciaDe(s);
+  if(alt && s.insercion.altAplica) alt.horasRealizadas = Math.min(MAX_HORAS_PRE, insNum(s.insercion.altHoras));
+  if(pre && s.insercion.preEstado==='aplica') pre.horasRealizadas = Math.min(MAX_HORAS_PRE, insNum(s.insercion.preHoras));
   s.insercion.fecha = new Date().toISOString().slice(0,10);
   s.insercion.usuario = (currentUser && currentUser.email) || '';
   sincronizarHorasPre();
@@ -8089,9 +8132,9 @@ function insStatsHTML(datos){
 }
 
 /* ---------- Ventana del estudiante ---------- */
-function insListaNav(){ return (state.data.students||[]).filter(x=>!esPre(x) && (!state.dashCarrera || (x.carrera||'Sin especialidad asignada')===state.dashCarrera)).sort((a,b)=>(a.carrera||'').localeCompare(b.carrera||'')||(a.nombre||'').localeCompare(b.nombre||'')); }
+function insListaNav(){ return (state.data.students||[]).filter(x=>esProf(x) && (!state.dashCarrera || (x.carrera||'Sin especialidad asignada')===state.dashCarrera)).sort((a,b)=>(a.carrera||'').localeCompare(b.carrera||'')||(a.nombre||'').localeCompare(b.nombre||'')); }
 function insAbrir(id){
-  const s = (state.data.students||[]).find(x=>x.id===id && !esPre(x)); if(!s) return;
+  const s = (state.data.students||[]).find(x=>x.id===id && esProf(x)); if(!s) return;
   const prevBody = document.querySelector('#modal-root .modal-overlay');
   const scroll = prevBody ? prevBody.scrollTop : 0;
   state.insId = id;
@@ -8220,7 +8263,7 @@ function insFechaLarga(d){
 function insNombreArchivo(t){ return String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\w]+/g,'_').replace(/^_|_$/g,''); }
 
 function insCertificadoPDF(id){
-  const s = (state.data.students||[]).find(x=>x.id===id && !esPre(x)); if(!s){ toast('No se encontró el estudiante'); return; }
+  const s = (state.data.students||[]).find(x=>x.id===id && esProf(x)); if(!s){ toast('No se encontró el estudiante'); return; }
   let jsPDF; try{ jsPDF = collectPDFmakerLib(); }catch(e){ toast('No se pudo cargar la librería PDF. Revisa tu conexión a internet.'); return; }
   const cfg = config(), d = insercionDe(s), ap = insAprob();
   const pdf = new jsPDF({unit:'mm', format:PAGE_FORMAT});
