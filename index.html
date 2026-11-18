@@ -741,7 +741,7 @@ select{cursor:pointer;}
    ============================================================ */
 const DOC_TYPES = [
   {key:'doc01', n:1, name:'Carta de solicitud de práctica'},
-  {key:'doc12', n:2, name:'Solicitud práctica profesional (formato alterno)'},
+  {key:'doc12', n:2, name:'Solicitud práctica profesional'},
   {key:'doc02', n:3, name:'Ficha de matrícula de práctica'},
   {key:'doc03', n:4, name:'Seguro contra accidentes escolares'},
   {key:'doc04', n:5, name:'Plan de práctica'},
@@ -8022,7 +8022,7 @@ function insercionPanelHTML(lista, dc){
   }).join('') || `<div class="hint">Aún no hay estudiantes de práctica profesional.</div>`;
   return `<div class="panel ins-panel" style="margin-bottom:18px">
     <div class="panel-head"><h2 style="display:flex;align-items:center;gap:9px"><span class="panel-head-icon">${icon('star',18)}</span>Nota final integrada · Inserción laboral</h2>
-      <span class="hint">Alternancia + pre-práctica (máx. ${MAX_HORAS_PRE} h) + práctica profesional · cada etapa pesa según sus horas${dc?` · ${insEsc(dc)}`:''}</span></div>
+      <span class="hint" style="display:flex;align-items:center;gap:10px">Alternancia + pre-práctica (máx. ${MAX_HORAS_PRE} h) + práctica profesional · cada etapa pesa según sus horas${dc?` · ${insEsc(dc)}`:''}<button class="btn-secondary" data-action="ins-acta" style="white-space:nowrap">${icon('download',14)} Acta de calificaciones (PDF)</button></span></div>
     <div class="panel-body">
       ${filas}
       <div class="hint" style="margin-top:4px">* Nota parcial: falta la nota de alguna etapa. Haz clic en «Ver nota final» para ver y editar las horas de cada estudiante.</div>
@@ -8135,7 +8135,7 @@ function insAbrir(id){
     </div>
     <div class="modal-foot" style="background:#fff;border-radius:0 0 14px 14px;justify-content:space-between">
       <span class="hint" style="margin:0">Al cambiar las horas se recalculan la práctica profesional, los pesos y la nota final.</span>
-      <div style="display:flex;gap:8px"><button class="btn-secondary" data-action="ins-ficha" data-id="${s.id}">${icon('idcard',14)} Ficha del estudiante</button><button class="btn-primary" data-action="ins-guardar">${icon('check',14)} Guardar y cerrar</button></div>
+      <div style="display:flex;gap:8px"><button class="btn-secondary" data-action="ins-pdf" data-id="${s.id}">${icon('download',14)} Descargar PDF</button><button class="btn-secondary" data-action="ins-ficha" data-id="${s.id}">${icon('idcard',14)} Ficha del estudiante</button><button class="btn-primary" data-action="ins-guardar">${icon('check',14)} Guardar y cerrar</button></div>
     </div>
    </div>
   </div>`;
@@ -8156,6 +8156,8 @@ document.addEventListener('click', async (e)=>{
       await insAplicar(id, ch); insRefrescar(id);
     }
     else if(a==='ins-guardar'){ await saveData(); closeModal(); toast('Horas y nota final guardadas'); renderView(); }
+    else if(a==='ins-pdf'){ insCertificadoPDF(id); }
+    else if(a==='ins-acta'){ insActaPDF(); }
     else if(a==='ins-ficha'){ closeModal(); cambiarModo('profesional'); state.view='fichas'; state.fichaId=id; renderView(); window.scrollTo(0,0); }
   }catch(err){ console.error('insercion', err); toast('No se pudo completar la acción. Revisa la consola (F12).'); }
 });
@@ -8172,6 +8174,163 @@ document.addEventListener('keydown', (e)=>{
   else if(e.key==='Escape' && document.querySelector('#modal-root .ins-modal')){ closeModal(); }
 });
 
+</script>
+<script>
+/* ============================================================
+   DOCUMENTO FORMAL DE CALIFICACIONES (PDF) · Inserción laboral
+   - Certificado individual (botón «Descargar PDF» en la ventana del estudiante)
+   - Acta de calificaciones del curso (botón en el panel «Nota final integrada»)
+   ============================================================ */
+function insNotaLetras(n){
+  if(n==null || isNaN(n)) return '';
+  const U = ['cero','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve'];
+  const t = Number(n).toFixed(1).split('.');
+  return U[Number(t[0])]+' coma '+U[Number(t[1])];
+}
+function insFechaLarga(d){
+  const dt = d ? new Date(d) : new Date();
+  return dt.toLocaleDateString('es-CL',{day:'numeric', month:'long', year:'numeric'});
+}
+function insNombreArchivo(t){ return String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\w]+/g,'_').replace(/^_|_$/g,''); }
+
+function insCertificadoPDF(id){
+  const s = (state.data.students||[]).find(x=>x.id===id && !esPre(x)); if(!s){ toast('No se encontró el estudiante'); return; }
+  let jsPDF; try{ jsPDF = collectPDFmakerLib(); }catch(e){ toast('No se pudo cargar la librería PDF. Revisa tu conexión a internet.'); return; }
+  const cfg = config(), d = insercionDe(s), ap = insAprob();
+  const pdf = new jsPDF({unit:'mm', format:PAGE_FORMAT});
+  const pw = pdf.internal.pageSize.getWidth(), L = 18, W = pw-36;
+  const anio = new Date().getFullYear();
+  let y = addLetterhead(pdf, cfg, 'Certificado de Calificaciones', 'Proceso de Inserción Laboral · Práctica Profesional '+anio, s.carrera);
+
+  y = sectionTitle(pdf, L, y, '1. Identificación del estudiante'); y += 6;
+  y = addFieldGrid(pdf, y, [
+    {label:'Nombre completo', value:s.nombre},
+    {label:'RUN', value:s.rut},
+    {label:'Especialidad', value:s.carrera},
+    {label:'Curso', value:s.curso},
+    {label:'Centro de práctica profesional', value:s.empresa},
+    {label:'Profesor tutor', value:s.profesorResponsable || firmaDocente(cfg, s.carrera, 'supervisor').nombre},
+  ], pw);
+
+  y = sectionTitle(pdf, L, y, '2. Calificaciones por etapa'); y += 4;
+  const estadoEtapa = e => {
+    if(e.k==='pre' && e.estado==='rechazada') return 'Rechazada';
+    if(!e.aplica) return 'No aplica';
+    if(e.nota==null) return 'Pendiente';
+    return e.nota>=ap ? 'Aprobada' : 'Reprobada';
+  };
+  const body = d.etapas.map((e,i)=>[
+    {content:(i+1)+'. '+e.nombre, styles:{fontStyle:'bold'}},
+    e.aplica ? (e.lugar||'—') : '—',
+    e.aplica ? insH(e.horas)+' h' : (e.k==='pre' && e.estado==='rechazada' ? insH(d.preHorasReal)+' h (no se reconocen)' : '—'),
+    e.aplica ? fp(insR1(e.peso))+' %' : '0 %',
+    {content: e.aplica && e.nota!=null ? fmtNota(e.nota) : '—', styles:{fontStyle:'bold', halign:'center'}},
+    e.aporte==null ? '—' : e.aporte.toFixed(2).replace('.',','),
+    estadoEtapa(e)
+  ]);
+  body.push([
+    {content:'TOTAL EXIGIDO', styles:{fontStyle:'bold'}}, '',
+    {content:insH(d.base)+' h', styles:{fontStyle:'bold'}}, {content:'100 %', styles:{fontStyle:'bold'}},
+    {content: d.nota==null ? '—' : fmtNota(d.nota), styles:{fontStyle:'bold', halign:'center'}}, '', ''
+  ]);
+  pdf.autoTable({ startY:y, margin:{left:L,right:L}, theme:'grid',
+    styles:{fontSize:8.6, cellPadding:2.2, valign:'middle', lineColor:[210,205,195], lineWidth:0.2, textColor:[30,30,30]},
+    headStyles:{fillColor:[17,8,51], textColor:255, fontStyle:'bold', fontSize:8.2},
+    columnStyles:{0:{cellWidth:40},2:{halign:'center',cellWidth:24},3:{halign:'center',cellWidth:16},4:{cellWidth:15},5:{halign:'center',cellWidth:16},6:{halign:'center',cellWidth:22}},
+    didParseCell: h=>{ if(h.section==='body' && h.row.index===body.length-1){ h.cell.styles.fillColor=[245,242,236]; } },
+    head:[['Etapa','Lugar','Horas','Peso','Nota','Aporte','Estado']], body });
+  y = pdf.lastAutoTable.finalY + 8;
+
+  y = sectionTitle(pdf, L, y, '3. Cálculo de la nota final'); y += 6;
+  y = paragraph(pdf, L, y, 'La nota final integrada corresponde al promedio ponderado de las etapas con calificación, donde cada etapa pesa según las horas realizadas (peso = horas de la etapa ÷ '+insH(d.base)+' h exigidas).', W);
+  y += 1;
+  const formula = d.conNota.length
+    ? '('+d.conNota.map(e=>fmtNota(e.nota)+' × '+insH(e.horas)).join(' + ')+') ÷ '+insH(d.H)+' = '+d.suma.toFixed(2).replace('.',',')+' ÷ '+insH(d.H)+' = '+d.exacta.toFixed(2).replace('.',',')
+    : 'Aún no hay calificaciones registradas.';
+  pdf.setFillColor(245,242,236); const fl = pdf.splitTextToSize(formula, W-10);
+  pdf.roundedRect(L, y, W, fl.length*4.6+5, 1.5, 1.5, 'F');
+  pdf.setFont('courier','normal'); pdf.setFontSize(9); pdf.setTextColor(17,8,51); pdf.text(fl, L+5, y+5.5);
+  y += fl.length*4.6+11;
+
+  // Recuadro con la nota final
+  if(y > pageBottomLimit(pdf, 120)){ pdf.addPage(); y = 22; }
+  const boxH = 26;
+  pdf.setFillColor(17,8,51); pdf.roundedRect(L, y, W, boxH, 2, 2, 'F');
+  pdf.setFillColor(255,176,1); pdf.rect(L, y, 3, boxH, 'F');
+  pdf.setFont('helvetica','bold'); pdf.setFontSize(8.5); pdf.setTextColor(200,195,225);
+  pdf.text('NOTA FINAL INTEGRADA', L+9, y+8);
+  pdf.setFont('times','bold'); pdf.setFontSize(28); pdf.setTextColor(255,176,1);
+  pdf.text(d.nota==null ? '—' : fmtNota(d.nota), L+9, y+21);
+  pdf.setFont('helvetica','normal'); pdf.setFontSize(9.5); pdf.setTextColor(255,255,255);
+  const sit = d.preEstado==='rechazada' ? 'PENDIENTE · en revisión' : !d.completa ? (d.nota==null ? 'SIN CALIFICACIONES' : 'NOTA PARCIAL · faltan calificaciones') : (d.nota>=ap ? 'APROBADO' : 'REPROBADO');
+  const linea2 = d.nota!=null ? '('+insNotaLetras(d.nota)+')  ·  '+conceptoLikert(d.nota) : '';
+  pdf.setFont('helvetica','bold'); pdf.text('Situación final: '+sit, L+42, y+13);
+  pdf.setFont('helvetica','normal'); pdf.setFontSize(9); pdf.setTextColor(207,201,230);
+  if(linea2) pdf.text(linea2, L+42, y+19);
+  pdf.text('Nota mínima de aprobación: '+fmtNota(ap), pw-L-5, y+8, {align:'right'});
+  y += boxH + 9;
+
+  const texto = d.completa && d.preEstado!=='rechazada'
+    ? `Se extiende el presente certificado a don(ña) ${s.nombre||''}, RUN ${s.rut||'—'}, estudiante de la especialidad ${s.carrera||''}, quien obtuvo una nota final integrada de ${fmtNota(d.nota)} (${insNotaLetras(d.nota)}) en su proceso de inserción laboral, para los fines que estime conveniente.`
+    : `El presente documento registra las calificaciones de ${s.nombre||''}, RUN ${s.rut||'—'}, a la fecha de emisión. Tiene carácter provisorio, ya que el proceso de inserción laboral no cuenta aún con todas sus calificaciones.`;
+  y = paragraph(pdf, L, y, texto, W) + 3;
+  pdf.setFont('helvetica','normal'); pdf.setFontSize(10); pdf.setTextColor(30,30,30);
+  pdf.text('Puerto Natales, '+insFechaLarga(), pw-L, y, {align:'right'});
+  y += 14;
+  // Si el profesor tutor y el jefe de especialidad son la misma persona, firma una sola vez
+  const fSup = firmaDocente(cfg, s.carrera, 'supervisor'), fJefe = firmaDocente(cfg, s.carrera, 'jefe');
+  const firmas = (fSup.nombre && fSup.nombre===fJefe.nombre)
+    ? [docenteSignature(cfg, s, 'jefe', 'Profesor tutor y Jefe de especialidad')]
+    : [docenteSignature(cfg, s, 'supervisor', 'Profesor tutor'), docenteSignature(cfg, s, 'jefe', 'Jefe de especialidad')];
+  firmas.push(coordSignature(cfg, 'Coordinación TP'), directorSignature(cfg));
+  addSignatures(pdf, y, firmas, pw);
+  addFooterAll(pdf);
+  savePDF(pdf, 'Certificado_Calificaciones_'+insNombreArchivo(s.nombre)+'.pdf');
+  toast('Certificado de calificaciones descargado');
+}
+
+function insActaPDF(){
+  const lista = insListaNav();
+  if(!lista.length){ toast('No hay estudiantes de práctica profesional'); return; }
+  let jsPDF; try{ jsPDF = collectPDFmakerLib(); }catch(e){ toast('No se pudo cargar la librería PDF. Revisa tu conexión a internet.'); return; }
+  const cfg = config(), ap = insAprob();
+  const pdf = new jsPDF({unit:'mm', format:PAGE_FORMAT});
+  const pw = pdf.internal.pageSize.getWidth(), L = 18, W = pw-36;
+  const anio = new Date().getFullYear();
+  const grupos = {};
+  lista.forEach(s=>{ const c = s.carrera||'Sin especialidad asignada'; (grupos[c]=grupos[c]||[]).push(s); });
+  Object.keys(grupos).forEach((c, gi)=>{
+    if(gi>0) pdf.addPage();
+    let y = addLetterhead(pdf, cfg, 'Acta de Calificaciones', 'Nota final integrada · Inserción laboral '+anio+' · '+c, c);
+    const datos = grupos[c].map(s=>insercionDe(s)).sort((a,b)=>(a.s.nombre||'').localeCompare(b.s.nombre||''));
+    const cel = e => (e.k==='pre' && e.estado==='rechazada') ? 'Rechazada' : !e.aplica ? 'N/A' : (e.nota==null ? '— ' : fmtNota(e.nota))+'\n'+insH(e.horas)+' h';
+    const sit = d => d.preEstado==='rechazada' ? 'En revisión' : !d.completa ? (d.nota==null ? 'Sin notas' : 'Parcial') : (d.nota>=ap ? 'Aprobado' : 'Reprobado');
+    const body = datos.map((d,i)=>[String(i+1), d.s.nombre||'', d.s.rut||'', cel(d.etapas[0]), cel(d.etapas[1]), cel(d.etapas[2]),
+      {content:d.nota==null?'—':fmtNota(d.nota)+(d.completa?'':'*'), styles:{fontStyle:'bold', fontSize:10}}, sit(d)]);
+    pdf.autoTable({ startY:y, margin:{left:L,right:L}, theme:'grid',
+      styles:{fontSize:8.2, cellPadding:1.8, valign:'middle', lineColor:[210,205,195], lineWidth:0.2, textColor:[30,30,30]},
+      headStyles:{fillColor:[17,8,51], textColor:255, fontStyle:'bold', fontSize:7.8, halign:'center'},
+      columnStyles:{0:{halign:'center',cellWidth:8},2:{cellWidth:23},3:{halign:'center',cellWidth:21},4:{halign:'center',cellWidth:21},5:{halign:'center',cellWidth:21},6:{halign:'center',cellWidth:16},7:{halign:'center',cellWidth:20}},
+      didParseCell: h=>{ if(h.section==='body' && h.column.index===7){ const t=h.cell.raw; h.cell.styles.textColor = t==='Aprobado'?[0,128,58]: (t==='Reprobado'||t==='En revisión')?[105,20,25]:[90,90,90]; h.cell.styles.fontStyle='bold'; } },
+      head:[['N°','Nombre del estudiante','RUN','Alternancia\nnota · horas','Pre-práctica\nnota · horas','Práctica prof.\nnota · horas','Nota final','Situación']], body });
+    y = pdf.lastAutoTable.finalY + 6;
+    const fin = datos.filter(d=>d.completa && d.nota!=null);
+    const prom = fin.length ? fin.reduce((a,d)=>a+d.nota,0)/fin.length : null;
+    pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); pdf.setTextColor(80,80,80);
+    const res = `Total: ${datos.length} estudiante${datos.length===1?'':'s'}  ·  Aprobados: ${datos.filter(d=>sit(d)==='Aprobado').length}  ·  Reprobados: ${datos.filter(d=>sit(d)==='Reprobado').length}  ·  Pendientes: ${datos.filter(d=>!['Aprobado','Reprobado'].includes(sit(d))).length}  ·  Promedio (notas completas): ${prom==null?'—':fmtNota(insR1(prom))}`;
+    y = paragraph(pdf, L, y, res, W);
+    pdf.setFontSize(7.8); pdf.setTextColor(120,120,120);
+    y = paragraph(pdf, L, y, `* Nota parcial: falta la calificación de alguna etapa. La nota final es el promedio ponderado por horas de las etapas que aplican (alternancia, pre-práctica de máx. ${MAX_HORAS_PRE} h y práctica profesional). Nota mínima de aprobación: ${fmtNota(ap)}.`, W) + 2;
+    pdf.setFont('helvetica','normal'); pdf.setFontSize(10); pdf.setTextColor(30,30,30);
+    pdf.text('Puerto Natales, '+insFechaLarga(), pw-L, y+4, {align:'right'});
+    const s0 = grupos[c][0];
+    addSignatures(pdf, y+16, [docenteSignature(cfg, s0, 'jefe', 'Jefe de especialidad'), coordSignature(cfg, 'Coordinación TP'), directorSignature(cfg)], pw);
+  });
+  addFooterAll(pdf);
+  const nom = state.dashCarrera ? '_'+insNombreArchivo(state.dashCarrera) : '';
+  savePDF(pdf, 'Acta_Calificaciones_Insercion'+nom+'_'+anio+'.pdf');
+  toast('Acta de calificaciones descargada');
+}
 </script>
 <script>
 /* ============================================================
