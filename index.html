@@ -5262,6 +5262,7 @@ function renderAltDocs(){
   altAcc('docsPdf', `${icon('star',18)} Planes de alternancia (PDF)`, 'Con nota de evaluación', `
     <div style="padding:16px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px">
       ${tarjeta('star','Planes de alternancia de los 12 estudiantes', 'Módulos, tareas en la Municipalidad, nivel marcado en cada criterio, nota del plan y descuento de '+fmtH(A.horas)+' h sobre las '+HORAS_PRACTICA_ADM+' h.', `<button class="btn-secondary" style="margin-top:8px" data-action="alt-plan-pdf" data-id="todos">${icon('download',14)} Descargar PDF</button>`)}
+      ${tarjeta('file','Bitácoras de los 3 días de todos los estudiantes', 'Las bitácoras del día 1, 2 y 3 de cada estudiante en un solo PDF (una página por día), con lo registrado en el sistema.', `<button class="btn-secondary" style="margin-top:8px" data-action="alt-bitacoras-todas">${icon('download',14)} Descargar PDF</button>`)}
     </div>`) +
   altAcc('docsEst', `${icon('idcard',18)} Documentos por estudiante`, alumnosAlternancia().length+' estudiantes', `
     <div style="padding:12px 20px 16px">
@@ -5536,11 +5537,27 @@ async function altGuardarBitacora(id, n){
 }
 /* PDF de la bitácora con el mismo formato del documento oficial (Word) */
 async function altBitacoraPDF(id, n){
-  const s = altAlumno(id); if(!s) return; const b = altBit(s,n); const d = ALT_DIAS.find(x=>x.n===n);
-  const cfg = config();
+  const s = altAlumno(id); if(!s) return;
   const jsPDF = collectPDFmakerLib(); const pdf = new jsPDF({unit:'mm',format:'letter'});
-  const pw = pdf.internal.pageSize.getWidth(), L = 22, W = pw-44;
   pdf.__banda = 'PLAN DE ALTERNANCIA'; // nombre de archivo propio (sin prefijo de pre-práctica)
+  altBitacoraPagina(pdf, s, n);
+  savePDF(pdf, 'Bitacora_dia_'+n+'_'+(s.nombre||'estudiante').replace(/[\/\s]+/g,'_')+'.pdf');
+}
+/* Todas las bitácoras (3 días) de todos los estudiantes de alternancia en un solo PDF */
+async function altBitacorasTodasPDF(){
+  const lista = alumnosAlternancia();
+  if(!lista.length){ toast('No hay estudiantes de alternancia'); return; }
+  toast('Generando bitácoras de todos los estudiantes…');
+  const jsPDF = collectPDFmakerLib(); const pdf = new jsPDF({unit:'mm',format:'letter'});
+  pdf.__banda = 'PLAN DE ALTERNANCIA';
+  let primera = true;
+  lista.forEach(s=>{ ALT_DIAS.forEach(d=>{ if(!primera) pdf.addPage(); primera = false; altBitacoraPagina(pdf, s, d.n); }); });
+  savePDF(pdf, 'Bitacoras_alternancia_todos_los_estudiantes.pdf');
+}
+function altBitacoraPagina(pdf, s, n){
+  const b = altBit(s,n); const d = ALT_DIAS.find(x=>x.n===n);
+  const cfg = config();
+  const pw = pdf.internal.pageSize.getWidth(), L = 22, W = pw-44;
   const logo = logoForCarrera(cfg, 'Administración / Recursos Humanos') || cfg.logoBase64;
   if(logo){ try{ pdf.addImage(logo,'PNG',L,14,18,18); }catch(e){} }
   pdf.setTextColor(0,0,0);
@@ -5579,7 +5596,6 @@ async function altBitacoraPDF(id, n){
   pdf.text('Firma y timbre del maestro guía', L+W/2+8+(W/2-12)/2, y+5, {align:'center'});
   pdf.setFont('helvetica','italic'); pdf.setFontSize(7.5); pdf.setTextColor(60,60,60);
   pdf.text('Formación por alternancia 2026 · Municipalidad de Puerto Natales', pw/2, pdf.internal.pageSize.getHeight()-12, {align:'center'});
-  savePDF(pdf, 'Bitacora_dia_'+n+'_'+(s.nombre||'estudiante').replace(/[\/\s]+/g,'_')+'.pdf');
 }
 /* ---------- Carta de autorización y compromiso (mismo formato del documento oficial) ---------- */
 const CARTA_DEBERES = [
@@ -7579,6 +7595,7 @@ document.addEventListener('click', async (e)=>{
   try{
   switch(action){
     case 'alt-plan-pdf': await planAlternanciaPDF(id); break;
+    case 'alt-bitacoras-todas': await altBitacorasTodasPDF(); break;
     case 'alt-evaluar': state.altEvalId=id; state.view='altPlan'; renderView(); window.scrollTo(0,0); break;
     case 'alt-abrir-ficha': state.altFichaId=id; state.view='alternancia'; renderView(); window.scrollTo(0,0); break;
     case 'alt-cerrar-ficha': state.altFichaId=null; renderView(); window.scrollTo(0,0); break;
