@@ -1825,7 +1825,7 @@ function practicaProfesionalDe(p){
 }
 function horasPreDe(p){ return Math.min(MAX_HORAS_PRE, Math.max(0, Number(p && p.horasRealizadas)||0)); }
 /* Límite de 180 h en pre-práctica y descuento automático en la práctica profesional 2026 */
-const PRE_CAMPOS_COPIA = ['numeroMatricula','nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','comuna','ciudad','institucion','carrera','curso','jornada','profesorResponsable','jefePractica'];
+const PRE_CAMPOS_COPIA = ['numeroMatricula','nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','sector','comuna','ciudad','apoderado','rutApoderado','institucion','carrera','curso','jornada','profesorResponsable','jefePractica','anoEgreso'];
 /* Cada estudiante de la Práctica Profesional 2026 tiene también su registro de pre-práctica (se crea una sola vez) */
 function asegurarRegistrosPre(){
   if(!state.data || !Array.isArray(state.data.students)) return false;
@@ -3657,7 +3657,7 @@ function renderDetalle(){
 }
 
 /* Campos que componen la Individualización (se usan al crear y al editar) */
-const INDIV_KEYS = ['numeroMatricula','nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','comuna','ciudad','institucion','carrera','curso','jornada','profesorResponsable','jefePractica','tipoPractica','empresa','rutEmpresa','direccionEmpresa','area','cargo','supervisor','cargoSupervisor','correoSupervisor','telefonoSupervisor','celularSupervisor','ciSupervisor','representanteLegal','rutRepresentante','fechaInicio','fechaTermino','horasRequeridas','horasRealizadas','jornadaHorario','estado','horasCronologicas','resolDualNum','resolDualFecha','resolDualHoras','resolAlterNum','resolAlterFecha','resolAlterHoras','profSupNombre','profSupCI','profSupCargo','profSupTelefono','profSupCorreo'];
+const INDIV_KEYS = ['numeroMatricula','nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','sector','comuna','ciudad','apoderado','rutApoderado','institucion','carrera','curso','jornada','profesorResponsable','jefePractica','anoEgreso','tipoPractica','empresa','rutEmpresa','direccionEmpresa','area','cargo','supervisor','cargoSupervisor','correoSupervisor','telefonoSupervisor','celularSupervisor','ciSupervisor','representanteLegal','rutRepresentante','fechaInicio','fechaTermino','horasRequeridas','horasRealizadas','jornadaHorario','estado','horasCronologicas','resolDualNum','resolDualFecha','resolDualHoras','resolAlterNum','resolAlterFecha','resolAlterHoras','profSupNombre','profSupCI','profSupCargo','profSupTelefono','profSupCorreo'];
 function tplIndividualizacion(s){
   const foto = `
     <div style="display:flex;gap:16px;align-items:center;margin-bottom:16px">
@@ -3690,8 +3690,11 @@ function seccionesIndividualizacionHTML(s, fotoHTML, porSeccion){
       ${fld('telefono','Teléfono',s.telefono)}
       ${fld('correo','Correo electrónico',s.correo)}
       ${fld('direccion','Dirección',s.direccion)}
+      ${fld('sector','Población / sector',s.sector)}
       ${fld('comuna','Comuna',s.comuna)}
       ${fld('ciudad','Ciudad',s.ciudad)}
+      ${fld('apoderado','Nombre del apoderado(a) / tutor(a)',s.apoderado)}
+      ${fld('rutApoderado','C.I. del apoderado(a) / tutor(a)',s.rutApoderado)}
     </div>
     ${btn('personal')}
   </div>
@@ -3701,8 +3704,9 @@ function seccionesIndividualizacionHTML(s, fotoHTML, porSeccion){
       ${fldSelectEspecialidad(s.carrera)}
       ${fld('curso','Curso / nivel',s.curso)}
       ${fld('jornada','Jornada',s.jornada)}
-      ${fld('profesorResponsable','Profesor responsable',s.profesorResponsable)}
+      ${fld('profesorResponsable','Coordinador TP',s.profesorResponsable)}
       ${fld('jefePractica','Jefe / docente de práctica',s.jefePractica)}
+      ${fld('anoEgreso','Año de egreso',s.anoEgreso||s.anioEgreso)}
     </div>
     ${btn('academico')}
   </div>
@@ -4046,8 +4050,8 @@ function tplCierre(s){
    ============================================================ */
 const INDIV_SECCIONES = {
   pago: ['pagoTitular','pagoRutTitular','pagoBanco','pagoTipoCuenta','pagoNumeroCuenta','pagoCorreo'],
-  personal: ['numeroMatricula','nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','comuna','ciudad'],
-  academico: ['institucion','carrera','curso','jornada','profesorResponsable','jefePractica'],
+  personal: ['numeroMatricula','nombre','rut','fechaNacimiento','edad','telefono','correo','direccion','sector','comuna','ciudad','apoderado','rutApoderado'],
+  academico: ['institucion','carrera','curso','jornada','profesorResponsable','jefePractica','anoEgreso'],
   practica: ['tipoPractica','empresa','rutEmpresa','direccionEmpresa','representanteLegal','rutRepresentante','area','cargo','supervisor','cargoSupervisor','correoSupervisor','celularSupervisor','telefonoSupervisor','ciSupervisor','fechaInicio','fechaTermino','horasRequeridas','horasRealizadas','jornadaHorario','estado'],
   anexo: ['horasCronologicas','resolDualNum','resolDualFecha','resolDualHoras','resolAlterNum','resolAlterFecha','resolAlterHoras','profSupNombre','profSupCI','profSupCargo','profSupTelefono','profSupCorreo'],
 };
@@ -4244,7 +4248,8 @@ function subirCV(sid){
     if(f.size > 10*1024*1024){ toast('El archivo supera 10 MB. Reduzca su tamaño e intente de nuevo.'); return; }
     const s = getStudent(sid); if(!s) return;
     const prev = s.cv && s.cv.filePath;
-    const path = sid+'/cv/'+Date.now()+'_'+sanitizeFileName(f.name);
+    const _ext = (f.name.match(/\.[A-Za-z0-9]+$/)||['.pdf'])[0].toLowerCase();
+    const path = sid+'/cv/Curriculum_'+safeFileName(s.nombre)+'_'+Date.now()+_ext;
     toast('Subiendo currículum…');
     try{
       const { error } = await sb.storage.from(DOCS_BUCKET).upload(path, f, { upsert:false, contentType: f.type||undefined });
@@ -4533,7 +4538,7 @@ const INICIO_CAMPOS = {
             ['fechaInicio','Fecha de inicio','date'],['fechaTermino','Fecha de término','date'],['horasRequeridas','Total de horas','number'],['jornadaHorario','Horario'],
             ['empresa','Empresa o institución'],['rutEmpresa','RUT empresa'],['direccionEmpresa','Dirección empresa'],['supervisor','Maestro guía'],['cargoSupervisor','Cargo del maestro guía'],['correoSupervisor','Correo del maestro guía']]},
   doc13: {fecha:false, intro:'Ficha de asistencia del estudiante (formato del liceo, todas las especialidades). Se entrega al inicio para que el estudiante registre y firme su asistencia en la empresa; trae los días ya ingresados en «Asistencia del estudiante» y filas en blanco. Si la ficha está en papel, use «Importar ficha física».',
-    campos:[['nombre','Nombre estudiante'],['empresa','Lugar de práctica'],['fechaInicio','Fecha de inicio de práctica','date'],['profesorResponsable','Profesor responsable'],['profSupNombre','Profesor supervisor']]},
+    campos:[['nombre','Nombre estudiante'],['empresa','Lugar de práctica'],['fechaInicio','Fecha de inicio de práctica','date'],['profesorResponsable','Coordinador TP'],['profSupNombre','Profesor supervisor']]},
   doc09: {fecha:false, intro:'Solicitud de término anticipado de la práctica (solo si el estudiante la termina antes). Si no corresponde, márquela como «No requiere».',
     campos:[['terminoAnticipado.fechaSolicitud','Fecha de la solicitud','date'],['horasRealizadas','Horas realizadas','number'],['horasRequeridas','Horas requeridas','number'],
             ['fechaInicio','Fecha de inicio','date'],['fechaTermino','Fecha de término','date'],['empresa','Empresa'],['terminoAnticipado.motivo','Motivo del término','textarea']]},
@@ -6525,7 +6530,7 @@ function contentSupervision(pdf,s,cfg,y,pw){
 function contentPostergacion(pdf,s,cfg,y,pw){
   y = sectionTitle(pdf,18,y,'Ficha de postergación de práctica'); y+=8;
   y = addFieldGrid(pdf,y,[{label:'Fecha',value:fmtDate((s.postergacion&&s.postergacion.fecha)||new Date().toISOString().slice(0,10))},{label:'Especialidad',value:s.carrera}],pw);
-  y = addFieldGrid(pdf,y,[{label:'Nombre estudiante',value:s.nombre},{label:'C.I.',value:s.rut},{label:'Fecha de nacimiento',value:s.fechaNacimiento},{label:'Dirección',value:s.direccion},{label:'Celular',value:s.telefono},{label:'Correo electrónico',value:s.correo},{label:'Año egreso',value:s.anioEgreso},{label:'Nombre apoderado',value:s.apoderado},{label:'C.I. apoderado',value:s.rutApoderado}],pw);
+  y = addFieldGrid(pdf,y,[{label:'Nombre estudiante',value:s.nombre},{label:'C.I.',value:s.rut},{label:'Fecha de nacimiento',value:s.fechaNacimiento},{label:'Dirección',value:s.direccion},{label:'Celular',value:s.telefono},{label:'Correo electrónico',value:s.correo},{label:'Año egreso',value:s.anoEgreso||s.anioEgreso},{label:'Nombre apoderado',value:s.apoderado},{label:'C.I. apoderado',value:s.rutApoderado}],pw);
   y = checkPageBreak(pdf,y,cfg);
   y = sectionTitle(pdf,18,y,'Solicitud de postergación de práctica profesional'); y+=8;
   y = paragraph(pdf,18,y,'La presente ficha tiene por finalidad formalizar la solicitud de postergación de la Práctica Profesional por parte del estudiante, dejando constancia de los antecedentes que fundamentan dicha solicitud y permitiendo al establecimiento educacional realizar el seguimiento correspondiente.', pw-36)+5;
@@ -6569,7 +6574,7 @@ function cuadroLineasEscritura(pdf, y, pw, texto, minLineas){
 function contentRechazo(pdf,s,cfg,y,pw){
   y = sectionTitle(pdf,18,y,'Ficha de rechazo de práctica / rechazo lugar de práctica'); y+=8;
   y = addFieldGrid(pdf,y,[{label:'Fecha',value:fmtDate((s.rechazo&&s.rechazo.fecha)||new Date().toISOString().slice(0,10))},{label:'Especialidad',value:s.carrera}],pw);
-  y = addFieldGrid(pdf,y,[{label:'Nombre estudiante',value:s.nombre},{label:'C.I.',value:s.rut},{label:'Nombre apoderado',value:s.apoderado},{label:'C.I. apoderado',value:s.rutApoderado},{label:'Fecha de nacimiento',value:s.fechaNacimiento},{label:'Celular',value:s.telefono},{label:'Año egreso',value:s.anioEgreso},{label:'Dirección',value:s.direccion},{label:'Población/Sector',value:s.sector}],pw);
+  y = addFieldGrid(pdf,y,[{label:'Nombre estudiante',value:s.nombre},{label:'C.I.',value:s.rut},{label:'Nombre apoderado',value:s.apoderado},{label:'C.I. apoderado',value:s.rutApoderado},{label:'Fecha de nacimiento',value:s.fechaNacimiento},{label:'Celular',value:s.telefono},{label:'Año egreso',value:s.anoEgreso||s.anioEgreso},{label:'Dirección',value:s.direccion},{label:'Población/Sector',value:s.sector}],pw);
   y = checkPageBreak(pdf,y,cfg);
   y = addFieldGrid(pdf,y,[{label:'Rechazo práctica',value:(s.rechazo&&s.rechazo.rechazoPractica)},{label:'Rechazo lugar de práctica',value:(s.rechazo&&s.rechazo.rechazoLugar)||s.empresa}],pw);
   y = sectionTitle(pdf,18,y,'Motivo'); y+=5;
@@ -6878,7 +6883,7 @@ async function generateDocPDF(sid, docKey, silent){
   const y = addLetterhead(pdf, cfg, d.name, s.nombre, s.carrera);
   buildDocContent(pdf, docKey, s, cfg, y, pw);
   addFooterAll(pdf);
-  const fname = String(d.n).padStart(2,'0')+'_'+d.name.replace(/[\/\s]+/g,'_')+'.pdf';
+  const fname = String(d.n).padStart(2,'0')+'_'+safeFileName(d.name)+'_'+safeFileName(s.nombre)+'.pdf';
   savePDF(pdf, fname);
   if(s.documentos[docKey].noRequiere){ s.documentos[docKey].noRequiere = false; s.documentos[docKey].status = 'revision'; }
   s.documentos[docKey].fileName = fname;
@@ -6936,7 +6941,7 @@ async function downloadExpediente(sid){
     const y = addLetterhead(pdf,cfg,'Certificado de exención de práctica',s.nombre,s.carrera);
     contentExencion(pdf,s,cfg,y,pw);
     addFooterAll(pdf);
-    savePDF(pdf, 'Exencion_'+s.nombre.replace(/\s+/g,'_')+'.pdf');
+    savePDF(pdf, 'Exencion_'+safeFileName(s.nombre)+'.pdf');
     toast('Certificado de exención descargado');
     return;
   }
@@ -6949,7 +6954,7 @@ async function downloadExpediente(sid){
     buildDocContent(pdf, d.key, s, cfg, y, pw);
   });
   addFooterAll(pdf);
-  savePDF(pdf, 'Expediente_'+s.nombre.replace(/\s+/g,'_')+'.pdf');
+  savePDF(pdf, 'Expediente_'+safeFileName(s.nombre)+'.pdf');
   toast('Expediente completo descargado');
 }
 
@@ -6964,7 +6969,9 @@ async function handleUploadDoc(sid, docKey, droppedFile){
     const f = droppedFile || input.files[0]; if(!f) return;
     const s = getStudent(sid); if(!s) return;
     const prevPath = s.documentos[docKey].filePath;
-    const path = sid+'/'+docKey+'/'+Date.now()+'_'+sanitizeFileName(f.name);
+    const _dDoc = DOC_TYPES.find(x=>x.key===docKey);
+    const _ext = (f.name.match(/\.[A-Za-z0-9]+$/)||['.pdf'])[0].toLowerCase();
+    const path = sid+'/'+docKey+'/'+(_dDoc? String(_dDoc.n).padStart(2,'0')+'_'+safeFileName(_dDoc.name) : docKey)+'_'+safeFileName(s.nombre)+'_'+Date.now()+_ext;
     toast('Subiendo '+f.name+'…');
     try{
       const { error: upErr } = await sb.storage.from(DOCS_BUCKET).upload(path, f, { upsert:false, contentType: f.type||undefined });
@@ -7286,13 +7293,17 @@ const IMPORT_COLUMNS = [
   {sec:'Datos personales', header:'Teléfono', key:'telefono'},
   {sec:'Datos personales', header:'Correo electrónico', key:'correo'},
   {sec:'Datos personales', header:'Dirección', key:'direccion'},
+  {sec:'Datos personales', header:'Población / sector', key:'sector'},
   {sec:'Datos personales', header:'Comuna', key:'comuna'},
   {sec:'Datos personales', header:'Ciudad', key:'ciudad'},
+  {sec:'Datos personales', header:'Nombre apoderado(a) / tutor(a)', key:'apoderado'},
+  {sec:'Datos personales', header:'C.I. apoderado(a) / tutor(a)', key:'rutApoderado'},
   {sec:'Datos académicos', header:'Carrera / especialidad', key:'carrera'},
   {sec:'Datos académicos', header:'Curso / nivel', key:'curso'},
   {sec:'Datos académicos', header:'Jornada', key:'jornada'},
-  {sec:'Datos académicos', header:'Profesor responsable', key:'profesorResponsable'},
+  {sec:'Datos académicos', header:'Coordinador TP', key:'profesorResponsable'},
   {sec:'Datos académicos', header:'Jefe / docente de práctica', key:'jefePractica'},
+  {sec:'Datos académicos', header:'Año de egreso', key:'anoEgreso', type:'number'},
   {sec:'Datos de la práctica', header:'Tipo de práctica', key:'tipoPractica'},
   {sec:'Datos de la práctica', header:'Empresa', key:'empresa'},
   {sec:'Datos de la práctica', header:'RUT empresa', key:'rutEmpresa'},
@@ -7466,7 +7477,7 @@ async function handleImportStudentsFile(file){
     const headerMap = {};
     IMPORT_COLUMNS.forEach(c=>{ headerMap[c.header.trim().toLowerCase()] = c.key; });
     // Encabezados de plantillas anteriores
-    headerMap['supervisor de empresa'] = 'supervisor'; headerMap['rut empresa'] = 'rutEmpresa';
+    headerMap['supervisor de empresa'] = 'supervisor'; headerMap['profesor responsable'] = 'profesorResponsable'; headerMap['rut empresa'] = 'rutEmpresa';
     headerMap['fecha de inicio (aaaa-mm-dd)'] = 'fechaInicio'; headerMap['fecha de término (aaaa-mm-dd)'] = 'fechaTermino';
     const colDe = {}; IMPORT_COLUMNS.forEach(c=>{ colDe[c.key]=c; });
     const estadosNorm = {}; ESTADOS.forEach(e=> estadosNorm[normalizeTxt(e)] = e);
