@@ -7072,7 +7072,9 @@ async function downloadExpediente(sid){
   }
   toast('Generando expediente…');
   const jsPDF = collectPDFmakerLib(); const pdf = new jsPDF({unit:'mm',format:PAGE_FORMAT});
-  DOC_TYPES.forEach((d,i)=>{
+  /* Los documentos marcados «No requiere» no se incluyen en el expediente */
+  const docsExp = DOC_TYPES.filter(d=> !(s.documentos && s.documentos[d.key] && s.documentos[d.key].noRequiere));
+  docsExp.forEach((d,i)=>{
     if(i>0) pdf.addPage();
     const pw = pdf.internal.pageSize.getWidth();
     const y = addLetterhead(pdf,cfg,d.name,s.nombre,s.carrera);
