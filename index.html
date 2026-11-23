@@ -2213,6 +2213,9 @@ async function verificarAcceso(){
   showLoginError(sinAccesoMsg());
   return false;
 }
+/* Plan de Alternancia 2026: solo existe para Administración / Recursos Humanos */
+const CARRERAS_CON_ALTERNANCIA = ['Administración / Recursos Humanos'];
+function veAlternancia(){ return accesoTotal() || CARRERAS_CON_ALTERNANCIA.some(puedeVerCarrera); }
 function sinAccesoMsg(){ return 'Este correo no tiene una especialidad asignada en el sistema. Contacta a Coordinación TP.'; }
 
 async function doLogin(email, password){
@@ -2610,7 +2613,7 @@ function renderShell(){
   };
   const navPre = NAV.slice(0,6).concat([NAV_PRE_EXTRA]).concat(NAV.slice(6));
   const panelUnico = `<div class="nav-item ni-home ${state.view==='dashboard'?'active':''}" data-action="nav" data-modo="profesional" data-view="dashboard">${icon('home')}<span>Panel General</span></div>`;
-  document.getElementById('navList').innerHTML = panelUnico + grupo('alter','#7BD389',NAV_ALTER) + grupo('pre','#5BC0EB',navPre) + grupo('profesional','#FFB001',NAV);
+  document.getElementById('navList').innerHTML = panelUnico + (veAlternancia() ? grupo('alter','#7BD389',NAV_ALTER) : '') + grupo('pre','#5BC0EB',navPre) + grupo('profesional','#FFB001',NAV);
   document.getElementById('navFootInst').textContent = config().nombreInstitucion || '—';
 
   const titles = {horasPre:'Cantidad de horas', alternancia:'Plan de alternancia · Municipalidad', altPlan:'Plan de alternancia · Evaluación', altDocs:'Documentación · Alternancia', dashboard:'Panel General', estudiantes:'Estudiantes', empresas:'Empresas', documentacion:'Proceso de Práctica', fichas:'Ficha del estudiante', inicio:'Documentación inicial', cierre:'Cierre de práctica', reportes:'Reporte y exportación', evaluaciones:'Plan de práctica', seguimiento:'Seguimiento', expedientes:'Expedientes', configuracion:'Configuración', detalle:'Expediente del estudiante'};
@@ -4888,6 +4891,7 @@ function renderView(){
   map.horasPre = renderHorasPre; map.alternancia = renderAlternancia; map.altPlan = renderAltPlan; map.altDocs = renderAltDocs;
   if((state.view==='horasPre'||esVistaAlter(state.view)) && state.modo!=='pre') state.view='dashboard';
   if(state.view==='configuracion' && !accesoTotal()) state.view='dashboard';
+  if(esVistaAlter(state.view) && !veAlternancia()) state.view='dashboard';
   if(!accesoTotal() && state.dashCarrera && !puedeVerCarrera(state.dashCarrera)) state.dashCarrera='';
   (map[state.view]||renderDashboard)();
   const vr = document.getElementById('view-root');
