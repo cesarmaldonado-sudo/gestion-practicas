@@ -2158,6 +2158,63 @@ async function enviarAvisoEmpresaAlumnoAsignado(s){
 const DOCS_BUCKET = 'documentos-practicas';
 let currentUser = null;
 
+/* ============================================================
+   ACCESOS POR CORREO
+   - Correos de Administración, Coordinación y Dirección: acceso total.
+   - Resto de correos: solo ven y gestionan su especialidad
+     (se reconoce por una palabra clave en el correo, antes de la @).
+   - Se pueden fijar accesos puntuales en config.accesosUsuarios:
+       { "correo@dominio.cl": "total" | "<nombre exacto de la especialidad>" }
+   ============================================================ */
+const ACCESO_TOTAL_CLAVES = ['administracion','coordinacion','direccion'];
+const ACCESO_ESPECIALIDAD_CLAVES = [
+  {claves:['construccion','metalica'],             carrera:'Construcciones Metálicas'},
+  {claves:['gastronomia','cocina'],                carrera:'Gastronomía Mención Cocina'},
+  {claves:['mecanica','automotriz'],               carrera:'Mecánica Automotriz'},
+  {claves:['turismo'],                             carrera:'Servicios de Turismo'},
+  {claves:['rrhh','recursoshumanos'],              carrera:'Administración / Recursos Humanos'}
+];
+function _accNorm(t){ return (t||'').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
+function accesoDeCorreo(email){
+  const correo = _accNorm(email).trim();
+  if(!correo) return {total:false, carrera:null};
+  const cfg = (state && state.data && state.data.config) || {};
+  const manual = cfg.accesosUsuarios || {};
+  for(const k in manual){
+    if(_accNorm(k).trim()===correo){
+      const v = manual[k];
+      if(v==='total') return {total:true, carrera:null};
+      if(v) return {total:false, carrera:v};
+    }
+  }
+  const local = correo.split('@')[0].replace(/[^a-z]/g,'');
+  if(ACCESO_TOTAL_CLAVES.some(c=> local.includes(c))) return {total:true, carrera:null};
+  const m = ACCESO_ESPECIALIDAD_CLAVES.find(e=> e.claves.some(c=> local.includes(c)));
+  return {total:false, carrera: m ? m.carrera : null};
+}
+function accesoUsuario(){ return accesoDeCorreo(currentUser && currentUser.email); }
+function accesoTotal(){ return accesoUsuario().total; }
+/* ¿El usuario actual puede ver esta especialidad? */
+function puedeVerCarrera(carrera){
+  const a = accesoUsuario();
+  if(a.total) return true;
+  if(!a.carrera) return false;
+  const c = _accNorm(carrera).trim(), mia = _accNorm(a.carrera).trim();
+  return !!c && (c===mia || c.includes(mia) || mia.includes(c));
+}
+function puedeVerEstudiante(s){ return !!s && puedeVerCarrera(s.carrera); }
+function filtrarPorAcceso(list){ return accesoTotal() ? list : (list||[]).filter(puedeVerEstudiante); }
+function etiquetaAcceso(){ const a = accesoUsuario(); return a.total ? 'Acceso total' : (a.carrera || 'Sin acceso'); }
+/* Si el correo no tiene acceso total ni especialidad, cierra la sesión */
+async function verificarAcceso(){
+  const a = accesoUsuario();
+  if(a.total || a.carrera) return true;
+  await doLogout();
+  showLoginError(sinAccesoMsg());
+  return false;
+}
+function sinAccesoMsg(){ return 'Este correo no tiene una especialidad asignada en el sistema. Contacta a Coordinación TP.'; }
+
 async function doLogin(email, password){
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if(error) throw error;
@@ -2191,7 +2248,7 @@ async function initAuthUI(){
       document.getElementById('login-root').style.display='none';
       document.getElementById('app').style.display='flex';
       document.getElementById('view-root').innerHTML = '<div class="empty-state">Cargando expedientes...</div>';
-      if(await loadData()) renderView();
+      if(await loadData()){ if(!(await verificarAcceso())) return; renderView(); }
     }catch(e){
       showLoginError(e.message==='Invalid login credentials' ? 'Correo o contraseña incorrectos.' : (e.message||'No se pudo iniciar sesión.'));
     }finally{
@@ -2406,7 +2463,7 @@ function toast(msg){
 /* ============================================================
    HELPERS
    ============================================================ */
-function students(){ return state.data.students.filter(s=> state.modo==='pre' ? esPre(s) : esProf(s)); }
+function students(){ return filtrarPorAcceso(state.data.students.filter(s=> state.modo==='pre' ? esPre(s) : esProf(s))); }
 function config(){ return state.data.config; }
 function normalizeTxt(s){ return (s||'').toString().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
 function logoForCarrera(cfg, carrera){
@@ -2432,7 +2489,7 @@ function ensureLogosPorCarrera(cfg){
 function getStudent(id){
   const s = students().find(s=>s.id===id); if(s) return s;
   /* La ficha completa del Plan de Alternancia se abre solo desde la sección de alternancia */
-  return state.modo==='pre' ? ((state.data&&state.data.students)||[]).find(x=>x.id===id && esAltReg(x)) || null : null;
+  return state.modo==='pre' ? ((state.data&&state.data.students)||[]).find(x=>x.id===id && esAltReg(x) && puedeVerEstudiante(x)) || null : null;
 }
 function fichaActualEsAlt(){ return state.view==='fichas' && !!state.fichaId && esAltReg(((state.data&&state.data.students)||[]).find(x=>x.id===state.fichaId)); }
 function fmtDate(d){ if(!d) return '—'; const dt=new Date(d+'T00:00:00'); if(isNaN(dt)) return d; return dt.toLocaleDateString('es-CL',{day:'2-digit',month:'short',year:'numeric'}); }
@@ -2545,7 +2602,7 @@ function renderShell(){
         <span class="ng-dot" style="background:${color}"></span><span>${MODO_LABEL[g]}</span><span class="ng-chev">${icon('chevronDown',15)}</span>
       </div>
       <div class="nav-group-body">
-        ${items.filter(n=>n.id!=='dashboard').map(n=>`<div class="nav-item ${curGrupo===g && state.view===n.id?'active':''}" data-action="nav" data-modo="${modo}" data-view="${n.id}">
+        ${items.filter(n=>n.id!=='dashboard' && (n.id!=='configuracion' || accesoTotal())).map(n=>`<div class="nav-item ${curGrupo===g && state.view===n.id?'active':''}" data-action="nav" data-modo="${modo}" data-view="${n.id}">
           ${icon(n.icon)}<span>${n.label}</span></div>`).join('')}
         ${g==='profesional' ? `<div class="nav-item" data-action="open-video" title="Video de presentación del Sistema de Gestión de Prácticas">${icon('play')}<span>Video del sistema</span></div>` : ''}
       </div>
@@ -2565,7 +2622,7 @@ function renderShell(){
     <input type="file" id="importStudentsInput" accept=".xlsx,.xls" style="display:none" />
     <button class="btn-primary gold" data-action="new-student">${icon('plus',15)} ${state.modo==='pre'?'Nueva pre-práctica':'Nueva práctica'}</button>
     <div class="user-badge">
-      <span class="ub-email">${(currentUser&&currentUser.email)||''}</span>
+      <span class="ub-email">${(currentUser&&currentUser.email)||''} · <strong>${etiquetaAcceso()}</strong></span>
       <button data-action="logout">Cerrar sesión</button>
     </div>
   `;
@@ -2811,7 +2868,8 @@ function todasLasTareas(esp){
   return out;
 }
 function fldSelectEspecialidad(val){
-  const opts = Object.keys(ESPECIALIDADES);
+  const opts = Object.keys(ESPECIALIDADES).filter(puedeVerCarrera);
+  if(!accesoTotal() && !val && opts.length===1) val = opts[0];
   const extra = (val && !opts.includes(val))? [val] : [];
   const all = [...opts, ...extra];
   return `<div class="field"><label>Carrera / especialidad</label><select id="f_carrera"><option value="">Selecciona una especialidad</option>${all.map(o=>`<option value="${o.replace(/"/g,'&quot;')}" ${o===val?'selected':''}>${o}</option>`).join('')}</select></div>`;
@@ -4829,6 +4887,8 @@ function renderView(){
   const map = {dashboard:renderDashboard, estudiantes:renderEstudiantes, documentacion:renderReportes, reportes:renderReportes, fichas:renderFichas, inicio:renderInicioPractica, cierre:renderCierrePractica, evaluaciones:renderEvaluaciones, seguimiento:renderSeguimiento, configuracion:renderConfiguracion, detalle:renderDetalle};
   map.horasPre = renderHorasPre; map.alternancia = renderAlternancia; map.altPlan = renderAltPlan; map.altDocs = renderAltDocs;
   if((state.view==='horasPre'||esVistaAlter(state.view)) && state.modo!=='pre') state.view='dashboard';
+  if(state.view==='configuracion' && !accesoTotal()) state.view='dashboard';
+  if(!accesoTotal() && state.dashCarrera && !puedeVerCarrera(state.dashCarrera)) state.dashCarrera='';
   (map[state.view]||renderDashboard)();
   const vr = document.getElementById('view-root');
   if(vr && state.modo==='pre' && !vr.querySelector('.pre-banner')){
@@ -5013,7 +5073,7 @@ function separarAlternanciaDePre(){
   sincronizarHorasPre();
   return true;
 }
-function alumnosAlternancia(){ return ((state.data&&state.data.students)||[]).filter(s=> esAltReg(s) && s.alternancia==='municipalidad2026'); }
+function alumnosAlternancia(){ return filtrarPorAcceso(((state.data&&state.data.students)||[]).filter(s=> esAltReg(s) && s.alternancia==='municipalidad2026')); }
 const ALT_NIVELES = [[1,'Por mejorar'],[2,'Regular'],[3,'Bueno'],[4,'Excelente']];
 /* Sección replegable: recuerda si quedó abierta o cerrada */
 function altAcc(key, titulo, meta, cuerpo, abierta){
@@ -5849,6 +5909,7 @@ async function handleCreateStudent(){
   if(otra){ ['rutEmpresa','direccionEmpresa','representanteLegal','rutRepresentante','sectorEconomico'].forEach(k=>{ if(!s[k] && otra[k]) s[k]=otra[k]; }); }
   if(!s.nombre.trim()){ toast('Ingresa al menos el nombre del estudiante'); return; }
   if(!s.carrera || !ESPECIALIDADES[s.carrera]){ toast('Selecciona una de las 5 especialidades disponibles'); return; }
+  if(!puedeVerCarrera(s.carrera)){ toast('Tu correo solo puede registrar estudiantes de '+etiquetaAcceso()); return; }
   s.fotoBase64 = newStudentFotoBase64 || '';
   if(!s.estado) s.estado = 'Pendiente';
   s.modalidad = state.modo;
@@ -7559,6 +7620,7 @@ async function handleImportStudentsFile(file){
       const carreraRaw = (mapped.carrera||'').toString().trim();
       const match = carreraRaw ? especialidadesNorm[normalizeTxt(carreraRaw)] : null;
       if(!match){ carrerasNoReconocidas++; nombresRechazados.push(nombre); return; }
+      if(!puedeVerCarrera(match)){ omitidos++; nombresRechazados.push(nombre+' (otra especialidad)'); return; }
       const s = blankStudent();
       Object.keys(mapped).forEach(k=>{
         const raw = mapped[k], t = (colDe[k]||{}).type;
@@ -7877,7 +7939,7 @@ document.addEventListener('change', async (e)=>{
     document.getElementById('login-root').style.display='none';
     document.getElementById('app').style.display='flex';
     document.getElementById('view-root').innerHTML = '<div class="empty-state">Cargando expedientes...</div>';
-    if(await loadData()) renderView();
+    if(await loadData()){ if(await verificarAcceso()) renderView(); }
   }
   sb.auth.onAuthStateChange((event, session)=>{
     if(event==='SIGNED_OUT'){
@@ -8042,7 +8104,7 @@ function descuentoInsercion(s){ const d = insercionDe(s); return d.etapas[0].hor
 
 /* Aplica un cambio de horas o de estado y deja todo sincronizado */
 async function insAplicar(id, cambios){
-  const s = (state.data.students||[]).find(x=>x.id===id && esProf(x)); if(!s) return;
+  const s = (state.data.students||[]).find(x=>x.id===id && esProf(x) && puedeVerEstudiante(x)); if(!s) return;
   const d = insercionDe(s);
   s.insercion = Object.assign({altAplica:d.etapas[0].aplica, altHoras:d.etapas[0].horas, preEstado:d.preEstado, preHoras:d.preHorasReal}, s.insercion||{}, cambios);
   if(s.insercion.preHoras!=null && s.insercion.preHoras>MAX_HORAS_PRE) toast(`La pre-práctica se cuenta hasta ${MAX_HORAS_PRE} h: las ${insH(s.insercion.preHoras-MAX_HORAS_PRE)} h restantes no se descuentan`);
@@ -8132,9 +8194,9 @@ function insStatsHTML(datos){
 }
 
 /* ---------- Ventana del estudiante ---------- */
-function insListaNav(){ return (state.data.students||[]).filter(x=>esProf(x) && (!state.dashCarrera || (x.carrera||'Sin especialidad asignada')===state.dashCarrera)).sort((a,b)=>(a.carrera||'').localeCompare(b.carrera||'')||(a.nombre||'').localeCompare(b.nombre||'')); }
+function insListaNav(){ return (state.data.students||[]).filter(x=>esProf(x) && puedeVerEstudiante(x) && (!state.dashCarrera || (x.carrera||'Sin especialidad asignada')===state.dashCarrera)).sort((a,b)=>(a.carrera||'').localeCompare(b.carrera||'')||(a.nombre||'').localeCompare(b.nombre||'')); }
 function insAbrir(id){
-  const s = (state.data.students||[]).find(x=>x.id===id && esProf(x)); if(!s) return;
+  const s = (state.data.students||[]).find(x=>x.id===id && esProf(x) && puedeVerEstudiante(x)); if(!s) return;
   const prevBody = document.querySelector('#modal-root .modal-overlay');
   const scroll = prevBody ? prevBody.scrollTop : 0;
   state.insId = id;
@@ -8263,7 +8325,7 @@ function insFechaLarga(d){
 function insNombreArchivo(t){ return String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\w]+/g,'_').replace(/^_|_$/g,''); }
 
 function insCertificadoPDF(id){
-  const s = (state.data.students||[]).find(x=>x.id===id && esProf(x)); if(!s){ toast('No se encontró el estudiante'); return; }
+  const s = (state.data.students||[]).find(x=>x.id===id && esProf(x) && puedeVerEstudiante(x)); if(!s){ toast('No se encontró el estudiante'); return; }
   let jsPDF; try{ jsPDF = collectPDFmakerLib(); }catch(e){ toast('No se pudo cargar la librería PDF. Revisa tu conexión a internet.'); return; }
   const cfg = config(), d = insercionDe(s), ap = insAprob();
   const pdf = new jsPDF({unit:'mm', format:PAGE_FORMAT});
