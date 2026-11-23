@@ -2207,6 +2207,12 @@ let currentUser = null;
        { "correo@dominio.cl": "total" | "<nombre exacto de la especialidad>" }
    ============================================================ */
 const ACCESO_TOTAL_CLAVES = ['administracion','coordinacion','direccion'];
+/* MAESTROS GUÍA (empresa): solo ven «Práctica Profesional 2026 › Plan de práctica»
+   de su especialidad, para evaluar al estudiante. Nada más del sistema.
+   También se pueden agregar en config.accesosUsuarios con el valor "maestro:<especialidad>". */
+const ACCESOS_MAESTRO_GUIA = {
+  'maestro.adm@lcm.com': 'Administración / Recursos Humanos'
+};
 const ACCESO_ESPECIALIDAD_CLAVES = [
   {claves:['construccion','metalica'],             carrera:'Construcciones Metálicas'},
   {claves:['gastronomia','cocina'],                carrera:'Gastronomía Mención Cocina'},
@@ -2219,11 +2225,15 @@ function accesoDeCorreo(email){
   const correo = _accNorm(email).trim();
   if(!correo) return {total:false, carrera:null};
   const cfg = (state && state.data && state.data.config) || {};
+  for(const k in ACCESOS_MAESTRO_GUIA){
+    if(_accNorm(k).trim()===correo) return {total:false, carrera:ACCESOS_MAESTRO_GUIA[k], maestro:true};
+  }
   const manual = cfg.accesosUsuarios || {};
   for(const k in manual){
     if(_accNorm(k).trim()===correo){
       const v = manual[k];
       if(v==='total') return {total:true, carrera:null};
+      if(typeof v==='string' && /^maestro:/i.test(v)) return {total:false, carrera:v.replace(/^maestro:\s*/i,''), maestro:true};
       if(v) return {total:false, carrera:v};
     }
   }
@@ -2244,7 +2254,8 @@ function puedeVerCarrera(carrera){
 }
 function puedeVerEstudiante(s){ return !!s && puedeVerCarrera(s.carrera); }
 function filtrarPorAcceso(list){ return accesoTotal() ? list : (list||[]).filter(puedeVerEstudiante); }
-function etiquetaAcceso(){ const a = accesoUsuario(); return a.total ? 'Acceso total' : (a.carrera || 'Sin acceso'); }
+function esMaestroGuia(){ return !!accesoUsuario().maestro; }
+function etiquetaAcceso(){ const a = accesoUsuario(); return a.total ? 'Acceso total' : (a.maestro ? 'Maestro guía · '+(a.carrera||'') : (a.carrera || 'Sin acceso')); }
 /* Si el correo no tiene acceso total ni especialidad, cierra la sesión */
 async function verificarAcceso(){
   const a = accesoUsuario();
@@ -2663,6 +2674,15 @@ function renderShell(){
   };
   const navPre = NAV.slice(0,6).concat([NAV_PRE_EXTRA]).concat(NAV.slice(6));
   const panelUnico = `<div class="nav-item ni-home ${state.view==='dashboard'?'active':''}" data-action="nav" data-modo="profesional" data-view="dashboard">${icon('home')}<span>Panel General</span></div>`;
+  if(esMaestroGuia()){
+    state.navOpen.profesional = true;
+    document.getElementById('navList').innerHTML = `<div class="nav-group open current">
+      <div class="nav-group-head"><span class="ng-dot" style="background:#FFB001"></span><span>${MODO_LABEL.profesional}</span></div>
+      <div class="nav-group-body">
+        <div class="nav-item ${state.view==='evaluaciones'||state.view==='detalle'?'active':''}" data-action="nav" data-modo="profesional" data-view="evaluaciones">${icon('star')}<span>Plan de práctica</span></div>
+      </div>
+    </div>`;
+  } else
   document.getElementById('navList').innerHTML = panelUnico + (veAlternancia() ? grupo('alter','#7BD389',NAV_ALTER) : '') + grupo('pre','#5BC0EB',navPre) + grupo('profesional','#FFB001',NAV);
   document.getElementById('navFootInst').textContent = config().nombreInstitucion || '—';
 
@@ -2681,6 +2701,10 @@ function renderShell(){
       <button data-action="logout">Cerrar sesión</button>
     </div>
   `;
+  if(esMaestroGuia()){
+    const tb = document.getElementById('topbar');
+    tb.querySelectorAll('.search-wrap,[data-action="download-import-template"],[data-action="trigger-import"],[data-action="trigger-matricula"],[data-action="new-student"],#importStudentsInput,#matriculaInput').forEach(el=>el.remove());
+  }
 }
 
 /* ============================================================
@@ -3756,7 +3780,9 @@ function renderDetalle(){
     ['asistencia','Asistencia del estudiante'],
   ];
   if(state.detailTab==='evaluaciones') state.detailTab = 'plan';
-  const visibleTabs = tabs;
+  const MG = esMaestroGuia();
+  const visibleTabs = MG ? tabs.filter(t=>t[0]==='plan') : tabs;
+  if(MG) state.volverVista = 'evaluaciones';
   const VOLVER = {dashboard:'Panel General', evaluaciones:'Plan de práctica', seguimiento:'Seguimiento', documentacion:'Proceso de Práctica', fichas:'Ficha del estudiante', inicio:'Documentación inicial', cierre:'Cierre de práctica', reportes:'Reporte y exportación', estudiantes:'Estudiantes'};
   const vv = VOLVER[state.volverVista] ? state.volverVista : 'evaluaciones';
   const html = `
@@ -3771,8 +3797,8 @@ function renderDetalle(){
       </div>
       <div style="display:flex;gap:8px;align-items:center">
         ${pillResultado(s)}
-        <button class="btn-secondary" data-action="export-student-json" data-id="${s.id}">${icon('download',13)} JSON</button>
-        <button class="btn-danger" data-action="delete-student" data-id="${s.id}">${icon('trash',13)} Eliminar</button>
+        ${MG ? '' : `<button class="btn-secondary" data-action="export-student-json" data-id="${s.id}">${icon('download',13)} JSON</button>
+        <button class="btn-danger" data-action="delete-student" data-id="${s.id}">${icon('trash',13)} Eliminar</button>`}
       </div>
     </div>
     <div class="tabbar">${visibleTabs.map(t=>`<div class="tabbtn ${state.detailTab===t[0]?'active':''}" data-action="detail-tab" data-tab="${t[0]}">${t[1]}</div>`).join('')}</div>
@@ -4934,6 +4960,15 @@ function normalizarInstitucion(){
   });
 }
 function renderView(){
+  if(esMaestroGuia()){
+    if(state.modo!=='profesional') cambiarModo('profesional');
+    if(state.view==='detalle'){
+      const sd = getStudent(state.selectedId);
+      if(!sd || !puedeVerEstudiante(sd) || !esProf(sd)){ state.view='evaluaciones'; state.selectedId=null; }
+      else state.detailTab='plan';
+    }
+    if(state.view!=='evaluaciones' && state.view!=='detalle') state.view='evaluaciones';
+  }
   if(state.view==='dashboard' && state.modo==='pre') cambiarModo('profesional');
   normalizarInstitucion();
   { const nuevos = asegurarRegistrosPre(); const dup = depurarPreDuplicados(); if(nuevos || dup) setTimeout(()=>saveData(), 0); }
@@ -7854,6 +7889,12 @@ document.addEventListener('click', async (e)=>{
   if(!t) return;
   const action = t.dataset.action;
   const id = t.dataset.id;
+  if(esMaestroGuia()){
+    const BLOQ = ['new-student','trigger-import','trigger-matricula','download-import-template','delete-student','export-student-json','open-video','nav-toggle'];
+    if(BLOQ.includes(action) || /^(alt-|ins-)/.test(action)){ e.preventDefault(); e.stopImmediatePropagation(); return; }
+    if(action==='nav' && t.dataset.view!=='evaluaciones'){ e.preventDefault(); e.stopImmediatePropagation(); return; }
+    if(action==='detail-tab' && t.dataset.tab!=='plan'){ e.preventDefault(); e.stopImmediatePropagation(); return; }
+  }
   try{
   switch(action){
     case 'alt-plan-pdf': await planAlternanciaPDF(id); break;
