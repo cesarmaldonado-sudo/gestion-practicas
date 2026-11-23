@@ -2859,7 +2859,7 @@ function renderDashboard(){
       labels: withEval.map(s=>s.nombre.split(' ')[0]),
       datasets:[
         {label:'Empresa', data:withEval.map(s=>s.evaluacionEmpresa.nota), backgroundColor:'#0357DD', borderRadius:4},
-        {label:'Nota final', data:withEval.map(s=>weightedNota(s)), backgroundColor:'#FFB001', borderRadius:4},
+        {label:'Nota final', data:withEval.map(s=> s.resultadoPractica ? weightedNota(s) : null), backgroundColor:'#FFB001', borderRadius:4},
       ]
     }, {scales:{y:{min:1,max:7}}});
     makeChart('chartHoras','bar', {
@@ -3478,7 +3478,7 @@ function renderEvaluaciones(){
             const s = c.s;
             const resultadoLabel = c.estado==='pendiente' ? (c.nota!==null ? 'Pendiente de cierre' : 'Pendiente') : resultadoOficial(s).label;
             const resultadoColor = c.estado==='pendiente' ? 'var(--amber)' : c.estado==='aprobado' ? 'var(--green)' : c.estado==='eximida' ? 'var(--blue)' : 'var(--wine)';
-            const notaTxt = c.nota!==null ? c.nota.toFixed(2) : '—';
+            const notaTxt = (c.nota!==null && s.resultadoPractica) ? c.nota.toFixed(2) : '—';
             const empVal = s.evaluacionEmpresa ? Number(s.evaluacionEmpresa.nota).toFixed(1) : '—';
             const infVal = (s.informeFinal && s.informeFinal.nota) ? Number(s.informeFinal.nota).toFixed(1) : '—';
             return `
@@ -3490,7 +3490,7 @@ function renderEvaluaciones(){
                   <div class="dgh-meta">${s.empresa||'Sin empresa asignada'} · Maestro guía ${empVal} · Informe ${infVal}</div>
                 </div>
                 <div class="doc-group-progress">
-                  <span class="bar-label" style="color:${c.estado==='pendiente'?'var(--slate)':resultadoColor};font-weight:700;font-family:'Fraunces',serif;font-size:15px" title="${c.estado==='pendiente'?'Nota parcial: el resultado se define al finalizar la práctica':''}">${notaTxt}</span>
+                  <span class="bar-label" style="color:${c.estado==='pendiente'?'var(--slate)':resultadoColor};font-weight:700;font-family:'Fraunces',serif;font-size:15px" title="${c.estado==='pendiente'?'La nota final se muestra al finalizar la práctica':''}">${notaTxt}</span>
                   <span class="pill" style="background:${resultadoColor}18;color:${resultadoColor}">${resultadoLabel}</span>
                 </div>
                 <button class="btn-secondary" data-action="open-student-tab" data-id="${s.id}" data-tab="plan">${c.nota!==null ? `${icon('check',13)} Ver plan evaluado` : `Evaluar plan ${icon('arrow',13)}`}</button>
@@ -4098,8 +4098,8 @@ function tplEvaluaciones(s){
     <div class="panel-body">
       <div class="st" style="margin-bottom:8px"><div class="bar"></div><h4>Nota final ponderada</h4></div>
       <div class="hint">Maestro guía ${pesoFinal(config(),'empresa')}% · Informe final ${pesoFinal(config(),'informe')}%</div>
-      <div class="num" style="font-size:30px;margin-top:6px">${(s.evaluacionEmpresa)? weightedNota(s).toFixed(2) : '—'}</div>
-      <div class="label">${s.resultadoPractica ? resultadoOficial(s).LABEL : (s.evaluacionEmpresa ? 'PENDIENTE · se define al finalizar la práctica' : 'Falta la evaluación del maestro guía')}</div>
+      <div class="num" style="font-size:30px;margin-top:6px">${(s.evaluacionEmpresa && s.resultadoPractica)? weightedNota(s).toFixed(2) : '—'}</div>
+      <div class="label">${s.resultadoPractica ? resultadoOficial(s).LABEL : (s.evaluacionEmpresa ? 'PENDIENTE · la nota final se muestra al finalizar la práctica' : 'Falta la evaluación del maestro guía')}</div>
     </div>
   </div>`;
 }
@@ -4128,8 +4128,8 @@ function tplInformeNotaFinal(s){
     <div class="panel-body">
       <div class="st" style="margin-bottom:8px"><div class="bar"></div><h4>Nota final ponderada</h4></div>
       <div class="hint">Plan de práctica (maestro guía) ${pesoFinal(config(),'empresa')}% · Informe final ${pesoFinal(config(),'informe')}%</div>
-      <div class="num" style="font-size:30px;margin-top:6px">${(s.evaluacionEmpresa)? weightedNota(s).toFixed(2) : '—'}</div>
-      <div class="label">${s.resultadoPractica ? resultadoOficial(s).LABEL : (s.evaluacionEmpresa ? 'PENDIENTE · se define al finalizar la práctica' : 'Falta evaluar el Plan de práctica')}</div>
+      <div class="num" style="font-size:30px;margin-top:6px">${(s.evaluacionEmpresa && s.resultadoPractica)? weightedNota(s).toFixed(2) : '—'}</div>
+      <div class="label">${s.resultadoPractica ? resultadoOficial(s).LABEL : (s.evaluacionEmpresa ? 'PENDIENTE · la nota final se muestra al finalizar la práctica' : 'Falta evaluar el Plan de práctica')}</div>
     </div>
   </div>`;
 }
@@ -7040,7 +7040,7 @@ function contentInformeFinal(pdf,s,cfg,y,pw){
   });
 }
 function contentActa(pdf,s,cfg,y,pw){
-  const nota = (s.evaluacionEmpresa)? weightedNota(s): null;
+  const nota = (s.evaluacionEmpresa && s.resultadoPractica)? weightedNota(s): null;
   const resultado = resultadoOficial(s).LABEL;
   y = addFieldGrid(pdf,y,[{label:'Estudiante',value:s.nombre},{label:'Empresa',value:s.empresa},{label:'Carrera',value:s.carrera},{label:'Período',value:(s.fechaInicio||'—')+' al '+(s.fechaTermino||'—')},{label:'Horas realizadas',value:s.horasRealizadas+' / '+s.horasRequeridas},{label:'Evaluación empresa',value:s.evaluacionEmpresa? s.evaluacionEmpresa.nota.toFixed(1):'—'},{label:'Informe final',value:(s.informeFinal&&s.informeFinal.nota)? Number(s.informeFinal.nota).toFixed(1):'—'},{label:'Nota final ponderada',value: nota!==null? nota.toFixed(2):'—'}],pw);
   y+=6;
@@ -7412,7 +7412,7 @@ function exportReport(type){
     students().forEach(s=> rows.push([s.nombre, s.rut, s.carrera, s.empresa, ...DOC_TYPES.map(d=>lbl(s.documentos[d.key])), docsResueltos(s)+'/'+DOC_TYPES.length]));
     name='estado_documentos_por_estudiante.csv';
   }
-  else if(type==='evaluaciones'){ rows=[['Estudiante','Eval. Maestro guía','Informe','Nota final','Resultado']]; students().forEach(s=>{ const n=(s.evaluacionEmpresa)? weightedNota(s):''; rows.push([s.nombre, s.evaluacionEmpresa?s.evaluacionEmpresa.nota:'', s.informeFinal?s.informeFinal.nota:'', n, resultadoOficial(s).label]); }); name='reporte_evaluaciones.csv'; }
+  else if(type==='evaluaciones'){ rows=[['Estudiante','Eval. Maestro guía','Informe','Nota final','Resultado']]; students().forEach(s=>{ const n=(s.evaluacionEmpresa && s.resultadoPractica)? weightedNota(s):''; rows.push([s.nombre, s.evaluacionEmpresa?s.evaluacionEmpresa.nota:'', s.informeFinal?s.informeFinal.nota:'', n, resultadoOficial(s).label]); }); name='reporte_evaluaciones.csv'; }
   else if(type==='especialidad'){ rows=[['Especialidad','Estudiantes','Activas','Finalizadas','% Finalizadas','Horas realizadas','Horas requeridas','% Horas','Promedio evaluación docente']]; statsPorEspecialidad().forEach(r=>rows.push([r.especialidad,r.total,r.activas,r.finalizadas,r.pctFinal+'%',r.horasReal,r.horasReq,r.pctHoras+'%',r.promEval])); name='estadistica_por_especialidad.csv'; }
   else if(type==='periodo'){ rows=[['Período','Estudiantes','Activas','Finalizadas','% Finalizadas','Promedio evaluación docente','Horas realizadas']]; statsPorPeriodo().forEach(r=>rows.push([r.anio,r.total,r.activas,r.finalizadas,r.pctFinal+'%',r.promEval,r.horasTotales])); name='estadistica_por_periodo.csv'; }
   else { rows=[['Estudiante','Empresa','Carrera','Fecha de cierre','Resultado']]; students().filter(s=>s.estado==='Cerrada'||s.estado==='Finalizada').forEach(s=>{ const n=(s.evaluacionEmpresa)?weightedNota(s):null; rows.push([s.nombre,s.empresa,s.carrera,s.fechaCierre||'',resultadoOficial(s).label]); }); name='reporte_finalizadas.csv'; }
@@ -8264,7 +8264,16 @@ function insercionDe(s){
   else if(conNota.length) estado = {k:'curso', label:'En curso · nota parcial', color:'var(--slate)', bg:'#ECEAE6'};
   else estado = {k:'sin', label:'Sin notas aún', color:'var(--slate)', bg:'#ECEAE6'};
   const tipo = (altAplica?'A':'')+(preEstado==='aplica'?'P':'');
-  return {s, pre, alt, esAlt, base, etapas, conNota, H, suma, exacta,
+  /* La nota final integrada se publica solo cuando la práctica profesional se cierra
+     (Finalizar — Aprobada / Rechazar / Eximir). Las notas de cada etapa se conservan. */
+  const cerrada = !!s.resultadoPractica;
+  const ro = resultadoOficial(s);
+  const estadoPanel = !cerrada ? {k:'pendiente', label:'Pendiente', color:'#a86a00', bg:'var(--gold-soft)'}
+    : ro.k==='aprobado' ? {k:'aprobado', label:'✓ Aprobado', color:'#00803a', bg:'var(--green-soft)'}
+    : ro.k==='eximida'  ? {k:'eximida', label:'Eximida', color:'var(--blue)', bg:'var(--blue-soft)'}
+    : {k:'reprobado', label:'✕ Reprobado', color:'var(--wine)', bg:'var(--wine-soft)'};
+  const notaPublica = (cerrada && ro.k!=='eximida' && preEstado!=='rechazada') ? insR1(exacta) : null;
+  return {s, pre, alt, esAlt, base, etapas, conNota, H, suma, exacta, cerrada, notaPublica, estadoPanel,
     nota: preEstado==='rechazada' ? null : insR1(exacta), completa, estado, tipo,
     preEstado, preHorasReal:preHoras, sobreTope: preEstado==='aplica' && preHoras>MAX_HORAS_PRE};
 }
@@ -8309,13 +8318,13 @@ function insercionPanelHTML(lista, dc){
         <span class="carrera-name">${insEsc(c)}</span><span class="hint">${arr.length} estudiante${arr.length===1?'':'s'}</span><span class="badge-count">${arr.length}</span>
       </div>
       <div class="carrera-body" style="${collapsed?'display:none':''}">
-      ${arr.map(d=>{ const s=d.s; const nf = d.nota;
+      ${arr.map(d=>{ const s=d.s; const nf = d.notaPublica;
         return `<div class="ins-row">
           <span class="ins-av">${s.fotoBase64?`<img src="${s.fotoBase64}" alt="">`:initials(s.nombre)}</span>
           <div class="ins-nm"><b>${insEsc(s.nombre||'Sin nombre')}</b><span>${insEsc([s.curso, s.rut].filter(Boolean).join(' · ')||'—')}</span></div>
           <div style="flex:1"></div>
-          <div class="ins-nf" style="color:${nf==null?'var(--slate)':colorNota(nf)}">${nf==null?'—':fmtNota(nf)+(d.completa?'':'*')}</div>
-          <div class="ins-es" style="color:${d.estado.color}">${d.estado.label}</div>
+          <div class="ins-nf" style="color:${nf==null?'var(--slate)':colorNota(nf)}">${nf==null?'—':fmtNota(nf)}</div>
+          <div class="ins-es" style="color:${d.estadoPanel.color}">${d.estadoPanel.label}</div>
           <button class="btn-secondary" data-action="ins-open" data-id="${s.id}" style="white-space:nowrap">Ver nota final →</button>
         </div>`; }).join('')}
       </div></div>`;
@@ -8325,12 +8334,13 @@ function insercionPanelHTML(lista, dc){
       <span class="hint" style="display:flex;align-items:center;gap:10px">Alternancia + pre-práctica (máx. ${MAX_HORAS_PRE} h) + práctica profesional · cada etapa pesa según sus horas${dc?` · ${insEsc(dc)}`:''}<button class="btn-secondary" data-action="ins-acta" style="white-space:nowrap">${icon('download',14)} Acta de calificaciones (PDF)</button></span></div>
     <div class="panel-body">
       ${filas}
-      <div class="hint" style="margin-top:4px">* Nota parcial: falta la nota de alguna etapa. Haz clic en «Ver nota final» para ver y editar las horas de cada estudiante.</div>
+      <div class="hint" style="margin-top:4px">La nota final se muestra cuando la práctica profesional se cierra en «Cierre de práctica» (Finalizar — Aprobada). Mientras tanto figura «Pendiente»; las notas de alternancia y pre-práctica quedan guardadas. Haz clic en «Ver nota final» para ver y editar las horas de cada estudiante.</div>
       ${insStatsHTML(datos)}
     </div></div>`;
 }
 function insStatsHTML(datos){
   if(!datos.length) return '';
+  datos = datos.map(d=>Object.assign({}, d, {nota:d.notaPublica, completa:d.notaPublica!=null}));
   const fin = datos.filter(d=>d.completa && d.nota!=null);
   const prom = fin.length ? fin.reduce((a,d)=>a+d.nota,0)/fin.length : null;
   const nAlt = datos.filter(d=>d.etapas[0].aplica).length;
@@ -8604,9 +8614,9 @@ function insActaPDF(){
     let y = addLetterhead(pdf, cfg, 'Acta de Calificaciones', 'Nota final integrada · Inserción laboral '+anio+' · '+c, c);
     const datos = grupos[c].map(s=>insercionDe(s)).sort((a,b)=>(a.s.nombre||'').localeCompare(b.s.nombre||''));
     const cel = e => (e.k==='pre' && e.estado==='rechazada') ? 'Rechazada' : !e.aplica ? 'N/A' : (e.nota==null ? '— ' : fmtNota(e.nota))+'\n'+insH(e.horas)+' h';
-    const sit = d => d.preEstado==='rechazada' ? 'En revisión' : !d.completa ? (d.nota==null ? 'Sin notas' : 'Parcial') : (d.nota>=ap ? 'Aprobado' : 'Reprobado');
+    const sit = d => !d.cerrada ? 'Pendiente' : resultadoOficial(d.s).label;
     const body = datos.map((d,i)=>[String(i+1), d.s.nombre||'', d.s.rut||'', cel(d.etapas[0]), cel(d.etapas[1]), cel(d.etapas[2]),
-      {content:d.nota==null?'—':fmtNota(d.nota)+(d.completa?'':'*'), styles:{fontStyle:'bold', fontSize:10}}, sit(d)]);
+      {content:d.notaPublica==null?'—':fmtNota(d.notaPublica), styles:{fontStyle:'bold', fontSize:10}}, sit(d)]);
     pdf.autoTable({ startY:y, margin:{left:L,right:L}, theme:'grid',
       styles:{fontSize:8.2, cellPadding:1.8, valign:'middle', lineColor:[210,205,195], lineWidth:0.2, textColor:[30,30,30]},
       headStyles:{fillColor:[17,8,51], textColor:255, fontStyle:'bold', fontSize:7.8, halign:'center'},
@@ -8614,13 +8624,13 @@ function insActaPDF(){
       didParseCell: h=>{ if(h.section==='body' && h.column.index===7){ const t=h.cell.raw; h.cell.styles.textColor = t==='Aprobado'?[0,128,58]: (t==='Reprobado'||t==='En revisión')?[105,20,25]:[90,90,90]; h.cell.styles.fontStyle='bold'; } },
       head:[['N°','Nombre del estudiante','RUN','Alternancia\nnota · horas','Pre-práctica\nnota · horas','Práctica prof.\nnota · horas','Nota final','Situación']], body });
     y = pdf.lastAutoTable.finalY + 6;
-    const fin = datos.filter(d=>d.completa && d.nota!=null);
-    const prom = fin.length ? fin.reduce((a,d)=>a+d.nota,0)/fin.length : null;
+    const fin = datos.filter(d=>d.notaPublica!=null);
+    const prom = fin.length ? fin.reduce((a,d)=>a+d.notaPublica,0)/fin.length : null;
     pdf.setFont('helvetica','normal'); pdf.setFontSize(8.5); pdf.setTextColor(80,80,80);
     const res = `Total: ${datos.length} estudiante${datos.length===1?'':'s'}  ·  Aprobados: ${datos.filter(d=>sit(d)==='Aprobado').length}  ·  Reprobados: ${datos.filter(d=>sit(d)==='Reprobado').length}  ·  Pendientes: ${datos.filter(d=>!['Aprobado','Reprobado'].includes(sit(d))).length}  ·  Promedio (notas completas): ${prom==null?'—':fmtNota(insR1(prom))}`;
     y = paragraph(pdf, L, y, res, W);
     pdf.setFontSize(7.8); pdf.setTextColor(120,120,120);
-    y = paragraph(pdf, L, y, `* Nota parcial: falta la calificación de alguna etapa. La nota final es el promedio ponderado por horas de las etapas que aplican (alternancia, pre-práctica de máx. ${MAX_HORAS_PRE} h y práctica profesional). Nota mínima de aprobación: ${fmtNota(ap)}.`, W) + 2;
+    y = paragraph(pdf, L, y, `La nota final se registra al cerrar la práctica profesional; mientras tanto figura «Pendiente». La nota final es el promedio ponderado por horas de las etapas que aplican (alternancia, pre-práctica de máx. ${MAX_HORAS_PRE} h y práctica profesional). Nota mínima de aprobación: ${fmtNota(ap)}.`, W) + 2;
     pdf.setFont('helvetica','normal'); pdf.setFontSize(10); pdf.setTextColor(30,30,30);
     pdf.text('Puerto Natales, '+insFechaLarga(), pw-L, y+4, {align:'right'});
     const s0 = grupos[c][0];
