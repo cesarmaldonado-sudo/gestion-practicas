@@ -948,7 +948,7 @@ function resumenNotaHTML(prefix, r){
     <div style="flex:1;min-width:150px;background:var(--navy,#110833);color:#fff;border-radius:10px;padding:10px 12px">
       <div style="font-size:11px;opacity:.8">${prefix==='plan'?'Nota final del Plan de Práctica':(prefix==='ee'?'Nota maestro guía (empresa)':'Nota profesor supervisor')}</div>
       <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:700">${fmtNota(r.nota)}</div>
-      <div style="font-size:11px;opacity:.8">${r.nota===null? 'Marca los niveles de logro' : (r.nota>=(config().escalaAprobacion||4)? 'Aprobado':'Reprobado')+' · '+conceptoDeNota(r.nota)}</div></div>
+      <div style="font-size:11px;opacity:.8">${r.nota===null? 'Marca los niveles de logro' : conceptoDeNota(r.nota)+' · resultado al finalizar la práctica'}</div></div>
   </div>`;
 }
 function tablaEscalaNivelesHTML(){
@@ -1053,7 +1053,7 @@ function resumenLikertHTML(prefix, r){
     <div style="flex:1;min-width:150px;background:var(--navy,#110833);color:#fff;border-radius:10px;padding:10px 12px">
       <div style="font-size:11px;opacity:.8">${prefix==='ee'?'Nota maestro guía (empresa)':(prefix==='pl'?'Nota final del Plan de Práctica':'Nota profesor supervisor')}</div>
       <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:700">${fmtNota(r.nota)}</div>
-      <div style="font-size:11px;opacity:.8">${r.nota===null? 'Responda las afirmaciones' : (r.nota>=(config().escalaAprobacion||4)? 'Aprobado':'Reprobado')+' · '+conceptoLikert(r.nota)}</div></div>
+      <div style="font-size:11px;opacity:.8">${r.nota===null? 'Responda las afirmaciones' : conceptoLikert(r.nota)+' · resultado al finalizar la práctica'}</div></div>
   </div>`;
 }
 function likertLeyendaHTML(){
@@ -1349,7 +1349,7 @@ function resumenCompHTML(nombreEsp, r){
       <div style="flex:1;min-width:150px;background:var(--navy,#110833);color:#fff;border-radius:10px;padding:10px 12px">
         <div style="font-size:11px;opacity:.8">Nota final del Plan de Práctica</div>
         <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:700">${fmtNota(r.nota)}</div>
-        <div style="font-size:11px;opacity:.8">${r.nota===null? 'Responda las afirmaciones' : (r.nota>=ap? 'Aprobado':'Reprobado')+' · '+conceptoLikert(r.nota)}</div></div>
+        <div style="font-size:11px;opacity:.8">${r.nota===null? 'Responda las afirmaciones' : conceptoLikert(r.nota)+' · resultado al finalizar la práctica'}</div></div>
     </div>
     <div class="likert-wrap" style="margin-top:10px"><table class="comp-tabla"><thead><tr><th>Área de competencia · módulos (peso · puntaje)</th><th>Peso</th><th>Puntaje (1–4)</th><th>% logro</th><th>Nivel</th><th>Aporte</th></tr></thead>
       <tbody>${filas}<tr class="comp-total"><td>Resultado ponderado</td><td style="text-align:center">${fp(comp.pesoTotal)}&nbsp;%</td><td></td><td style="text-align:center">${fmtPct(comp.pctFinal)}</td><td style="text-align:center">${nv? nv.k : '—'}</td><td style="text-align:center">Nota ${fmtNota(r.nota)}</td></tr></tbody></table></div>
@@ -2570,6 +2570,16 @@ function weightedNota(s){
   const pe = Number(p.empresa)||0, pi = Number(p.informe)||0, tot = (pe+pi)||1;
   return Math.round((((en*pe)+(inf*pi))/tot)*100)/100;
 }
+/* Resultado OFICIAL de la práctica: solo se define al cerrarla
+   («Finalizar — Aprobada», «Rechazar» o «Eximir»). Antes de eso, siempre «Pendiente»,
+   aunque ya exista una nota parcial. */
+function resultadoOficial(s){
+  const r = s && s.resultadoPractica;
+  if(r==='aprobada')  return {k:'aprobado',  label:'Aprobado',  LABEL:'APROBADO'};
+  if(r==='rechazada') return {k:'reprobado', label:'Reprobado', LABEL:'REPROBADO'};
+  if(r==='eximida')   return {k:'eximida',   label:'Eximida',   LABEL:'EXIMIDA'};
+  return {k:'pendiente', label:'Pendiente', LABEL:'PENDIENTE'};
+}
 function avg(obj){ const v=Object.values(obj); return v.length? Math.round((v.reduce((a,b)=>a+Number(b),0)/v.length)*100)/100 : 0; }
 
 /* ============================================================
@@ -3390,12 +3400,12 @@ function renderEvaluaciones(){
 
   const computed = list.map(s=>{
     const nota = (s.evaluacionEmpresa)? weightedNota(s) : null;
-    const aprobado = nota!==null ? nota>=escala : null;
-    const estado = nota===null ? 'pendiente' : (aprobado ? 'aprobado' : 'reprobado');
-    return {s, nota, aprobado, estado};
+    const ro = resultadoOficial(s);
+    const estado = ro.k;
+    return {s, nota, aprobado: estado==='aprobado', estado};
   });
 
-  const counts = {pendiente:0, aprobado:0, reprobado:0};
+  const counts = {pendiente:0, aprobado:0, reprobado:0, eximida:0};
   computed.forEach(c=> counts[c.estado]++);
 
   const ef = state.evalFilters.estado, sf = state.evalFilters.estudiante;
@@ -3466,8 +3476,8 @@ function renderEvaluaciones(){
           <div class="carrera-body" style="${collapsed?'display:none':''}">
           ${gList.map(c=>{
             const s = c.s;
-            const resultadoLabel = c.estado==='pendiente' ? 'Pendiente' : c.estado==='aprobado' ? 'Aprobado' : 'Reprobado';
-            const resultadoColor = c.estado==='pendiente' ? 'var(--amber)' : c.estado==='aprobado' ? 'var(--green)' : 'var(--wine)';
+            const resultadoLabel = c.estado==='pendiente' ? (c.nota!==null ? 'Pendiente de cierre' : 'Pendiente') : resultadoOficial(s).label;
+            const resultadoColor = c.estado==='pendiente' ? 'var(--amber)' : c.estado==='aprobado' ? 'var(--green)' : c.estado==='eximida' ? 'var(--blue)' : 'var(--wine)';
             const notaTxt = c.nota!==null ? c.nota.toFixed(2) : '—';
             const empVal = s.evaluacionEmpresa ? Number(s.evaluacionEmpresa.nota).toFixed(1) : '—';
             const infVal = (s.informeFinal && s.informeFinal.nota) ? Number(s.informeFinal.nota).toFixed(1) : '—';
@@ -3480,7 +3490,7 @@ function renderEvaluaciones(){
                   <div class="dgh-meta">${s.empresa||'Sin empresa asignada'} · Maestro guía ${empVal} · Informe ${infVal}</div>
                 </div>
                 <div class="doc-group-progress">
-                  <span class="bar-label" style="color:${resultadoColor};font-weight:700;font-family:'Fraunces',serif;font-size:15px">${notaTxt}</span>
+                  <span class="bar-label" style="color:${c.estado==='pendiente'?'var(--slate)':resultadoColor};font-weight:700;font-family:'Fraunces',serif;font-size:15px" title="${c.estado==='pendiente'?'Nota parcial: el resultado se define al finalizar la práctica':''}">${notaTxt}</span>
                   <span class="pill" style="background:${resultadoColor}18;color:${resultadoColor}">${resultadoLabel}</span>
                 </div>
                 <button class="btn-secondary" data-action="open-student-tab" data-id="${s.id}" data-tab="plan">${c.nota!==null ? `${icon('check',13)} Ver plan evaluado` : `Evaluar plan ${icon('arrow',13)}`}</button>
@@ -4089,7 +4099,7 @@ function tplEvaluaciones(s){
       <div class="st" style="margin-bottom:8px"><div class="bar"></div><h4>Nota final ponderada</h4></div>
       <div class="hint">Maestro guía ${pesoFinal(config(),'empresa')}% · Informe final ${pesoFinal(config(),'informe')}%</div>
       <div class="num" style="font-size:30px;margin-top:6px">${(s.evaluacionEmpresa)? weightedNota(s).toFixed(2) : '—'}</div>
-      <div class="label">${(s.evaluacionEmpresa)? (weightedNota(s)>=config().escalaAprobacion? 'APROBADO':'REPROBADO') : 'Falta la evaluación del maestro guía'}</div>
+      <div class="label">${s.resultadoPractica ? resultadoOficial(s).LABEL : (s.evaluacionEmpresa ? 'PENDIENTE · se define al finalizar la práctica' : 'Falta la evaluación del maestro guía')}</div>
     </div>
   </div>`;
 }
@@ -4119,7 +4129,7 @@ function tplInformeNotaFinal(s){
       <div class="st" style="margin-bottom:8px"><div class="bar"></div><h4>Nota final ponderada</h4></div>
       <div class="hint">Plan de práctica (maestro guía) ${pesoFinal(config(),'empresa')}% · Informe final ${pesoFinal(config(),'informe')}%</div>
       <div class="num" style="font-size:30px;margin-top:6px">${(s.evaluacionEmpresa)? weightedNota(s).toFixed(2) : '—'}</div>
-      <div class="label">${(s.evaluacionEmpresa)? (weightedNota(s)>=config().escalaAprobacion? 'APROBADO':'REPROBADO') : 'Falta evaluar el Plan de práctica'}</div>
+      <div class="label">${s.resultadoPractica ? resultadoOficial(s).LABEL : (s.evaluacionEmpresa ? 'PENDIENTE · se define al finalizar la práctica' : 'Falta evaluar el Plan de práctica')}</div>
     </div>
   </div>`;
 }
@@ -7031,7 +7041,7 @@ function contentInformeFinal(pdf,s,cfg,y,pw){
 }
 function contentActa(pdf,s,cfg,y,pw){
   const nota = (s.evaluacionEmpresa)? weightedNota(s): null;
-  const resultado = nota!==null? (nota>=cfg.escalaAprobacion?'APROBADO':'REPROBADO') : 'PENDIENTE';
+  const resultado = resultadoOficial(s).LABEL;
   y = addFieldGrid(pdf,y,[{label:'Estudiante',value:s.nombre},{label:'Empresa',value:s.empresa},{label:'Carrera',value:s.carrera},{label:'Período',value:(s.fechaInicio||'—')+' al '+(s.fechaTermino||'—')},{label:'Horas realizadas',value:s.horasRealizadas+' / '+s.horasRequeridas},{label:'Evaluación empresa',value:s.evaluacionEmpresa? s.evaluacionEmpresa.nota.toFixed(1):'—'},{label:'Informe final',value:(s.informeFinal&&s.informeFinal.nota)? Number(s.informeFinal.nota).toFixed(1):'—'},{label:'Nota final ponderada',value: nota!==null? nota.toFixed(2):'—'}],pw);
   y+=6;
   pdf.setDrawColor(255,176,1); pdf.setLineWidth(1); pdf.rect(18,y,pw-36,20);
@@ -7402,10 +7412,10 @@ function exportReport(type){
     students().forEach(s=> rows.push([s.nombre, s.rut, s.carrera, s.empresa, ...DOC_TYPES.map(d=>lbl(s.documentos[d.key])), docsResueltos(s)+'/'+DOC_TYPES.length]));
     name='estado_documentos_por_estudiante.csv';
   }
-  else if(type==='evaluaciones'){ rows=[['Estudiante','Eval. Maestro guía','Informe','Nota final','Resultado']]; students().forEach(s=>{ const n=(s.evaluacionEmpresa)? weightedNota(s):''; rows.push([s.nombre, s.evaluacionEmpresa?s.evaluacionEmpresa.nota:'', s.informeFinal?s.informeFinal.nota:'', n, n!==''? (n>=config().escalaAprobacion?'Aprobado':'Reprobado'):'']); }); name='reporte_evaluaciones.csv'; }
+  else if(type==='evaluaciones'){ rows=[['Estudiante','Eval. Maestro guía','Informe','Nota final','Resultado']]; students().forEach(s=>{ const n=(s.evaluacionEmpresa)? weightedNota(s):''; rows.push([s.nombre, s.evaluacionEmpresa?s.evaluacionEmpresa.nota:'', s.informeFinal?s.informeFinal.nota:'', n, resultadoOficial(s).label]); }); name='reporte_evaluaciones.csv'; }
   else if(type==='especialidad'){ rows=[['Especialidad','Estudiantes','Activas','Finalizadas','% Finalizadas','Horas realizadas','Horas requeridas','% Horas','Promedio evaluación docente']]; statsPorEspecialidad().forEach(r=>rows.push([r.especialidad,r.total,r.activas,r.finalizadas,r.pctFinal+'%',r.horasReal,r.horasReq,r.pctHoras+'%',r.promEval])); name='estadistica_por_especialidad.csv'; }
   else if(type==='periodo'){ rows=[['Período','Estudiantes','Activas','Finalizadas','% Finalizadas','Promedio evaluación docente','Horas realizadas']]; statsPorPeriodo().forEach(r=>rows.push([r.anio,r.total,r.activas,r.finalizadas,r.pctFinal+'%',r.promEval,r.horasTotales])); name='estadistica_por_periodo.csv'; }
-  else { rows=[['Estudiante','Empresa','Carrera','Fecha de cierre','Resultado']]; students().filter(s=>s.estado==='Cerrada'||s.estado==='Finalizada').forEach(s=>{ const n=(s.evaluacionEmpresa)?weightedNota(s):null; rows.push([s.nombre,s.empresa,s.carrera,s.fechaCierre||'',n!==null?(n>=config().escalaAprobacion?'Aprobado':'Reprobado'):'']); }); name='reporte_finalizadas.csv'; }
+  else { rows=[['Estudiante','Empresa','Carrera','Fecha de cierre','Resultado']]; students().filter(s=>s.estado==='Cerrada'||s.estado==='Finalizada').forEach(s=>{ const n=(s.evaluacionEmpresa)?weightedNota(s):null; rows.push([s.nombre,s.empresa,s.carrera,s.fechaCierre||'',resultadoOficial(s).label]); }); name='reporte_finalizadas.csv'; }
   const csv = rows.map(r=>r.map(csvEscape).join(',')).join('\n');
   download(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}), name);
   toast('Reporte exportado');
