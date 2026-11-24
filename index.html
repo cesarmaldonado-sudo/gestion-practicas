@@ -4690,7 +4690,7 @@ const INICIO_CAMPOS = {
   doc01: {fecha:true, intro:'Carta dirigida a la empresa para solicitar el cupo de práctica.',
     campos:[['empresa','Empresa'],['nombre','Nombre del estudiante'],['rut','RUT del estudiante'],['horasRequeridas','Horas de práctica','number']]},
   doc12: {fecha:true, intro:'Solicitud dirigida al maestro guía de la empresa.',
-    campos:[['supervisor','Maestro guía (destinatario)'],['cargoSupervisor','Cargo del maestro guía'],['empresa','Empresa'],['nombre','Nombre del estudiante'],['rut','RUT del estudiante'],['anoEgreso','Año de egreso','number']]},
+    campos:[['supervisor','Maestro guía (destinatario)'],['cargoSupervisor','Cargo del maestro guía'],['empresa','Empresa'],['nombre','Nombre del estudiante'],['rut','RUT del estudiante'],['anoEgreso','Año de egreso','number'],['horasRequeridas','Horas de práctica','number']]},
   doc02: {fecha:true, intro:'Ficha con los datos del estudiante, de la práctica y de la empresa.',
     campos:[['numeroMatricula','N° de matrícula (alfanumérico)'],['nombre','Nombre completo'],['rut','C.I. / RUT'],['fechaNacimiento','Fecha de nacimiento','date'],['telefono','Celular'],['direccion','Dirección'],['correo','Correo electrónico'],
             ['fechaInicio','Fecha de inicio','date'],['fechaTermino','Fecha de término','date'],['horasRequeridas','Total de horas','number'],['jornadaHorario','Horario'],
@@ -6616,7 +6616,7 @@ function contentSolicitud2(pdf,s,cfg,y,pw){
   y = paragraph(pdf,18,y,'De mi consideración:', pw-36)+4;
   y = paragraph(pdf,18,y,'Como es de su conocimiento, la reglamentación vigente de Enseñanza Media Técnico Profesional exige que los estudiantes egresados de esta modalidad de enseñanza realicen un período de práctica profesional en una empresa afín con su especialidad. Esta es parte de su proceso formativo y un requisito para obtener el título de Técnico de Nivel Medio.', pw-36)+4;
   y = checkPageBreak(pdf,y,cfg);
-  y = paragraph(pdf,18,y,'Esta práctica tiene una duración mínima de 360 horas de trabajo. El tiempo de duración de la práctica, así como las tareas o actividades a realizar por el estudiante, deberán quedar definidas, de común acuerdo, en el Plan de Práctica del estudiante.', pw-36)+4;
+  y = paragraph(pdf,18,y,`Esta práctica tiene una duración mínima de ${s.horasRequeridas||360} horas de trabajo. El tiempo de duración de la práctica, así como las tareas o actividades a realizar por el estudiante, deberán quedar definidas, de común acuerdo, en el Plan de Práctica del estudiante.`, pw-36)+4;
   y = paragraph(pdf,18,y,'Los estudiantes de Enseñanza Media Técnico-Profesional que realizan su práctica profesional en una empresa están protegidos por un seguro escolar en caso de accidente, tal como lo establece la Ley N.º 16.744.', pw-36)+4;
   y = paragraph(pdf,18,y,'Si su empresa acepta a un estudiante en práctica de nuestro establecimiento, deberá disponer de un maestro guía para que acompañe, supervise, dirija y oriente al estudiante en la realización de su Práctica Técnico Profesional en las áreas de estudio acordadas y estipuladas en el Plan de Práctica.', pw-36)+6;
   y = checkPageBreak(pdf,y,cfg);
